@@ -60,10 +60,52 @@ Our setup includes:
 
 ![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Bemchmark.png)
 
+What's that code button on the graph widget ?
+---------------------------------------------
+
+That "code" button on the graph widgets open up the graph "code-behind" in Crayon's graph editor. Crayon's graph editor is a rich editor based on [CodeMirror][] with [JSBeautifier][] formatting and [JSHint][] validation. We've also designed a nice auto-complete that has icons and help for every option with well over a hundred options for graph design. To give you a taste of how simple it is, here is the graph definitions for the benchmark image above:
+
+`
+{
+    "from": "last 30 minutes",
+    "unit": "m",
+    "names": ["Inserts"],
+	"tailSecondsInterval": 60,
+    "graphOpts": {
+        "fillGraph": true,
+        "aggregative": "max",
+        "stackedGraph": true,
+        "title": "Max Insert Time (ms)",
+		"noLegend": true,
+        "width": "wholeLine",
+        "height": 100
+    }
+}
+`
+
+* Note how the `from` field understands free text
+* Note that there is no `to` field, this means we want everything until now
+* We can choose any aggregation `unit` from s/m/h/d (second, minute, hour, day)
+* `names` is an array which can contain any amount of Metric names.
+* `servers` is also omitted. We will get results from all servers.
+* `components` is also omitted. We will get results from all components.
+* `graphOpts` is the container for all the options regarding graph drawing.
+* `graphOpts.lineStyles` allows applying graph options per Metric using a regex match.
+* `aggregative` is one of Crayon's unique features. In this example, we want to draw the max value from each mintue.
+* `width` I wouldn't even mention if it weren't for the "wholeLine" feature which binds the graph size to the window's.
+
+Phew, There are so many... Just one more:  
+Names of servers, components and Metrics can end with '%' like in SQL to indicate "all the names that being with"
+
+[CodeMirror]: https://github.com/marijnh/CodeMirror
+[JSHint]: https://github.com/jshint/jshint
+[JSBeautifier]: https://github.com/einars/js-beautify
+
 What's your roadmap ?
 ---------------------
 
-asdfasdf
+We've just started and this is the first version we're uploading here.  
+asdfasdfasdfasdf
 
 What are my alternatives ?
 --------------------------
