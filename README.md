@@ -5,7 +5,7 @@ Crayon
 
 * Crayon is a _complete_ monitoring and charting solution for large scale applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
-* Crayon is a stack which consists of [NodeJS][] as server, [MongoDB][] as storage and [dyGraphs][] as charting control. 
+* Crayon's stack consists of [NodeJS][] as server, [MongoDB][] as storage and [dyGraphs][] as charting control. 
 * Crayon is a smooth migration from old school monitoring systems such as [Munin][] (and soon [Graphite][])
 * Crayon is _unique_ in many ways beyond its stack. Some of its features are unavailable in most of today's modern charting systems.
 
@@ -37,11 +37,12 @@ A metric has the following fields:
 * `val` - Any number javascript can handle will do (e.g. "23.12")
 * `server` - *optional* The server this metric belongs to (e.g. "prod-us-ny3")
 * `component` - *optional* The component this metric belongs to (e.g. "Database")
+* a simple metric: `[{name:'Inserts',time:'2013-07-25T10:10:23Z',val:1}]`
 
 The 2 most important API's are:
-* `/addRaw` - For Feeding Crayon with metrics using `POST` (e.g. `[{name:'Inserts',time:'2013-07-25T10:10:23Z',val:1}]`)
-* `/find` - For querying metrics using `GET` arguments (e.g. `query` for mongo query, `fields` for projection and alike)
-* `/matchSeriesName` - For query (e.g. `http://prod-us-ny3/matchSeriesName?regex=cpu` )
+* `/addRaw` - For Feeding Crayon with metrics using `POST` (e.g. the simple metric above)
+* `/find` - For querying metrics using `GET` arguments (e.g. "query" for mongo query, "fields" for projection and alike)
+* `/matchSeriesName` - For query (e.g. "http://prod-us-ny3/matchSeriesName?regex=cpu" )
 
 How much is large scale ?
 -------------------------
