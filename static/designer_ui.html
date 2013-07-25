@@ -1,0 +1,146 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="../../crayon.css" media="screen" />
+	<script type="text/javascript" src="../../jquery-1.3.2.min.js"></script>	
+	<script type="text/javascript" src="../../client-graphing.js"></script>
+	<script type="text/javascript" src="../../client-querying.js"></script>
+	<script type="text/javascript" src="../../dygraph-combined.js"></script>
+	<script type="text/javascript" src="/beautify.js"></script>
+
+</head>
+<body>
+<div id="pageBody" class="frameBody">
+<table id="pageTable" cellSpacing="0" cellpadding="0" style="">
+	<tr>
+		<td><div id="graphDiv" style="width:600px; height:400px;margin-top: 20px;"></div></td>
+		<td><div id="legendDiv" class="legendDiv" style="width:420px"></div></td>
+	</tr>
+</table>
+
+<!-- add series dialog -->
+<div class="slidingOverlay" id="addSeriesDialog" style="left: -200px; top: 40px; width:300px; height: 500px;">
+  <h2>Add series</h2>
+
+  <p>
+    Search series by name using regex:<br>
+    <input id="matchRegex" style="width:240px"/><span class="crayonButton" onclick="searchSeries()" style="margin-left:10px">go</span>
+  </p>
+
+  <div id="matchBox" class="listBox" style="width:100%; height:250px;">
+  	<table id='matchTable' class="listTable" style='border-collapse: separate;text-align: left;width:100%;'>
+
+  	</table>
+  </div>
+
+  <!-- Buttons -->
+  <p>
+	<span class="crayonButton" onclick="addSeries_ok()" style="float:right;">OK</span>
+	<span class="crayonButton" onclick="addSeries_cancel()" style="float:right;margin-right:10px">Cancel</span>
+	<span class="crayonButton" onclick="addSeries_toggleAll()" style="float:left;">Toggle All</span>
+  </p>
+</div>
+
+</div>
+<script type="text/javascript">
+//<a href="http://dygraphs.com/options.html">Dygraph Reference</a></td>
+
+var queryArgs = {};
+(function () {
+	var match,
+		pl     = /\+/g,  // Regex for replacing addition symbol with a space
+		search = /([^&=]+)=?([^&]*)/g,
+		decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+		query  = window.location.toString().split("?")[1]||"";
+
+	while (match = search.exec(query))
+	   queryArgs[decode(match[1])] = decode(match[2]);
+})();
+
+var resizeGraph = function() {
+	var graphDivJQ = $(graphDiv);
+	var newWidth = $(window).width() -300 -150;
+	graphDivJQ.width(newWidth);
+	if (cacheByDiv && cacheByDiv[graphDiv.id]) {
+		cacheByDiv[graphDiv.id].dygraph.resize(graphDivJQ.width(),graphDivJQ.height());
+	}
+}
+$(window).resize(resizeGraph);
+
+var plotGraph = function(allGraphData) {  
+	var graphDivJQ = $("#graphDiv");
+	var graphDiv = graphDivJQ.get()[0];
+	var legendDiv = $("#legendDiv").get()[0];
+
+	resizeGraph();
+
+	allGraphData.sort(function (g1,g2) { return (g1.time < g2.time ? -1 : 1) });
+
+	var extraOptions = {}
+	if (submittedArgs.graphOpts) {
+		extraOptions = submittedArgs.graphOpts;
+	}
+	extraOptions.rangeSelectorHeight = 80;
+	
+  if (allGraphData && allGraphData.length > 0) {
+
+	 drawGraph(graphDiv, legendDiv, allGraphData, extraOptions);
+  } else {
+    console.error("Query returned no results. No data to chart.");
+  }
+	hideOverlay();
+}
+
+var submittedArgs = null;
+var submitQuery = function(args) {
+
+	submittedArgs = args;
+	// We're not going to query the entire database
+	if (!args.server && !args.components && !args.names) {
+		return;	
+	}
+
+	if (args.from || args.to || args.unit || args.server || args.names) {
+		showLoadingGraphDataOverlay();
+		new Query({
+			dateFrom: (args.from?args.from:null), 
+			dateTo: (args.to?args.to:null),
+			unit: args.unit,
+			hosts: args.server, 
+			components: args.components, // Don't filter components
+			names: args.names, // Don't filter counters
+			fields: allFields, // projections, field to select
+			callback: plotGraph
+    }).queryData();
+	}
+}
+
+var loadGraphFromArguments = function() {
+	
+	try {if (queryArgs.names) queryArgs.names = JSON.parse(queryArgs.names); } catch (ex) {}
+	try {if (queryArgs.components) queryArgs.components = JSON.parse(queryArgs.components); } catch (ex) {}
+	try {if (queryArgs.server) queryArgs.server = JSON.parse(queryArgs.server); } catch (ex) {}
+	try {if (queryArgs.graphOpts) queryArgs.graphOpts = JSON.parse(queryArgs.graphOpts); } catch (ex) {}
+	
+	if (queryArgs.from == null) queryArgs.from = "last 10 minutes";
+	if (queryArgs.unit == null) queryArgs.unit = 's';
+	if (queryArgs.graphOpts == null) queryArgs.graphOpts = { 
+		"gapInMinutes": 100,
+	};
+
+	//db.names.find({n: {$regex: "[^c]+cpu"}});
+	submitQuery(queryArgs);
+}
+
+//createTextAreaWithLines('txtQuery');
+
+
+	</script>
+</body>
+<script type="text/javascript" src="../../crayon-ui.js"></script>
+<script type="text/javascript">
+var pageHeader = "Graph Designer"
+//if (queryArgs.server) pageHeader += " > " + queryArgs.server;
+setHeader(pageHeader);
+loadGraphFromArguments();
+</script>
+</html>

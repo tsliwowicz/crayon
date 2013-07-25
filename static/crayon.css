@@ -1,0 +1,732 @@
+ul.slidingVerticalMenu {
+	width: 200px; /* width of menu */
+	overflow: auto;
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	position: fixed;
+	top: 70px;
+	right: 0px;
+}
+
+ul.slidingVerticalMenu li{
+	text-align: right; /* right align menu links */
+}
+
+ul.slidingVerticalMenu li a {
+	position: relative;
+	display: inline-block;
+	text-indent: 5px;
+	overflow: hidden;
+	background: rgb(149, 181, 189); /* initial background color of links */
+	font: normal 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+	text-decoration: none;
+	padding: 5px;
+	margin-bottom: 1px; /* spacing between links */
+	color: black;
+	-moz-box-shadow: inset -7px 0 5px rgba(83, 118, 163, 0.8); /* inner right shadow added to each link */
+	-webkit-box-shadow: inset -7px 0 5px rgba(83, 118, 163, 0.8);
+	box-shadow: inset -7px 0 5px rgba(83, 118, 163, 0.8);
+	-moz-transition: all 0.2s ease-in-out; /* CSS3 transition of hover properties */
+	-webkit-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	-ms-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+	vertical-align: top;
+	font-size: 15px;
+	font-weight: bold;
+	text-transform: capitalize;
+	cursor: pointer;
+}
+
+ul.slidingVerticalMenu li a:hover{
+	padding-right: 30px; /* add right padding to expand link horizontally to the left */
+	color: black;
+	background: #2586d7;
+	-moz-box-shadow: inset -3px 0 2px rgba(114,114,114, 0.8); /* contract inner right shadow */
+	-webkit-box-shadow: inset -3px 0 5px rgba(114,114,114, 0.8);
+	box-shadow: inset -3px 0 5px rgba(114,114,114, 0.8);
+}
+
+ul.slidingVerticalMenu li a:before{ /* CSS generated content: slanted right edge */
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	border-style: solid; 
+	border-width: 70px 0 0 20px; /* Play around with 1st and 4th value to change slant degree */
+	border-color: transparent transparent transparent white; /* change black to match the background color of the menu UL */
+}
+
+#ddblueblockmenu{
+	border-bottom-width: 0;
+	width: 185px;
+	vertical-align: top;
+	background-color: #536472;
+	z-index: 12;
+	height: 100%;
+	position: fixed;
+	left: 0px;
+	top: 40px;
+	-moz-box-shadow:    0px 0px 10px #000000;
+   	-webkit-box-shadow: 0px 0px 10px #000000;
+   	-ms-box-shadow:	    0px 0px 10px #000000;
+   	-o-box-shadow:      0px 0px 10px #000000;
+   	box-shadow:         0px 0px 10px #000000;
+}
+
+#ddblueblockmenu ul{
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	font: normal 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+}
+
+#ddblueblockmenu li a{
+	display: block;
+	padding: 3px 0;
+	padding-left: 9px;
+	width: 169px; /*185px minus all left/right paddings and margins*/
+	text-decoration: none;
+	color: white;
+	background-color: #404F5C;
+	border-bottom: 1px solid #697A8A;
+	border-left: 7px solid #262D33;
+}
+
+* html #ddblueblockmenu li a{ /*IE only */
+	width: 187px; /*IE 5*/
+	w\idth: 169px; /*185px minus all left/right paddings and margins*/
+}
+
+#ddblueblockmenu li a:hover {
+	background-color: #2586d7;
+	border-left-color: #1c64d1;
+}
+
+#ddblueblockmenu div.menutitle{
+	color: white;
+	border-bottom: 1px solid #161D23;
+	background-color: #161D23;
+	padding: 1px 0;
+	padding-left: 5px;
+	font: bold 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    font: bold 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+}
+
+.frameHeader {
+	color: #222222;
+	padding: 0px 0;
+	padding-left: 5px;
+	background-color: rgba(152, 166, 185, 1);
+	font: bold 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+	height: 22px;
+	position: fixed;
+	top: 40px;
+	left:185px;
+	width: 100%;
+	z-index: 15;
+	-moz-box-shadow:    0px 0px 10px #000000;
+   	-webkit-box-shadow: 0px 0px 10px #000000;
+   	-ms-box-shadow:	    0px 0px 10px #000000;
+   	-o-box-shadow:      0px 0px 10px #000000;
+   	box-shadow:         0px 0px 10px #000000;
+}
+
+#titleHeader {
+	margin: 0px;
+	background-image:url('CrayonsScatterSmall.png'); 
+	background-repeat:repeat-x; 
+	width:100%; 
+	height:40px;
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	z-index: 10;
+}
+
+.minigraph {
+	margin: 5;
+	border-style: solid;
+	padding: 0;
+	border-color: #BCD;
+	border-radius:5px 5px 5px 5px;
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+	cursor: pointer;
+	overflow: hidden;
+	display: inline-block;
+}
+
+.minigraph div:hover{
+	background-color:  #A5D6F7;
+}
+
+.frameBody {
+	/*
+   -moz-box-shadow:    inset 0px 5px 10px #000000;
+   -webkit-box-shadow: inset 0px 5px 10px #000000;
+   -ms-box-shadow:	   inset 0px 5px 10px #000000;
+   -o-box-shadow:      inset 0px 5px 10px #000000;
+   box-shadow:         inset 0px 5px 10px #000000;
+*/
+   /*
+   #-moz-box-shadow: 0 0 20px rgba(0,0,0,0.4); 
+   #-webkit-box-shadow: 0 0 20px rgba(0,0,0,0.4); 
+   #box-shadow: 0 0 20px rgba(0,0,0,0.4);
+*/
+   padding: 0;
+   margin-top: 60px;
+   margin-left: 175px;
+   /*margin-top: 82px;
+   margin-left: 185px;*/
+}
+
+
+
+
+h3 {
+	font-size: 14px;
+}
+
+h1 {
+	margin-left: 30px;
+}
+
+.listMenu {
+	/* width: 160px; */
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	margin-right: 12px;
+	margin-left: 12px;
+}
+	
+.listMenu li a {
+  	voice-family: "\"}\""; 
+  	voice-family: inherit;
+	margin: 0px;
+	padding-top: 0px;
+  	height: 20px;
+	text-decoration: none;
+	vertical-align: top;
+
+	border-radius:5px 5px 5px 5px;
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+}	
+	
+.listMenu li a:link, #listMenu li a:visited {
+	display: block;
+	padding: 0px 0 0 3px;	
+}
+	
+.listMenu li a:hover {
+	color: #123;
+	background-color: #DDEEFF;
+	padding: 0px 0 0 3px;
+}	
+
+.overlay {
+	margin-top: 60;
+	margin-left: 185;
+	background-color: rgba(0,0,0,0.8);
+	position: fixed;
+	top: 0; right: 0; bottom: 0; left: 0;
+	opacity: 0.0; /* also -moz-opacity, etc. */
+	z-index: 100;
+	display: none;
+	-moz-transition: all 0.2s ease-in-out; /* CSS3 transition of hover properties */
+	-webkit-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	-ms-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+
+.graphOverlay {
+	display: visible;
+	z-index: 20;
+	background-color: rgba(0,0,0,0.8);
+	opacity: 0.7;
+	position: absolute;
+	-moz-transition: opacity 0.2s ease-in-out; /* CSS3 transition of hover properties */
+	-webkit-transition: opacity 0.2s ease-in-out;
+	-o-transition: opacity 0.2s ease-in-out;
+	-ms-transition: opacity 0.2s ease-in-out;
+	transition: opacity 0.2s ease-in-out;
+	text-align: center;
+	color: white;
+	padding-top: 5px;
+}
+
+.graphOverlayText {
+	color: #DDD;
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+	height: 30px;
+	left: 0px;
+	width: 100%;
+}
+
+.legendDiv {
+	font-size: 12px;
+	width: 200px;
+	display: inline-block;
+	vertical-align: top;
+	margin-top: 40;
+	word-wrap: break-word;
+}
+
+.graphDiv {
+	display: inline-block;
+}
+
+.graphAndLegendDiv {
+	margin: 5;
+	border-style: solid;
+	padding: 0;
+	/* border-color: #BCD;*/
+	border-color: #C7C7C7;
+	border-radius:5px 5px 5px 5px;
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+	overflow: hidden;
+	display: inline-block;
+}
+
+.graphOptionsBar {
+	border-bottom-color: #ddd;
+	border-bottom-width: 1;
+	border-bottom-style: solid;
+	background-color: #f7f7f7; 
+	height: 25px;
+	padding-top: 4px;
+}
+
+.legendItem {
+	
+}
+
+.crayonButton {
+	border-top: 1px solid #96d1f8;
+	background: #65a9d7;
+	background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+	background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+	background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+	background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+	background: -o-linear-gradient(top, #3e779d, #65a9d7);
+	padding: 1px 10px;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+	-webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+	-moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+	box-shadow: rgba(0,0,0,1) 0 1px 0;
+	text-shadow: rgba(0,0,0,.4) 0 1px 0;
+	color: white;
+	font-size: 14px;
+	font-weight: normal;
+	font-family: Helvetica, Arial, Sans-Serif;
+	text-decoration: none;
+	vertical-align: middle;
+	cursor: pointer;
+}
+
+.crayonButton:hover {
+	border-top-color: #28597a;
+	background: #28597a;
+	color: #ccc;
+}
+.crayonButton:active {
+	border-top-color: #1b435e;
+	background: #1b435e;
+}
+
+
+/* ====================================== PROGRESS BAR ===================================*/
+.progressText {
+	color: #DDD;
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+	height: 30px;
+	margin-top: 180px;
+	position: fixed;
+	left: 0px;
+	width: 100%;
+}
+
+.meter { 
+	height: 20px;  /* Can be anything */
+	width: 33%;
+	left: 33%;
+	margin-top: 200px;
+	position: fixed;
+/*	margin: 60px 0 20px 0; /* Just for demo spacing */
+	background: #555;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px;
+	border-radius: 25px;
+	padding: 10px;
+	-webkit-box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+	-moz-box-shadow   : inset 0 -1px 1px rgba(255,255,255,0.3);
+	box-shadow        : inset 0 -1px 1px rgba(255,255,255,0.3);
+}
+.meter > span {
+	display: block;
+	height: 100%;
+	   -webkit-border-top-right-radius: 8px;
+	-webkit-border-bottom-right-radius: 8px;
+	       -moz-border-radius-topright: 8px;
+	    -moz-border-radius-bottomright: 8px;
+	           border-top-right-radius: 8px;
+	        border-bottom-right-radius: 8px;
+	    -webkit-border-top-left-radius: 20px;
+	 -webkit-border-bottom-left-radius: 20px;
+	        -moz-border-radius-topleft: 20px;
+	     -moz-border-radius-bottomleft: 20px;
+	            border-top-left-radius: 20px;
+	         border-bottom-left-radius: 20px;
+	background-color: rgb(43,194,83);
+	background-image: -webkit-gradient(
+	  linear,
+	  left bottom,
+	  left top,
+	  color-stop(0, rgb(43,194,83)),
+	  color-stop(1, rgb(84,240,84))
+	 );
+	background-image: -moz-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	-webkit-box-shadow: 
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	-moz-box-shadow: 
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	box-shadow: 
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	position: relative;
+	overflow: hidden;
+}
+.meter > span:after, .animate > span > span {
+	content: "";
+	position: absolute;
+	top: 0; left: 0; bottom: 0; right: 0;
+	background-image: 
+	   -webkit-gradient(linear, 0 0, 100% 100%, 
+	      color-stop(.25, rgba(255, 255, 255, .2)), 
+	      color-stop(.25, transparent), color-stop(.5, transparent), 
+	      color-stop(.5, rgba(255, 255, 255, .2)), 
+	      color-stop(.75, rgba(255, 255, 255, .2)), 
+	      color-stop(.75, transparent), to(transparent)
+	   );
+	background-image: 
+		-moz-linear-gradient(
+		  -45deg, 
+	      rgba(255, 255, 255, .2) 25%, 
+	      transparent 25%, 
+	      transparent 50%, 
+	      rgba(255, 255, 255, .2) 50%, 
+	      rgba(255, 255, 255, .2) 75%, 
+	      transparent 75%, 
+	      transparent
+	   );
+	z-index: 1;
+	-webkit-background-size: 50px 50px;
+	-moz-background-size: 50px 50px;
+	-webkit-animation: move 2s linear infinite;
+	   -webkit-border-top-right-radius: 8px;
+	-webkit-border-bottom-right-radius: 8px;
+	       -moz-border-radius-topright: 8px;
+	    -moz-border-radius-bottomright: 8px;
+	           border-top-right-radius: 8px;
+	        border-bottom-right-radius: 8px;
+	    -webkit-border-top-left-radius: 20px;
+	 -webkit-border-bottom-left-radius: 20px;
+	        -moz-border-radius-topleft: 20px;
+	     -moz-border-radius-bottomleft: 20px;
+	            border-top-left-radius: 20px;
+	         border-bottom-left-radius: 20px;
+	overflow: hidden;
+}
+
+.animate > span:after {
+	display: none;
+}
+
+@-webkit-keyframes move {
+    0% {
+       background-position: 0 0;
+    }
+    100% {
+       background-position: 50px 50px;
+    }
+}
+
+.orange > span {
+	background-color: #f1a165;
+	background-image: -moz-linear-gradient(top, #f1a165, #f36d0a);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #f1a165),color-stop(1, #f36d0a));
+	background-image: -webkit-linear-gradient(#f1a165, #f36d0a); 
+}
+
+.red > span {
+	background-color: #f0a3a3;
+	background-image: -moz-linear-gradient(top, #f0a3a3, #f42323);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #f0a3a3),color-stop(1, #f42323));
+	background-image: -webkit-linear-gradient(#f0a3a3, #f42323);
+}
+
+.nostripes > span > span, .nostripes > span:after {
+	-webkit-animation: none;
+	background-image: none;
+}
+
+.minigraphLeftTitle {
+	font-size: 12px;
+}
+
+.horizontalRuler {
+	width: 1024px;
+	top: 768px;
+	height: 5px;
+	left: 0px;
+	position: fixed;
+	background-color: orange;
+	display: none;
+}
+
+.verticalRuler {
+	width: 5px;
+	height: 768px;
+	left: 1024px;
+	top: 0px;
+	position: fixed;
+	background-color: orange;
+	display: none;
+}
+
+.slidingOverlay {
+	background-color:#fff;
+	width:350px;
+	padding:15px;
+	text-align:left;
+	border:2px solid #333;
+	position: fixed;
+	z-index: 10;
+	opacity:0.98;
+	display: none;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	-moz-box-shadow: 0 0 50px #ccc;
+	-webkit-box-shadow: 0 0 50px #ccc;
+	-moz-transition: all 0.4s ease-in-out; /* CSS3 transition of hover properties */
+	-webkit-transition: all 0.4s ease-in-out;
+	-o-transition: all 0.4s ease-in-out;
+	-ms-transition: all 0.4s ease-in-out;
+	transition: all 0.4s ease-in-out;
+}
+
+.listBox {
+	border-radius:5px 5px 5px 5px;
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+	overflow: auto;
+	border-style: solid;
+	border-color: rgb(170, 170, 170);
+	border-width: 1;
+}
+
+.listItemRow:nth-child(even) {
+    background-color: #FFF;
+    cursor: pointer;
+}
+.listItemRow {
+	background-color: rgb(240, 240, 253);
+	cursor: pointer;
+}
+
+.listItemCellSelected {
+	background-color: rgb(147, 226, 233);
+	font-weight: bold;
+}
+
+
+.listItemRow:hover:nth-child(even) {
+    background-color: #7AC0FA;
+}
+.listItemRow:hover{
+	background-color: #7AC0FA;
+}
+
+.listItemCell {
+	font-size: 12px;
+}
+
+/* ALERT BOX START */
+#crayonAlert {
+	background-color:white; 
+	text-align:left;
+	position: fixed; 
+	left:300; 
+	top:200;
+	padding: 0px;
+	width:300px;
+	height:150px;
+	border:2px solid #333;
+	z-index: 10;
+	opacity:0.98;
+	border-radius:6px;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	-moz-box-shadow: 0 0 50px #ccc;
+	-webkit-box-shadow: 0 0 50px #ccc;
+	-moz-transition: all 0.4s ease-in-out; /* CSS3 transition of hover properties */
+	-webkit-transition: all 0.4s ease-in-out;
+	-o-transition: all 0.4s ease-in-out;
+	-ms-transition: all 0.4s ease-in-out;
+	transition: all 0.4s ease-in-out;
+	overflow: hidden;
+}
+
+#crayonAlertUpperBar {
+	background-color:rgb(240, 240, 240);
+	height:20px;
+	padding: 8;
+	font-size: 15px;
+}
+#crayonAlertText {
+	height: 55px;
+	padding: 10;
+	overflow:hidden;
+}
+#crayonAlertBottomBar {
+	background-color:rgb(240, 240, 240);
+	height:20px;
+	padding: 10;
+}
+/* ALERT BOX END */
+
+
+/* CODE MIRROR START */
+.codemirrorTopBar {
+	border-bottom-color: #ddd;
+	border-bottom-width: 1;
+	border-bottom-style: solid;
+	background-color: #f7f7f7; 
+	height: 40px;
+	padding-top: 4px;
+}
+
+.codemirrorLeftBar {
+	border-right: 1px solid #ddd;
+	background-color: #f7f7f7;
+	white-space: nowrap;
+	width: 28px;
+	z-index: 0px;
+}
+
+.CodeMirror-hints ul {
+	width: 230px;
+}
+.CodeMirror-hints li {
+	font-size: 11px;
+	font: bold 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+	padding-left: 20px;  /* width of the image plus a little extra padding */
+}
+
+.imgNumber {
+	background-image: url('codemirror/number.png');
+	background-repeat: no-repeat;
+}
+.imgText {
+	background-image: url('codemirror/text.png');
+	background-repeat: no-repeat;
+}
+.imgJavascript {
+	background-image: url('codemirror/javascript.png');
+	background-repeat: no-repeat;
+}
+.imgFunction {
+	background-image: url('codemirror/function.png');
+	background-repeat: no-repeat;
+}
+
+.lint-error-icon {
+font-family: arial;
+color: white;
+background-color: red;
+font-weight: bold;
+border-radius: 50%;
+padding: 0 3px;
+margin-right: 7px;
+}
+.lint-error {
+font-family: arial;
+background: #ffa;
+color: #a00;
+padding: 2px 5px 3px;
+}
+.CodeMirror-linewidget {
+position: relative;
+z-index: 2;
+overflow: auto;
+font-size: 10px;
+}
+
+#autoCompleteDesc .option b {
+	font-size: 13px;
+	font-weight: bold;
+	color: #277ECE;
+}
+
+.dyDescType {
+	font-weight: bold;
+	color: #196081;
+}
+
+#autoCompleteDesc {
+	background-color:rgb(255, 255, 211);
+	border-color:rgb(240, 240, 240);
+	font-size: 11px;
+	font: bold 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+	z-index: 20;
+	width: 400;
+	height: 300;
+	/*
+	border-style: solid;
+	border-width: 1;
+	padding: 5;
+	overflow: auto;
+	-moz-box-shadow:    1px 1px 10px #000000;
+   	-webkit-box-shadow: 1px 1px 10px #000000;
+   	-ms-box-shadow:	    1px 1px 10px #000000;
+   	-o-box-shadow:      1px 1px 10px #000000;
+   	box-shadow:         1px 1px 10px #000000;*/
+
+	margin: 0;
+	padding: 2px;
+
+	-webkit-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	-moz-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	border-radius: 3px;
+	border: 1px solid silver;
+
+	background: white;
+
+	max-height: 20em;
+	overflow-y: auto;
+
+}
+/* CODE MIRROR END */
