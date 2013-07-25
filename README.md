@@ -3,7 +3,7 @@ Crayon
 
 (readme.md update in progress, first commit & last update on 2013-07-25).  
 
-* Crayon is a _complete_ monitoring and charting solution for large scale applications. 
+* Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
 * Crayon's stack consists of [NodeJS][] as server, [MongoDB][] as storage and [dyGraphs][] as charting control. 
 * Crayon is a smooth migration from old school monitoring systems such as [Munin][] (and soon [Graphite][])
@@ -47,7 +47,18 @@ The 2 most important API's are:
 How much is large scale ?
 -------------------------
 
-asdfasdf
+Of course large scale definition differs from one to the next.  
+Our target was a Million or more metrics per minute on 1 node.  
+We were making sure we can always scale out by adding more instances.  
+
+Our setup includes:  
+* `NGINX` - An open source balancer layer before NodeJS running on port 60000
+* `Crayon Job Manager NodeJS` - Crayon service running on port 54320 and does aggregations
+* `Crayon NodeJS` - Crayon service running on port 54321 receives metrics from NGINX
+* `Crayon NodeJS` - Crayon service running on port 54322 receives metrics from NGINX
+* `MongoDB` - Unsharded Mongo DB with SSD storage for data files and proper indexes ensured
+
+![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Benchmark.png 30min benchmark)
 
 What's your roadmap ?
 ---------------------
@@ -88,5 +99,8 @@ Stack and Licenses
 Change Log
 ----------
 
-* 2013-07-25 - 
-*First commit*
+2013-07-26 - 
+* Fixed Hide bug not working on names with "-" in munin plugin
+
+2013-07-25 - 
+* *First commit*
