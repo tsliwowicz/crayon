@@ -58,7 +58,7 @@ Our setup includes:
 * `Crayon NodeJS` - Crayon service running on port 54322 receives metrics from NGINX
 * `MongoDB` - Unsharded Mongo DB with SSD storage for data files and proper indexes ensured
 
-![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Benchmark.png 30min benchmark)
+![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Bemchmark.png)
 
 What's your roadmap ?
 ---------------------
