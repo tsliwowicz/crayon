@@ -85,10 +85,11 @@ That "code" button on the graph widgets open up the graph "code-behind" in Crayo
 
 * Note how the `from` field understands free text
 * Note that there is no `to` field, this means we want everything until now
-* We can choose any aggregation `unit` from s/m/h/d (second, minute, hour, day)
+* We can choose any aggregation `unit` from 's','m','h','d' (second, minute, hour, day)
 * `names` is an array which can contain any amount of Metric names.
 * `servers` is also omitted. We will get results from all servers.
 * `components` is also omitted. We will get results from all components.
+* `tailSecondsInterval` indicates we want this graph to update every 60 seconds.
 * `graphOpts` is the container for all the options regarding graph drawing.
 * `graphOpts.lineStyles` allows applying graph options per Metric using a regex match.
 * `aggregative` is one of Crayon's unique features. In this example, we want to draw the max value from each mintue.
@@ -105,12 +106,40 @@ What's your roadmap ?
 ---------------------
 
 We've just started and this is the first version we're uploading here.  
-asdfasdfasdfasdf
+I'll try to lay out a list of TODO's here (and update it occasionaly)  
+
+* We should add Monitoring on top of the values
+* We really want to add configurable Soft & Adaptive Thresholding algorithms
+* We should set up a site with a lot more documentation
+* We should create a migration plugin from graphite (We already have the one for munin)
 
 What are my alternatives ?
 --------------------------
 
-asdfasdfasd
+There are a lot of cloud services and payed services. I'm focusing on the Free & Open Source genre:  
+
+* [Munin][] - the old school stack (Munin-Node/Munin-Async/Munin-Server). Major Con: Updates only once in 5 minutes.
+* [Graphite][] - the most common solution today (Graphite/Carbon/Whisper). Major Con: No REAL good and dynamic UI.
+* [Cube][] - a new service with good API and only one unconfigurable UI ([Cubism][] horizon charts). Major Con: Very limited UI.
+* [Fnordmetric][] - a new service with good API and configurable UI. Major Con: Ruby server doesn't handle a lot of data.
+
+[Cube]: https://github.com/square/cubism/wiki/Cube
+[Cubism]: http://square.github.io/cubism/
+[Fnordmetric]: https://github.com/paulasmuth/fnordmetric
+
+How do I migrate from Munin ?
+-----------------------------
+
+asdfasdf  
+
+Are there any known issues ?
+----------------------------
+
+Like anything and especially like anything new, the answer is hardcoded `yes;`.  
+Here is a list of some of the things which are on my mind (I'll try to keep it updated):
+
+* Archiving data on Mongo DB takes too long, every hour everything freezes for a minute or two due to mongo DB write lock. This happens even though we're using zero writeconcern and issuing only 1 bulk remove operation.
+* Delta graphs (or 'derivative' graphs) are displayed incorrectly when shown after aggregation. The delta's get aggregated and if resets occur within the aggregation, the resulting numbers are completely useless. Up to a minute aggregation it looks fine.
 
 Stack and Licenses
 ------------------
@@ -140,9 +169,6 @@ Stack and Licenses
 
 Change Log
 ----------
-
-2013-07-26 - 
-* Fixed Hide bug not working on names with "-" in munin plugin
 
 2013-07-25 - 
 * *First commit*
