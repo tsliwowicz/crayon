@@ -22,7 +22,7 @@ body.append('<div id="frameHeader" class="frameHeader"></div>');
 body.append('<div id="ddblueblockmenu">' +
 				'<div class="menutitle">General</div>' + 
 				'<ul>' + 
-					'<li><a href="/designer.html">Graph Designer</a></li>' + 
+					'<li><a href="/designer.html">Dashboard Designer</a></li>' + 
 					'<li><a href="/config.html">Configuration</a></li>' + 
 //					'<li><a href="/system.html">System Status</a></li>' + 
 				'</ul>' + 

@@ -28,13 +28,10 @@
 <script type="text/javascript" src="../../crayon-ui.js"></script>
 <script type="text/javascript">
 
-var pageHeader = "System Status"
 var graphCols = 1;
 var graphWidth = 600;
 var graphHeight = 50;
 var seriesByName = {};
-//if (queryArgs.server) pageHeader += " > " + queryArgs.server;
-setHeader(pageHeader);
 
 var dashboard = {
 }
@@ -148,12 +145,14 @@ var loadDashboard = function() {
 		var defaultHeight = 250;
 		var graphWidth = graph.graphOpts.width || 500;
 		var graphHeight = graph.graphOpts.height || defaultHeight;
-	    
+	    graph.graphOpts.legendWidth = graph.graphOpts.legendWidth || 230;
+	    if (graph.graphOpts.noLegend) graph.graphOpts.legendWidth = 0;
+
 	    var graphHtmlToAdd = '';
 		graph.graphDivString = 'graph_' + graphNum;
 		graph.legendDivString = 'legend_' + graphNum;
 		graph.graphAndLegendDivString = 'grpah_and_legend_' + graphNum;
-
+		
 		var graphAndLegendStyle= "";
 		if (graph.graphOpts.width == "wholeLine") {
 			graphAndLegendStyle += "display:block;";
@@ -169,7 +168,7 @@ var loadDashboard = function() {
 		graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Code</span>';
 		graphHtmlToAdd += '<span class="crayonButton" onclick="refreshGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Refresh</span>';
 		graphHtmlToAdd += '</div>';
-		graphHtmlToAdd += '<div id="graphOverlay_' + graphNum + '" class="graphOverlay" style="width:' + (graphWidth - 10) + '; height:' + (graphHeight - 5) + '">';
+		graphHtmlToAdd += '<div id="graphOverlay_' + graphNum + '" class="graphOverlay" style="width:' + (graphWidth + graph.graphOpts.legendWidth - 10) + '; height:' + (graphHeight - 5) + '">';
 		graphHtmlToAdd += '<span id="graphOverlayText_' + graphNum + '" class="graphOverlayText">Loading</span>';
 		graphHtmlToAdd += '</div>';
 
@@ -177,12 +176,16 @@ var loadDashboard = function() {
 		graphHtmlToAdd += '<div id="graph_' + graphNum + '" class="graphDiv" style="width:' + graphWidth + '; height:' + graphHeight + '"></div>';
 		if (!graph.graphOpts.noLegend) {
 			graphHtmlToAdd += '<div id="legend_' + graphNum + '" class="legendDiv"></div>';
-			graph.legendDiv = $("#" + graph.legendDivString).get()[0];
-		} else {
-			graph.legendDiv = invisibleDiv;
-		}
+		} 
+
 		graphHtmlToAdd += '</div>'
 		lastCell.append(graphHtmlToAdd);
+
+		if (graph.graphOpts.noLegend) {
+			graph.legendDiv = invisibleDiv;
+		} else {
+			graph.legendDiv = $("#" + graph.legendDivString).get()[0];
+		}
 
 		graph.dyGraphTitle = graph.graphOpts.title
 		delete graph.graphOpts.title
@@ -223,7 +226,7 @@ var loadDashboard = function() {
 function resizeGraphByDiv(graphObj) {
 	graphObj.graphOpts.width= $(graphObj.div.parentNode).width() - 10;
 	$(graphObj.div).width(graphObj.graphOpts.width);
-	$(graphObj.overlay).width(graphObj.graphOpts.width);
+	$(graphObj.overlay).width(graphObj.graphOpts.width + graphObj.graphOpts.legendWidth);
 	if (cacheByDiv && cacheByDiv[graphObj.div.id]) {
 		cacheByDiv[graphObj.div.id].dygraph.resize(graphObj.graphOpts.width, graphObj.graphOpts.height || defaultHeight)
 	}
@@ -236,19 +239,38 @@ socket.on('browserSocket', function (data) {
 });
 */
 
-
-$.ajax({
-	url: queryArgs.url,
-	cache: false,
-	success: function(result) {
-		try {
-			dashboard = JSON.parse(result);
-			loadDashboard();
-		} catch (ex) {
-			console.error("Dasbhoard json is invalid: " + ex);
+if (queryArgs.url) {
+	$.ajax({
+		url: queryArgs.url,
+		cache: false,
+		success: function(result) {
+			try {
+				dashboard = JSON.parse(result);
+				loadDashboard();
+			} catch (ex) {
+				console.error("Dasbhoard json is invalid: " + ex);
+			}
 		}
+	});
+} else if (queryArgs.dashboard) {
+	try {
+		dashboard = JSON.parse(queryArgs.dashboard);
+		if (!dashboard.graphs) {
+			var newDashboard = {
+				graphs: [dashboard]
+			};
+		}
+		dashboard = newDashboard || dashboard;
+	} catch (ex) {
+		console.error("Dasbhoard json is invalid: " + ex);
 	}
-});
+
+	try {
+		loadDashboard();
+	} catch (ex) {
+		console.error("Failed loading dashboard:" + ex.stack);
+	}
+}
 
 </script>
 </html>

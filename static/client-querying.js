@@ -116,7 +116,7 @@ Query.prototype.queryData = function() {
 	var queryConditions = [];
 	
 	// Filter by host (with a tiny query optimization)
-	me.updateQueryConditionsForField(queryConditions, "s", me.hosts);
+	me.updateQueryConditionsForField(queryConditions, "s", me.servers || me.hosts);
 	me.updateQueryConditionsForField(queryConditions, "c", me.components);
 	me.updateQueryConditionsForField(queryConditions, "n", me.names);
 	queryConditions.push({ t: { $gte: startDateString} }, { t: { $lt: endDateString} });

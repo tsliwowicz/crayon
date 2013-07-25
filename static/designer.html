@@ -89,8 +89,8 @@ function searchSeries() {
 function updateMatchingSeriesList(nameDocs) {
 	var sb = "";
 	var namesInList = {};
-	for (nameIndex in argsWithinDialog.names) {
-		var name = argsWithinDialog.names[nameIndex];
+	for (nameIndex in graphToAddSeriesTo.names) {
+		var name = graphToAddSeriesTo.names[nameIndex];
 		namesInList[name] = 1;
 		sb += "<tr class='listItemRow'><td class='listItemCellSelected' onclick='toggleSeriesInList(this)'>" + name + "</td></tr>";
 	}
@@ -132,7 +132,8 @@ function toggleSeriesInList(listItem) {
 	}
 }
 
-var argsWithinDialog;
+var graphToAddSeriesTo;
+var dashboardToAddSeriesTo;
 function updateJsonSeriesNames(tds) {
 	var usedNames = {};
 
@@ -146,8 +147,8 @@ function updateJsonSeriesNames(tds) {
 		if (!name) continue;
 		newNamesArr.push(name);
 	}
-	argsWithinDialog.names = newNamesArr;
-	editor.setValue(js_beautify(JSON.stringify(argsWithinDialog)));
+	graphToAddSeriesTo.names = newNamesArr;
+	editor.setValue(js_beautify(JSON.stringify(dashboardToAddSeriesTo || graphToAddSeriesTo)));
 }
 function addSeries_toggleAll() {
 	var tds = matchTable.getElementsByTagName("td");
@@ -181,7 +182,15 @@ function addSeries() {
 		alert('JSON must be valid before adding a series to it.\n' + ex);
 		return;
 	}
-	argsWithinDialog = args;
+
+	if (args.graphs && args.graphs.length > 0) { 
+		graphToAddSeriesTo = args.graphs[0];
+		dashboardToAddSeriesTo = args;
+	} else {
+		graphToAddSeriesTo = args;
+		dashboardToAddSeriesTo = null;
+	}
+
 	updateMatchingSeriesList([]);
 	$("#addSeriesDialog").css("display", "block");
 	setTimeout(function() {
@@ -312,8 +321,11 @@ function updateUrl() {
   try {if (newQueryArgs.components) query += "&components=" + JSON.stringify(newQueryArgs.components); } catch (ex) {}
   try {if (newQueryArgs.server) query += "&server=" + JSON.stringify(newQueryArgs.server); } catch (ex) {}
   try {if (newQueryArgs.graphOpts) query += "&graphOpts=" + encodeURIComponent(JSON.stringify(newQueryArgs.graphOpts)); } catch (ex) {}
-  //window.location.search = query;
-  var win=window.open(window.location.origin + "/designer_ui.html" + query, '_blank');
+  
+  //var win=window.open(window.location.origin + "/designer_ui.html" + query, '_blank');
+  //win.focus();
+
+  var win=window.open(window.location.origin + "/by-json.html?dashboard=" + encodeURIComponent(jsonString), '_blank');
   win.focus();
 }
 
@@ -361,18 +373,46 @@ var loadGraphFromArguments = function() {
 	
 	try {if (queryArgs.names) queryArgs.names = JSON.parse(queryArgs.names); } catch (ex) {}
 	try {if (queryArgs.components) queryArgs.components = JSON.parse(queryArgs.components); } catch (ex) {}
-	try {if (queryArgs.server) queryArgs.server = JSON.parse(queryArgs.server); } catch (ex) {}
+	try {if (queryArgs.server || queryArgs.servers) queryArgs.server = JSON.parse(queryArgs.server || queryArgs.servers); } catch (ex) {}
 	try {if (queryArgs.graphOpts) queryArgs.graphOpts = JSON.parse(queryArgs.graphOpts); } catch (ex) {}
 	delete queryArgs.dummy;
 
+	var objectForDashboard = queryArgs;
+	if (queryArgs.from == null && queryArgs.to == null) {
+		objectForDashboard = { 
+		    "header": "My new Dashboard!",
+
+		    "defaultGraphOpts": {
+		       "width": 400,
+		       "height": 200,
+		    },
+
+		    "graphs":[{
+		    	"from": "10 minutes ago",
+		    	"unit": "s",
+		    	"names": ["crayon_cpu"],
+		    	"servers": null,
+		    	"components": null,
+		    	"tailSecondsInterval": null,
+		    	"graphOpts": {
+		    		"title": "My new Graph!",
+		    		"aggregative": "ave",
+		    		linesStyles: [
+		    		]
+		    	}
+		    }]
+		}
+	}
+
+/*
 	if (queryArgs.from == null) queryArgs.from = "last 10 minutes";
 	if (queryArgs.unit == null) queryArgs.unit = 's';
 	if (queryArgs.graphOpts == null) queryArgs.graphOpts = { 
 		"gapInMinutes": 100,
 	};
-
+*/
 	//db.names.find({n: {$regex: "[^c]+cpu"}});
-	editor.setValue(js_beautify(JSON.stringify(queryArgs)));
+	editor.setValue(js_beautify(JSON.stringify(objectForDashboard)));
 }
 
 //createTextAreaWithLines('txtQuery');
@@ -382,7 +422,7 @@ var loadGraphFromArguments = function() {
 </body>
 <script type="text/javascript" src="../../crayon-ui.js"></script>
 <script type="text/javascript">
-var pageHeader = "Graph Designer"
+var pageHeader = "Dashboard Designer"
 //if (queryArgs.server) pageHeader += " > " + queryArgs.server;
 setHeader(pageHeader);
 loadGraphFromArguments();
