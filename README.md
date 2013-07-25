@@ -92,7 +92,7 @@ That "code" button on the graph widgets open up the graph "code-behind" in Crayo
 * `tailSecondsInterval` indicates we want this graph to update every 60 seconds.
 * `graphOpts` is the container for all the options regarding graph drawing.
 * `graphOpts.lineStyles` allows applying graph options per Metric using a regex match.
-* `aggregative` is one of Crayon's unique features. In this example, we want to draw the max value from each mintue.
+* `aggregative` is one of Crayon's unique features. "Max" means we want the max value from each minute.
 * `width` I wouldn't even mention if it weren't for the "wholeLine" feature which binds the graph size to the window's.
 
 Phew, There are so many... Just one more:  
@@ -112,6 +112,7 @@ I'll try to lay out a list of TODO's here (and update it occasionaly)
 * We really want to add configurable Soft & Adaptive Thresholding algorithms
 * We should set up a site with a lot more documentation
 * We should create a migration plugin from graphite (We already have the one for munin)
+* We should set up a demo site for people to test Crayon online
 
 What are my alternatives ?
 --------------------------
@@ -130,12 +131,20 @@ There are a lot of cloud services and payed services. I'm focusing on the Free &
 How do I migrate from Munin ?
 -----------------------------
 
-asdfasdf  
+Along with crayon, undder the `server/plugins/` folders there is a folder called `munin-bridge`. This folder contains a few shell files which make the migration easier. 
+
+* [Munin Config to JSON][] - Should be executed once. It is responsible for a one time conversion of "munin-run <your-files> config" to JSON. The resulting document should be saved in `munin-configs` folder under `munin-bridge` (where it is read by the server on restart or when a special plugin API has been called).
+* [Munin Run to JSON][] - Should be executed every time we used to run munin-run and collect our metrics. This file is responsible for executing the plugins and posting the result to Crayon.
+* [Munin Agent][] - Acts as a bash service which calls the [Munin Run to JSON][] at specified intervals. This shell file should be executed with `munin-agent init` by a service. It is listed in PS/TOP as "crayon-agent".
+
+[Munin Config to JSON]:https://raw.github.com/shai-d/crayon/master/server/plugins/munin-bridge/munin-config-awk.sh
+[Munin Run to JSON]:https://raw.github.com/shai-d/crayon/master/server/plugins/munin-bridge/munin-crayon-bridge.sh
+[Munin Agent]:https://raw.github.com/shai-d/crayon/master/server/plugins/munin-bridge/munin-agent.sh
 
 Are there any known issues ?
 ----------------------------
 
-Like anything and especially like anything new, the answer is hardcoded `yes;`.  
+Like anything and especially like anything new, the answer is a hardcoded `yes;`.  
 Here is a list of some of the things which are on my mind (I'll try to keep it updated):
 
 * Archiving data on Mongo DB takes too long, every hour everything freezes for a minute or two due to mongo DB write lock. This happens even though we're using zero writeconcern and issuing only 1 bulk remove operation.
