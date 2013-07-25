@@ -65,7 +65,7 @@ What's that code button on the graph widget ?
 
 That "code" button on the graph widgets open up the graph "code-behind" in Crayon's graph editor. Crayon's graph editor is a rich editor based on [CodeMirror][] with [JSBeautifier][] formatting and [JSHint][] validation. We've also designed a nice auto-complete that has icons and help for every option with well over a hundred options for graph design. To give you a taste of how simple it is, here is the graph definitions for the benchmark image above:
 
-`
+```javascript
 {
     "from": "last 30 minutes",
     "unit": "m",
@@ -81,7 +81,7 @@ That "code" button on the graph widgets open up the graph "code-behind" in Crayo
         "height": 100
     }
 }
-`
+```
 
 * Note how the `from` field understands free text
 * Note that there is no `to` field, this means we want everything until now
