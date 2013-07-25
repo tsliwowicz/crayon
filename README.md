@@ -131,7 +131,7 @@ There are a lot of cloud services and payed services. I'm focusing on the Free &
 How do I migrate from Munin ?
 -----------------------------
 
-Along with crayon, undder the `server/plugins/` folders there is a folder called `munin-bridge`. This folder contains a few shell files which make the migration easier. 
+Along with crayon, under the `server/plugins/` folders there is a folder called `munin-bridge`. This folder contains a few shell files which make the migration easier. 
 
 * [Munin Config to JSON][] - Should be executed once. It is responsible for a one time conversion of "munin-run <your-files> config" to JSON. The resulting document should be saved in `munin-configs` folder under `munin-bridge` (where it is read by the server on restart or when a special plugin API has been called).
 * [Munin Run to JSON][] - Should be executed every time we used to run munin-run and collect our metrics. This file is responsible for executing the plugins and posting the result to Crayon.
