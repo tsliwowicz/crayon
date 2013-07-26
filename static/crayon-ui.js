@@ -14,7 +14,9 @@ var setHeader = function(name) {
 	$("#frameHeader").get()[0].innerHTML = name;
 }
 
+var head = $("head");
 var body = $("body");
+head.append('<link rel="stylesheet" type="text/css" href="/crayon.css" media="screen" />');
 
 /* CRAYON MAIN UI START */
 body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png"></div>');
@@ -24,14 +26,9 @@ body.append('<div id="ddblueblockmenu">' +
 				'<ul>' + 
 					'<li><a href="/designer.html">Dashboard Designer</a></li>' + 
 					'<li><a href="/config.html">Configuration</a></li>' + 
-//					'<li><a href="/system.html">System Status</a></li>' + 
 				'</ul>' + 
 				'<div class="menutitle">Dasboards</div>' + 
 				'<ul id="dashboardsUL">' + 
-				'</ul>' +
-				'<div class="menutitle">Help</div>' + 
-				'<ul>' + 
-					'<li><a href="/restAPI.html">Rest API</a></li>' +  
 				'</ul>' +
 			'</div>');
 

@@ -148,9 +148,9 @@ Since it's only javascript, there's also no need for compilation.
    c. `use crayon` - Switches to database "crayon" which is the name we'll use  
    d. `db.addUser("mng","mng");` - Adds our default user to the database  
    e. Do the following 3 lines with: `samples_sec`, `samples_min`, `samples_hour`, `samples_day`  
-   f. `db.<colName>.ensureIndex({t:1});` - Make selections by time fast  
-   g. `db.<colName>.ensureIndex({s:1, t:1});` - *optional* Make selections by server and time fast  
-   h. `db.<colName>.ensureIndex({n:1, t:1});` - *optional* Make selections by name and time fast  
+   f. `db.samples_XXX.ensureIndex({t:1});` - Make selections by time fast  
+   g. `db.samples_XXX.ensureIndex({s:1, t:1});` - *optional* Make selections by server and time fast  
+   h. `db.samples_XXX.ensureIndex({n:1, t:1});` - *optional* Make selections by name and time fast  
     
 3. Clone the git to your machine (either download or use the `git` command line).  
 4. Go to the crayon root directory (The one with the readme.md file)  
