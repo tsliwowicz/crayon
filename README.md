@@ -7,6 +7,7 @@ Crayon
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
 * Crayon's stack consists of [NodeJS][] as server, [MongoDB][] as storage and [dyGraphs][] as charting control. 
 * Crayon is a smooth migration from old school monitoring systems such as [Munin][] (and soon [Graphite][])
+* Crayon runs both on linux and on windows, simply because NodeJS and MongoDB does :)
 * Crayon is _unique_ in many ways beyond its stack. Some of its features are unavailable in most of today's modern charting systems.
 
 [Taboola]: http://www.taboola.com
@@ -127,6 +128,40 @@ There are a lot of cloud services and payed services. I'm focusing on the Free &
 [Cube]: https://github.com/square/cubism/wiki/Cube
 [Cubism]: http://square.github.io/cubism/
 [Fnordmetric]: https://github.com/paulasmuth/fnordmetric
+
+How do I run It ?
+-----------------
+
+Right now there are no RPMs for Crayon.  
+Since it's only javascript, there's also no need for compilation.  
+
+1. Get the prerequisits:
+   a. `yum install nodejs npm mongo` - NodeJS MongoDB and its download manager
+   b. `npm install cityhash` - Google hashing library wrapper for NodeJS
+   c. `npm install zlib` - Compression library for browser-node communication
+   d. `npm install mongodb` - Native driver for NodeJS to communicate with MongoDB
+   e. `npm install glob` - Helper file system library for munin plugin
+
+2. Setting up mongo:
+   a. `service mongod start` - Starts the MongoDB storage layer
+   b. `mongo` - A command which opens the mongo shell
+   c. `use crayon` - Switches to database "crayon" which is the name we'll use
+   d. `db.addUser("mng","mng");` - Adds our default user to the database
+   e. Do the following 3 lines with: `samples_sec`, `samples_min`, `samples_hour`, `samples_day`
+   f. `db.<colName>.ensureIndex({t:1});` - Make selections by time fast
+   g. `db.<colName>.ensureIndex({s:1, t:1});` - *optional* Make selections by server and time fast
+   h. `db.<colName>.ensureIndex({n:1, t:1});` - *optional* Make selections by name and time fast
+    
+3. Clone the git to your machine (either download or use the `git` command line).
+4. Go to the crayon root directory (The one with the readme.md file)
+5. Run the crayon service with `node server\server.js --port=54321 --jobmanager`  
+6. Web interface should be available now on  `http://<serverName>:54321/` 
+
+```javascript
+   Note: You can run as many instances as youd like (on different ports of course)
+         One of these instances should be started with "--jobmanager" to indicate
+		 it is responsible for periodic tasks.
+```		 
 
 How do I migrate from Munin ?
 -----------------------------
