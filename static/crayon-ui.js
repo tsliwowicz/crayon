@@ -126,9 +126,9 @@ function showOptionsForGraph(graphDiv) {
 		setTimeout(function() { graphMenuOptionsJQ.css("display", "block"); }, 200);
 		graphDivMenuIsShownTo = null;
 	} else {
-		var divJQ = $(graphDiv);
+		var divJQ = $(graphDiv.parentNode);
 		var pos = divJQ.position();
-		graphMenuOptionsJQ.css('left', pos.left).css('top', pos.top);
+		graphMenuOptionsJQ.css('left', pos.left + divJQ.width()).css('top', pos.top);
 		graphMenuOptionsJQ.css("display", "block");
 		setTimeout(function() { graphMenuOptionsJQ.css("opacity", 0.98); }, 200);
 		graphDivMenuIsShownTo = graphDiv;
