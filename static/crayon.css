@@ -1071,7 +1071,7 @@ font-size: 10px;
 	z-index:30;
 	width:200px;
 	margin:0; padding:0px; list-style:none;
-	background:#222; color:#BBB;
+	background:#FFF; color:#000;
 	-moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px;
 	-moz-box-shadow:0 0 5px #999; 
 	-webkit-box-shadow:0 0 5px #999;
@@ -1087,7 +1087,9 @@ font-size: 10px;
 	background:#EC6603; 
 	color:#fff;
 }
-.graphMenuOptions>ul.list li:last-child { border:none }
+.graphMenuOptions>ul.list li:last-child { 
+	border:none 
+}
 
 /* GRAPH MENU END */
 /*******************************************************************************************************/

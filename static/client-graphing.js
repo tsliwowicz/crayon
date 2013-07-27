@@ -1,4 +1,4 @@
-var defaultPallete = ["#6666E6","#32CD32","#FF00FF","#222222","#FF0000","#8A2BE2","#A52A2A","#5F9EA0","#6495ED","#DAA520","#DC143C","#FF1493","#696969","#2F4F4F","#7FFFD4","#808000","#D2691E"];
+var defaultPallete = ["#6666E6","#32CD32","#FF00FF","#F57F00","#FF0000","#8A2BE2","#A52A2A","#5F9EA0","#6495ED","#DAA520","#DC143C","#FF1493","#696969","#2F4F4F","#7FFFD4","#808000","#D2691E"];
 var colorCache = {};
 String.prototype.colorHash = function() {
 	var hashR,hashG,hashB = 0, i, char;
@@ -239,14 +239,15 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			includeServerInLabel: true,
 			includeComponentInLabel: true,
 			labelsKMG2: true,
-			highlightCircleSize: 4,
-			highlightSeriesOpts: { strokeWidth: 3, strokeBorderColor: "black" },
+			highlightCircleSize: 3,
+			//highlightSeriesOpts: { strokeWidth: 3, strokeBorderColor: "black" },
 			gapInMinutes: 3,
 			dateWindowRatio: 0.1,
 			wholeWindow: true,
 			aggregative: "ave",
 			isDelta: false,
-			valueMultiplier: 1
+			valueMultiplier: 1,
+			highlightSeriesBackgroundAlpha: 0
 		};
 
 	// Override default options
@@ -489,6 +490,8 @@ var populateTimeSlotArr = function(divCache, graphData) {
 	}
 
 	divCache.DEBUG_firstNewTimeSlotIndex = firstNewTimeSlotIndex;
+	var lastGoodValueOfEachIndex = {};
+
 	divCache.lastDate = lastDate;
 	//if (firstNewTimeSlotIndex != null) {
 		for (var timeSlotIndex = 0; timeSlotIndex < divCache.timeSlotArr.length; ++timeSlotIndex) {
@@ -500,7 +503,13 @@ var populateTimeSlotArr = function(divCache, graphData) {
 			for (series in divCache.seriesFound) {
 				var index = divCache.seriesFound[series].index;
 				if (timeSlot[index] == null) {
-					 timeSlot[index] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
+					if (divCache.graphOptions.connectSeparatedPoints && lastGoodValueOfEachIndex[index] != null) {
+						timeSlot[index] = (divCache.graphOptions.errorBars?[lastGoodValueOfEachIndex[index],noValue]:lastGoodValueOfEachIndex[index]);
+					} else {
+					 	timeSlot[index] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
+					}
+				} else {
+					lastGoodValueOfEachIndex[index] = timeSlot[index];
 				}
 			}
 
