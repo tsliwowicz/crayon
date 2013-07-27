@@ -150,9 +150,12 @@ var loadDashboard = function() {
 		// Graph Options Bar
 		graphHtmlToAdd += '<div class="graphOptionsBar" >';
 		graphHtmlToAdd += '<span style="margin-left:10px">' + title + '</span>';
-		graphHtmlToAdd += '<span class="crayonButton" onclick="hideGraph('+graph.graphAndLegendDivString+')" style="float:right;margin-right:10px">Hide</span>';
-		graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Code</span>';
-		graphHtmlToAdd += '<span class="crayonButton" onclick="refreshGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Refresh</span>';
+		//graphHtmlToAdd += '<span class="crayonButton" onclick="hideGraph('+graph.graphAndLegendDivString+')" style="float:right;margin-right:10px">Hide</span>';
+		//graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Code</span>';
+		//graphHtmlToAdd += '<span class="crayonButton" onclick="refreshGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Refresh</span>';
+		graphHtmlToAdd += '<span id="menuButton_' + graph.graphDivString + '" onclick="showOptionsForGraph('+
+			graph.graphDivString+')" class="crayonButton" style="float:right;margin-right:10px">Options</span>';
+		
 		graphHtmlToAdd += '</div>';
 		graphHtmlToAdd += '<div id="graphOverlay_' + graphNum + '" class="graphOverlay" style="width:' + (graphWidth + graph.graphOpts.legendWidth - 10) + '; height:' + (graphHeight - 5) + '">';
 		graphHtmlToAdd += '<span id="graphOverlayText_' + graphNum + '" class="graphOverlayText">Loading</span>';
@@ -232,10 +235,15 @@ if (queryArgs.url) {
 		success: function(result) {
 			try {
 				dashboard = JSON.parse(result);
+			} catch (ex) {
+				console.error("Dasbhoard json is invalid: " + ex.stack);
+			}
+
+			try {
 				loadDashboard();
 			} catch (ex) {
-				console.error("Dasbhoard json is invalid: " + ex);
-			}
+				console.error("Failed loading dashboard:" + ex.stack);
+			}				
 		}
 	});
 } else if (queryArgs.dashboard) {
@@ -248,7 +256,7 @@ if (queryArgs.url) {
 		}
 		dashboard = newDashboard || dashboard;
 	} catch (ex) {
-		console.error("Dasbhoard json is invalid: " + ex);
+		console.error("Dasbhoard json is invalid: " + ex.stack);
 	}
 
 	try {

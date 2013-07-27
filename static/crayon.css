@@ -1048,6 +1048,48 @@ font-size: 10px;
 	width: 130;
 	margin-left: 5px;
 }
+
+/* GRAPH MENU START */
+
+.graphMenuOptions { 
+	position:absolute;
+	opacity: 0;
+	-moz-transition: opacity 0.2s ease-in-out; /* CSS3 transition of hover properties */
+	-webkit-transition: opacity 0.2s ease-in-out;
+	-o-transition: opacity 0.2s ease-in-out;
+	-ms-transition: opacity 0.2s ease-in-out;
+	transition: opacity 0.2s ease-in-out;
+	margin-left: 250px;
+	margin-top: 25px;
+	display:none;
+}
+
+.graphMenuOptions>ul.list {
+	position:absolute; 
+	left:30px; 
+	top:-30px; 
+	z-index:999;
+	width:200px;
+	margin:0; padding:0px; list-style:none;
+	background:#222; color:#BBB;
+	-moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px;
+	-moz-box-shadow:0 0 5px #999; 
+	-webkit-box-shadow:0 0 5px #999;
+	box-shadow:0 0 5px #999;
+	cursor: pointer;
+}
+.graphMenuOptions>ul.list li {
+	border-bottom: solid 1px #ccc;
+	padding-left: 5;
+	font: normal 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+}
+.graphMenuOptions>ul.list li:hover {
+	background:#EC6603; 
+	color:#fff;
+}
+.graphMenuOptions>ul.list li:last-child { border:none }
+
+/* GRAPH MENU END */
 /*******************************************************************************************************/
 /*************************************** CRAYON MISC: END **********************************************/
 /*******************************************************************************************************/

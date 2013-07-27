@@ -108,6 +108,49 @@ body.append('<div id="alertOverlay" class="overlay"><div id="crayonAlert">'+
 			'	<span class="crayonButton" id="crayonAlertCancel" onclick="alertCancel()" style="float:right;margin-right:10px">Cancel</span>'+
 			'</div></div>');
 
+// Set action menu
+body.append('<div class="graphMenuOptions" style="width: 55px">	\
+				<ul class="list">	\
+					<li onclick="doActionOnGraphDiv(this)">Refresh</li>	\
+					<li onclick="doActionOnGraphDiv(this)">View Code</li>	\
+					<li onclick="doActionOnGraphDiv(this)">Hide</li>	\
+					<li onclick="doActionOnGraphDiv(this)">Get Image</li>	\
+				</ul>	\
+			</div>');
+var graphMenuOptionsJQ = $(".graphMenuOptions");
+var graphDivMenuIsShownTo = null;
+function showOptionsForGraph(graphDiv) {
+	if (graphDivMenuIsShownTo == graphDiv) {
+		graphMenuOptionsJQ.css("opacity", 0);
+		setTimeout(function() { graphMenuOptionsJQ.css("display", "block"); }, 200);
+		graphDivMenuIsShownTo = null;
+	} else {
+		var divJQ = $(graphDiv);
+		var pos = divJQ.position();
+		graphMenuOptionsJQ.css('left', pos.left).css('top', pos.top);
+		graphMenuOptionsJQ.css("display", "block");
+		setTimeout(function() { graphMenuOptionsJQ.css("opacity", 0.98); }, 200);
+		graphDivMenuIsShownTo = graphDiv;
+	}
+}
+function doActionOnGraphDiv(graphMenuOptionItem) {
+	var action = graphMenuOptionItem.innerHTML;
+	if (action == "Refresh") {
+		window.refreshGraph(graphDivMenuIsShownTo);
+	} else if (action == "View Code") {
+		window.codeGraph(graphDivMenuIsShownTo);
+	} else if (action == "Hide") {
+		window.hideGraph(graphDivMenuIsShownTo.parentNode);
+	} else if (action == "Get Image") {
+	}
+
+		//graphHtmlToAdd += '<span class="crayonButton" onclick="hideGraph('+graph.graphAndLegendDivString+')" style="float:right;margin-right:10px">Hide</span>';
+		//graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Code</span>';
+		//graphHtmlToAdd += '<span class="crayonButton" onclick="refreshGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Refresh</span>';
+
+	// Toggle it off;
+	showOptionsForGraph(graphDivMenuIsShownTo);
+}
 
 var OK = 1;
 var CANCEL = 0;
