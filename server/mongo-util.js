@@ -141,7 +141,7 @@ module.exports.archive = function(unit, timeToArchiveUntil) {
 	var colObj = collectionByUnit[unit];
 
 	var msBefore = new Date().getTime();
-	var secondString = dates.getSecond(timeToArchiveUntil);
+	var secondString = dates.getSecondBulk(timeToArchiveUntil);
 	logger.info("Archiving of collection " + colObj.name + " started (Anything older than '" + secondString.colorMagenta() +"')");
 	colObj.col.remove({ "t": {"$lt": secondString}}, function(err) {
 		var msAfter = new Date().getTime();

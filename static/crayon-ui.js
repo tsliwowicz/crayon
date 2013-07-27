@@ -14,9 +14,23 @@ var setHeader = function(name) {
 	$("#frameHeader").get()[0].innerHTML = name;
 }
 
+function readCookie(name) {
+    return (name = new RegExp('(?:^|;\\s*)' + ('' + name).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '=([^;]*)').exec(document.cookie)) && name[1];
+}
+var themeCookie = readCookie("theme");
+var theme = queryArgs.theme || themeCookie;
+
 var head = $("head");
 var body = $("body");
 head.append('<link rel="stylesheet" type="text/css" href="/crayon.css" media="screen" />');
+if (theme) {
+	if (theme != "default") {
+		head.append('<link rel="stylesheet" type="text/css" href="/themes/' + theme + '.css" media="screen" />');
+	}
+}
+if (queryArgs.theme) {
+	document.cookie = 'theme=' +queryArgs.theme + '; expires=Tue, 1 Jan 2030 00:00:00 UTC; path=/'
+}
 
 /* CRAYON MAIN UI START */
 body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png"></div>');
@@ -160,3 +174,10 @@ var hideOverlay = function() {
 }
 /* CRAYON PROGRESS END  */
 
+
+/*
+var all = document.getElementsByTagName("*");
+for (var i=0, max=all.length; i < max; i++) {
+     // Do something with the element here
+}
+*/

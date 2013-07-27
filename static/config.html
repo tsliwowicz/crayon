@@ -132,7 +132,9 @@ function saveConfig() {
 		}
 	});
 }
-
+if (theme != null) {
+	editor.setOption("theme", theme);
+}
 
 </script>
 </html>

@@ -1,4 +1,4 @@
-var defaultPallete = ["#0000FF","#32CD32","#FF00FF","#222222","#FF0000","#8A2BE2","#A52A2A","#5F9EA0","#6495ED","#DAA520","#DC143C","#FF1493","#696969","#2F4F4F","#7FFFD4","#808000","#D2691E"];
+var defaultPallete = ["#6666E6","#32CD32","#FF00FF","#222222","#FF0000","#8A2BE2","#A52A2A","#5F9EA0","#6495ED","#DAA520","#DC143C","#FF1493","#696969","#2F4F4F","#7FFFD4","#808000","#D2691E"];
 var colorCache = {};
 String.prototype.colorHash = function() {
 	var hashR,hashG,hashB = 0, i, char;
