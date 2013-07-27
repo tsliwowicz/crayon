@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, first commit & last update on 2013-07-25).  
+(readme.md update in progress, first commit & last update on 2013-07-27).  
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -26,6 +26,9 @@ What does it do ?
 * Crayon aggregates analytics in multiple ways thanks to Mongo DB's map reduce (e.g. Max, Min, Sum, Average, Count of samples, etc.)
 * Crayon graphs are not a picture, they are fully interactive with zooming and auto updating without any extra configuration
 * Crayon can be fed with multiple metrics at once to improve performance or even already aggregated metrics if aggregate them yourself
+* Crayon performs programmable realtime monitoring with json alert definitions and mail notification using [emailjs][]
+
+[emailjs]: https://github.com/eleith/emailjs
 
 What's the REST ? (API)
 -----------------------
@@ -141,7 +144,8 @@ Since it's only javascript, there's also no need for compilation.
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install mongodb` - Native driver for NodeJS to communicate with MongoDB  
    e. `npm install glob` - Helper file system library for munin plugin  
-
+   f. `npm install emailjs` - Allows sending mail notifications on alerts
+   
 2. Setting up mongo:  
    a. `service mongod start` - Starts the MongoDB storage layer  
    b. `mongo` - A command which opens the mongo shell  
@@ -209,12 +213,22 @@ Stack and Licenses
 * [npm] glob (BSD) - 
 *Used for the munin plugin to find munin configuration files*
 * [npm] node-mongodb-native (Apache) - 
-*Used for communicating with Mongo DB *
+*Used for communicating with Mongo DB*
+* [npm] emailjs (MIT) - 
+*Used for sending mail for alerts*
 * jQuery (MIT) - 
 *Used throughout the client side javascripts*
 
 Change Log
 ----------
+
+2013-07-27 - 
+* Added the graph context menu and get image operation
+* Added monitoring
+
+2013-07-26 - 
+* Added the entire JSON programmable dahboard UI
+* Added theming
 
 2013-07-25 - 
 * *First commit*

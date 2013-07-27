@@ -6,8 +6,12 @@ var crayonId = "";
 
 module.exports.setCrayonId = function(c) { 
 	crayonId = c; 
-	//logger.info("Crayon ID was set to " + c);
 }
+
+module.exports.getCrayonId = function(c) { 
+	return crayonId; 
+}
+
 
 module.exports.stopAll = function() {
 	for (counter in counterByKey) {

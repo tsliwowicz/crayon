@@ -1092,6 +1092,24 @@ font-size: 10px;
 }
 
 /* GRAPH MENU END */
+
+.monitorHelperBar {
+	height: 60px;
+	margin-left: 30px;
+	padding-left: 10px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	display: inline-block;
+}
+
+.guttersLikeCodeMirror {
+	border-right: 1px solid #ddd;
+	background-color: #f7f7f7;
+	white-space: nowrap;
+	width: 28px;
+	height: 100%;
+	position: absolute;
+}
 /*******************************************************************************************************/
 /*************************************** CRAYON MISC: END **********************************************/
 /*******************************************************************************************************/

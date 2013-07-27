@@ -1,4 +1,11 @@
 var configLib = require("./configuration.js");
+var dates = require("./dates.js");
+var prototypes = require("./prototypes.js");
+var ObjectID = require('mongodb').ObjectID;
+var countersLib = require("./counter.js");
+var mail = require("./crayonMail.js");
+var fs = require('fs');
+var staticDir = __dirname + '/../static'
 var minutesDelayLagAssuranceForAggregation = 1;
 
 function JobManager(logger, mongo) {
@@ -10,16 +17,87 @@ function JobManager(logger, mongo) {
 	me.minuteTimer = setInterval(function() { me.minuteElapsed(); }, 1000*60);
 	me.minuteElapsed();
 	me.hourElapsed();
+
+	//me.minuteTimer = setInterval(function() { me.checkThresholds(); }, 1000*5);
+	//me.checkThresholds();
 	if (!me.logger) throw new Error("Logger is undefined");
 }
 
+var previousAlerts = {};
+
+JobManager.prototype.checkThresholds = function() {
+	var me=this;
+
+	try {
+
+		var confText = fs.readFileSync(staticDir + "/thresholds.conf");
+		var thresholds = JSON.parse(confText);
+		for (var i = 0; i<thresholds.length; ++i) {
+
+			// Skip disabled thresholds
+			if (thresholds[i].enabled != null && thresholds[i].enabled == false) continue;
+
+			// Check the threshold
+			me.mongo.checkThreshold(thresholds[i], 's', function(threshold, matches) {
+				var alertedThresholds = [];
+				var alertedThresholdsNoVariables = [];
+				for (i in matches) {
+					var match = matches[i];
+					var server = match._id 
+					var val = match.v;
+
+					var excludeMatch = false;
+					for (excludeIndex in threshold.excludeServers) {
+						var serverRegexToExclude = threshold.excludeServers[excludeIndex];
+						if (server.match(serverRegexToExclude)) {
+							excludeMatch = true;
+							break;
+						}
+					}
+
+					if (excludeMatch) continue;
+					alertedThresholdsNoVariables.push({server: server, threshold: threshold.condition});
+					alertedThresholds.push({server: server, value: val, threshold: threshold.condition});
+				}
+
+				if (alertedThresholds.length > 0) {
+
+					var alertData = JSON.stringify(alertedThresholds);
+					var alertDataNoVariables = JSON.stringify(alertedThresholdsNoVariables);
+
+					// Skip thresholds in silense period if it's the same alert
+					var previousAlert = previousAlerts[JSON.stringify(threshold)];
+
+					if (previousAlert && 
+						previousAlert.alertTime.addMinutes(threshold.minutesBetweenAlerts||10) > new Date() &&
+						previousAlert.alertDataNoVariables == alertDataNoVariables) {
+						me.logger.info("Skipping Threshold Alert due to silence period: " + (threshold.description||"missing threshold 'description' attribute") + "\n" + alertData);
+						return;
+					} else {
+						previousAlerts[JSON.stringify(threshold)] = { alertTime: new Date(), alertData: alertData, alertDataNoVariables: alertDataNoVariables};
+					}
+
+					var desc = (threshold.description||"[no description] missing threshold 'description' attribute");
+					me.logger.info("Threshold Alert: ".colorRed() + desc + "\n" + alertData);
+
+					mail.send({
+						text:    "Threshold definition:\n" +  JSON.stringify(threshold) + "\n\nAlert Data:\n" + alertData, 
+						subject: "[Crayon] Threshold Passed: " + desc
+					});
+				}
+			});
+		}
+	} catch (ex) {
+		me.logger.error("Failed checking thresholds: " + ex.stack);
+	}
+}
 
 JobManager.prototype.minuteElapsed = function() {
 	var me=this;
 
 	var config = configLib.getConfig();
 	if (config.hoursToRetainSamples) me.archive(config.hoursToRetainSamples);
-	
+
 	// Aggregation
 	// Note: this could be spread accross multiple timers, but because this seems to operate very fast, I'll keep it here
 	// Also note that we add a lag of minutes because we're using write concern 0 and we want to be sure everything flushed
@@ -30,6 +108,8 @@ JobManager.prototype.minuteElapsed = function() {
 			});
 		}, 10000)
 	});
+
+	me.checkThresholds();
 }
 
 JobManager.prototype.hourElapsed = function() {

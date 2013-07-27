@@ -271,6 +271,7 @@ var getEndingContentType = function(filename){
 	else if (filename.endsWith(".htm"))  return "text/html";
 	else if (filename.endsWith(".txt"))  return "text/plain";
 	else if (filename.endsWith(".json")) return "text/json";
+	else if (filename.endsWith(".conf")) return "text/html";
 	else if (filename.endsWith(".ico"))  return "image/x-icon";
 	else if (filename.endsWith(".gif"))  return "image/gif";
 	else if (filename.endsWith(".jpg"))  return "image/jpg"; 

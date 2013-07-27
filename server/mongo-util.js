@@ -380,6 +380,56 @@ module.exports.aggregate = function(fromStr, toStr, sourceUnit, targetUnit, call
 		});
 }
 
+module.exports.checkThreshold = function(threshold, sourceUnit, callback) {
+	
+	logger.info("Checking threshold " + JSON.stringify(threshold).colorBlue());
+
+/* example 
+[{
+    "metric": "trc_rate#trc_request",
+    "duration": "300",
+    "aggregation": "$avg",
+    "condition": {
+        "$lte": "5"
+    },
+    "enabled": true
+}]
+*/
+
+	var scol = collectionByUnit[sourceUnit].col;
+	var dateString = dates.getSecondBulk(new Date().addSeconds(-threshold.duration));
+
+	// Build original match phrase
+	var originalMatch = {n: threshold.metric, t:{$gt: dateString}};
+	if (threshold.server) { originalMatch.s = threshold.server; }
+
+	// Build aggregation phrase
+	var valAgg = {};
+	valAgg[threshold.aggregation] = "$M";
+
+	// Fix condition
+	for (key in threshold.condition) {
+		threshold.condition[key] = Number(threshold.condition[key]);
+	}
+
+	var pipeline = [
+		{$match: originalMatch},
+		{$group:{_id: "$s", "v":valAgg}}, 
+		{$match: { "v": threshold.condition}}
+	];
+
+	//(JSON.stringify(pipeline));
+	scol.aggregate(pipeline,
+		function(err, result) {
+			if (err) {
+				logger.error("Error checking threshold: " + err);
+				return;
+			} 
+
+			if (callback) callback(threshold, result);
+		});
+}
+
 module.exports.bulkInsertWithoutErrors = bulkInsertWithoutErrors;
 module.exports.getMeasure = getMeasure;
 module.exports.clearTestsDatabase = clearTestsDatabase;
