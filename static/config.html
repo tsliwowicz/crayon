@@ -128,7 +128,7 @@ function saveConfig() {
 		dataType: "html",
 		headers: { "Accept-Encoding" : "gzip" },
 		success: function(result) {
-			showAlertOKOnly("Configuration Saved", "Configuration has been changed on the server effective immediately");
+			showAlert({OK: true, title:"Configuration Saved", text:"Configuration has been changed on the server effective immediately"});
 		}
 	});
 }

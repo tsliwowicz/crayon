@@ -200,6 +200,8 @@ Stack and Licenses
 *Used for prettifying javascript in editable text areas*
 * JSHint (MIT) - 
 *Used for syntax correction in editable text areas*
+* HTML2Canvas (MIT) - 
+*Used for rasterizing graphs into downloadable images*
 * [npm] cityhash (BSD) - 
 *Used to hash Metric names before writing them to the database*
 * [npm] zlib (BSD) - 

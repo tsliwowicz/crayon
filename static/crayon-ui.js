@@ -30,6 +30,7 @@ body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/Crayo
 	  '<option>ambiance</option>' +
 	  '</select></span></div>');
 
+head.append('<script type="text/javascript" src="/html2canvas.js"></script>');
 head.append('<link rel="stylesheet" type="text/css" href="/crayon.css" media="screen" />');
 if (theme) {
 	if (theme != "default") {
@@ -142,11 +143,13 @@ function doActionOnGraphDiv(graphMenuOptionItem) {
 	} else if (action == "Hide") {
 		window.hideGraph(graphDivMenuIsShownTo.parentNode);
 	} else if (action == "Get Image") {
+		html2canvas(graphDivMenuIsShownTo.parentNode, {
+		  onrendered: function(canvas) {
+		  	showAlert({OK:true, title:"Right click and Save As", el:canvas});
+		    //document.body.appendChild(canvas);
+		  }
+		});
 	}
-
-		//graphHtmlToAdd += '<span class="crayonButton" onclick="hideGraph('+graph.graphAndLegendDivString+')" style="float:right;margin-right:10px">Hide</span>';
-		//graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Code</span>';
-		//graphHtmlToAdd += '<span class="crayonButton" onclick="refreshGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Refresh</span>';
 
 	// Toggle it off;
 	showOptionsForGraph(graphDivMenuIsShownTo);
@@ -154,20 +157,45 @@ function doActionOnGraphDiv(graphMenuOptionItem) {
 
 var OK = 1;
 var CANCEL = 0;
-var alertCallback = null;
-var showAlertOKOnly = function(title, text, callback) {
-	crayonAlertCancel.style.display = "none";
-	showAlertInternal(title, text, callback);
-}
-var showAlertOKCancel = function(title, text, callback) {
-	crayonAlertCancel.style.display = "block";
-	showAlertInternal(title, text, callback);
-}
+var lastAlertOptions = null;
+var showAlert = function(options, callback) {
+	//options.title
+	//options.text
+	//options.OK
+	//options.Cancel
+	//options.autoSize
+/*	left:300; 
+	top:200;
+	width:300px;
+	height:150px; */
+	if (options.el) {
+		var padding = Number($(crayonAlertText).css("padding").replace("px",""))
+		$(crayonAlert).css("width", options.el.width + (padding * 2));
+		$(crayonAlertText).css("height", options.el.height);
+		//(padding * 2) + 20 + 20
+		$(crayonAlert).css("height", options.el.height + 95);
+	} else {
+		$(crayonAlert).css("width", 300);
+		$(crayonAlert).css("height", 150);
+		$(crayonAlertText).css("height", 55);
+	}
+	
 
-var showAlertInternal = function(title, text, callback) {
-	alertCallback = callback;
-	crayonAlertUpperBar.innerHTML = title;
-	crayonAlertText.innerHTML = text;
+	crayonAlertOK.style.display = options.OK ? "block" : "none";
+	crayonAlertCancel.style.display = options.Cancel ? "block" : "none";
+	crayonAlertUpperBar.innerHTML = options.title;
+	lastAlertOptions = options;
+
+	if (options.el) {
+		if (options.el.tagName == "CANVAS") {
+			$(crayonAlertText).html('<IMG src="' +options.el.toDataURL()+ '">');
+		} else {
+			$(crayonAlertText).html(options.el);
+		}
+	} else if (options.text) {
+		crayonAlertText.innerHTML = options.text;
+	}
+
 	$("#alertOverlay").css("display", "block");
 	setTimeout(function() { $("#alertOverlay").css("opacity", 0.98); }, 200);
 }
@@ -179,12 +207,12 @@ var hideAlert = function() {
 
 var alertOK = function() {
 	hideAlert();
-	if (alertCallback != null) alertCallback(OK);
+	if (lastAlertOptions.alertCallback != null) lastAlertOptions.alertCallback(OK);
 }
 
 var alertCancel = function() {
 	hideAlert();
-	if (alertCallback != null) alertCallback(CANCEL);
+	if (lastAlertOptions.alertCallback != null) lastAlertOptions.alertCallback(CANCEL);
 }
 
 /* CRAYON ALERT END */
