@@ -22,18 +22,35 @@ var theme = queryArgs.theme || themeCookie;
 
 var head = $("head");
 var body = $("body");
+
+/* CRAYON MAIN UI START */
+body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png">' +
+	  '<span id="themeSelectBlock">Theme:<select onchange="selectTheme()" id="themeSelect">' +
+	  '<option>default</option>' +
+	  '<option>ambiance</option>' +
+	  '</select></span></div>');
+
 head.append('<link rel="stylesheet" type="text/css" href="/crayon.css" media="screen" />');
 if (theme) {
 	if (theme != "default") {
 		head.append('<link rel="stylesheet" type="text/css" href="/themes/' + theme + '.css" media="screen" />');
 	}
-}
-if (queryArgs.theme) {
-	document.cookie = 'theme=' +queryArgs.theme + '; expires=Tue, 1 Jan 2030 00:00:00 UTC; path=/'
+	themeSelect.value = theme;
 }
 
-/* CRAYON MAIN UI START */
-body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png"></div>');
+function setTheme(t) {
+	document.cookie = 'theme=' + t + '; expires=Tue, 1 Jan 2030 00:00:00 UTC; path=/'
+}
+
+if (queryArgs.theme) {
+	setTheme(queryArgs.theme);
+}
+
+function selectTheme() {
+	setTheme(themeSelect.value);
+	window.location.reload();
+}
+
 body.append('<div id="frameHeader" class="frameHeader"></div>');
 body.append('<div id="ddblueblockmenu">' +
 				'<div class="menutitle">General</div>' + 
