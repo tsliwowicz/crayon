@@ -1,4 +1,6 @@
 { 
+    "id": "system",
+    "sidebarText": "Crayon System",
     "header": "Crayon System Status Live Dashboard",
     "defaultGraphOpts": {
        "noLegend": true,
@@ -36,6 +38,19 @@
 },
 
 {
+    "from": "last 3 minutes",
+    "unit": "s",
+    "names": ["crayon_cpu"],
+    "tailSecondsInterval": 5,
+    "graphOpts": {
+        "fillGraph": true,
+        "aggregative": "max",
+        "stackedGraph": true,
+        "title": "Max Crayon CPU Live"
+    }
+},
+
+{
     "from": "last 60 minutes",
     "unit": "m",
     "names": ["Upsert ms to samples_sec"],
@@ -43,8 +58,7 @@
         "fillGraph": true,
         "aggregative": "max",
         "stackedGraph": true,
-        "title": "Max Insert Time (ms)",
-        "width": "wholeLine"
+        "title": "Max Insert Time (ms)"
     }
 },
 
@@ -56,8 +70,19 @@
         "fillGraph": true,
         "aggregative": "sum",
         "stackedGraph": true,
-        "width": "wholeLine",
         "title": "Total Added Metrics /m"
+    }
+},
+
+{
+    "from": "last 60 minutes",
+    "unit": "m",
+    "names": ["crayon_cpu"],
+    "graphOpts": {
+        "fillGraph": true,
+        "aggregative": "ave",
+        "stackedGraph": true,
+        "title": "Crayon CPU"
     }
 },
 

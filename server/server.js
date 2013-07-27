@@ -22,6 +22,7 @@ var mongo = require('./mongo-util.js');
 var logger = require("./logger.js");
 var contextLib = require("./callContext.js");
 var measurements = require("./measurements.js");
+var dashboards = require("./dashboards.js");
 var configLib = require("./configuration.js");
 var pluginManager = new (require("./pluginManager.js").PluginManager)(logger,contextLib,mongo);
 var JobManager = require("./jobManager.js").JobManager;
@@ -33,6 +34,9 @@ configLib.setLogger(logger);
 measurements.setLogger(logger);
 measurements.setContextLib(contextLib);
 measurements.setMongo(mongo);
+dashboards.setLogger(logger);
+dashboards.setContextLib(contextLib);
+dashboards.setMongo(mongo);
 
 // Init sub modules
 pluginManager.loadPlugins();
@@ -75,6 +79,10 @@ mongo.connect(function (err) {
 			} else if (callContext.uri == "/setConfig") {
 				configLib.setConfig(callContext.body);
 				return callContext.respondText(200,"OK");
+			} else if (callContext.uri == "/saveDashboard") {
+				return dashboards.saveDashboard(callContext);
+			} else if (callContext.uri == "/deleteDashboard") {
+				return dashboards.deleteDashboard(callContext);
 			} else if (callContext.uri.indexOf("plugins/") > 0 && pluginManager.tryRun(callContext)) {
 				return;
 			}

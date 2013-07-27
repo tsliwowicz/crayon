@@ -207,3 +207,20 @@ ul.slidingVerticalMenu li a:before {
 ul.slidingVerticalMenu li a {
   background: rgb(92, 115, 121);
 }
+
+.graphMenuOptions>ul.list {
+  background:#222; 
+  color:#BBB;
+}
+.graphMenuOptions>ul.list li {
+  border-bottom: solid 1px #ccc;
+  font: normal 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
+}
+.graphMenuOptions>ul.list li:hover {
+  background:#EC6603; 
+  color:#fff;
+}
+
+#titleHeader {
+  background-image:url('/CrayonsScatterSmallGray.png'); 
+}

@@ -46,11 +46,11 @@ var plotGraph = function(allGraphData, graph) {
 			}
 		}
 
-		if (graphData.length == 0) {
+		if (cacheByDiv[graph.div.id]) {
+			updateDrawnGraph(graph.div, graphData);
+		} else if (graphData.length == 0) {
 			console.warn("No data found for graph " + graph.dyGraphTitle);
 			graph.overlayText.html("No Data");
-		} else if (cacheByDiv[graph.div.id]) {
-			updateDrawnGraph(graph.div, graphData);
 		} else {
 			drawGraph(graph.div, graph.legendDiv, graphData, graph.graphOpts);
 			hideGraphOverlay(graph);
@@ -220,13 +220,37 @@ function resizeGraphByDiv(graphObj) {
 		cacheByDiv[graphObj.div.id].dygraph.resize(graphObj.graphOpts.width, graphObj.graphOpts.height || defaultHeight)
 	}
 }
-/*
-var socket = io.connect('prod2-t1.taboolasyndication.com');
-socket.on('browserSocket', function (data) {
-	console.log(data);
-	socket.emit('serverSocket', { my: 'data' });
-});
-*/
+
+function deleteDashboardForce(d) {
+	$.ajax({
+		url: "/deleteDashboard",
+		data: "id=" + d.id,
+		dataType: "json",
+		cache: false,
+		success: function(resultObject) {
+			if (resultObject.error) {
+				showAlert({OK: true, title:"Delete Failed", text:"Server Error: " + resultObject.error});
+			} else {
+				window.reloadDashboardList();
+				window.location.href = "/";
+			}
+		}
+	});
+}
+
+function deleteDashboard() {
+	showAlert({OK: true, Cancel: true, title:"Confirm Delete", text:"Are you sure you want to delete this dashboard?", callback: 
+		function(choice) {
+			if (choice == "OK") {
+				deleteDashboardForce(dashboard);
+			}
+		}});
+}
+
+function codeDashboard() {
+	var win=window.open(window.location.origin + "/designer.html?url=" + queryArgs.url, '_blank');
+  	win.focus();
+}
 
 if (queryArgs.url) {
 	$.ajax({
@@ -238,6 +262,15 @@ if (queryArgs.url) {
 			} catch (ex) {
 				console.error("Dasbhoard json is invalid: " + ex.stack);
 			}
+
+			var pageTable = $("#pageTable");
+			pageTable.append(
+				'<tr> \
+					<td class="codemirrorTopBar" style=""> \
+						<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
+						<span class="crayonButton" onclick="deleteDashboard()"  style="margin-left:10px">Delete Dashboard</span> \
+					</td> \
+				</tr> ');
 
 			try {
 				loadDashboard();

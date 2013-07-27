@@ -163,12 +163,14 @@ var lastBenchmarkTime = null;
 					}
 					
 					var graphHtmlToAdd = '';
-					
+					var graphDivString = 'graph_' + graph.graph_name;
+					var graphAndLegendDivString = 'grpah_and_legend_' + graph.graph_name;
+					var graphLegendString = 'legend_' + graph.graph_name;
+					graphDivString = graphDivString.replace(/-/g,"_");
+					graphAndLegendDivString = graphAndLegendDivString.replace(/-/g,"_");
+					var extraOptions = { lineStyles: [] };
 					if (!isMini) {
-						var graphDivString = 'graph_' + graph.graph_name;
-						var graphAndLegendDivString = 'grpah_and_legend_' + graph.graph_name;
-
-						graphHtmlToAdd += '<div id="grpah_and_legend_' + graph.graph_name + '" class="graphAndLegendDiv">'
+						graphHtmlToAdd += '<div id="' + graphAndLegendDivString + '" class="graphAndLegendDiv">'
 
 						// Graph Options Bar
 						graphHtmlToAdd += '<div class="graphOptionsBar" >';
@@ -177,29 +179,30 @@ var lastBenchmarkTime = null;
 						graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graphDivString+')" style="float:right;margin-right:5px">Code</span>';
 						graphHtmlToAdd += '</div>';
 
-						graphHtmlToAdd += '<div id="graph_' + graph.graph_name + '" class="graphDiv" style="width:' + graphWidth + '; height:' + graphHeight + '"></div>';
-						graphHtmlToAdd += '<div id="legend_' + graph.graph_name + '" class="legendDiv"></div>';
+						graphHtmlToAdd += '<div id="' + graphDivString + '" class="graphDiv" style="width:' + graphWidth + '; height:' + graphHeight + '"></div>';
+						graphHtmlToAdd += '<div id="' + graphLegendString + '" class="legendDiv"></div>';
 						graphHtmlToAdd += '</div>'
 						lastCell.append(graphHtmlToAdd);
-						topToScrollTo = lastRow.position().top;
+						topToScrollTo = $('#' + graphDivString).position().top;
 					} else {
-						graphHtmlToAdd += '<div class="minigraph" onclick="minigraphClicked(this)" id="graph_' + graph.graph_name + '" style="width:' + graphWidth + '; height:' + graphHeight + '"></div>';
+						graphHtmlToAdd += '<div class="minigraph" onclick="minigraphClicked(this)" id="' + graphDivString + '" style="width:' + graphWidth + '; height:' + graphHeight + '"></div>';
 						lastCell.append(graphHtmlToAdd);
-						topToScrollTo = $('#graph_' + graph.graph_name).position().top;
+						extraOptions.title = title
+						topToScrollTo = $('#' + graphDivString).position().top;
 					}
 					
 
-					var graphDivJQ = $("#graph_" + graph.graph_name );
+					var graphDivJQ = $("#" + graphDivString);
 					var graphDiv = graphDivJQ.get()[0];
-					var legendDiv = isMini ? invisibleDivEl : $("#legend_" + graph.graph_name ).get()[0];
+					var legendDiv = isMini ? invisibleDivEl : $("#" + graphLegendString ).get()[0];
 
 					if (lastCategory != graph.graph_category) {
 						lastCategory = graph.graph_category;
-						pageCategories.append('<li><a onclick="window.scrollTo(0,$(&quot;#graph_' + graph.graph_name + '&quot;).position().top - 72)">' + graph.graph_category + '</a></li>');
+						pageCategories.append('<li><a onclick="window.scrollTo(0,$(&quot;#' + graphDivString + '&quot;).position().top - 72)">' + graph.graph_category + '</a></li>');
 						//pageCategories.append('<li><a href="#graph_' + graph.graph_name + '">' + graph.graph_category + '</a></li>');
 					}
 
-					var extraOptions = { lineStyles: [] };
+					
 
 					//extraOptions.title = title;
 

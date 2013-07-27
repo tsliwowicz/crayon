@@ -64,37 +64,48 @@ body.append('<div id="ddblueblockmenu">' +
 				'</ul>' +
 			'</div>');
 
-$.ajax({
-	url: "/dashboards",
-	dataType: 'json',
-	success: function(result) {
-		var ul = $("#dashboardsUL");
-		for (i in result) {
-			ul.prepend('<li><a href="' + result[i].uri + '">' + result[i].name + '</a></li>');
+var dashboardIDs = {};
+
+window.reloadDashboardList = function() {
+	var ul = $("#dashboardsUL");
+	ul.children().remove();
+
+	dashboardIDs = {};
+	$.ajax({
+		url: "/dashboards",
+		dataType: 'json',
+		success: function(result) {			
+			for (i in result) {
+				ul.prepend('<li><a href="' + result[i].uri + '">' + result[i].name + '</a></li>');
+			}
 		}
-	}
-});
+	});
 
-$.ajax({
-	url: "/dashboards.conf",
-	success: function(result) {
-		var lines = result.split('\n');
-		var ul = $("#dashboardsUL");
+	$.ajax({
+		url: "/dashboards.conf",
+		success: function(result) {
+			var lines = result.split('\n');
 
-		for (var i = 0; i < lines.length; ++i) {
-			var line = lines[i].trim();
+			for (var i = 0; i < lines.length; ++i) {
+				var line = lines[i].trim();
 
-			if (line.length == 0) continue;
-			if (line[0] == "#") continue;
+				if (line.length == 0) continue;
+				if (line[0] == "#") continue;
 
-			var parts = line.split('=');
-			if (parts.length < 2) continue;
-			var name = parts[0].trim();
-			var url = parts[1].trim();
-			ul.prepend('<li><a href="/by-json.html?url=' + url + '">' + name + '</a></li>');
+				var parts = line.split('=');
+				if (parts.length < 2) continue;
+				var name = parts[0].trim();
+				var url = parts[1].trim();
+
+				var idOfDashboard = url.replace("/dashboards/","").replace(".json","");
+				dashboardIDs[idOfDashboard] = name;
+
+				ul.prepend('<li><a href="/by-json.html?url=' + url + '">' + name + '</a></li>');
+			}
 		}
-	}
-});
+	});
+}
+reloadDashboardList();
 
 body.append('<div class="verticalRuler"></div>');
 
@@ -155,8 +166,6 @@ function doActionOnGraphDiv(graphMenuOptionItem) {
 	showOptionsForGraph(graphDivMenuIsShownTo);
 }
 
-var OK = 1;
-var CANCEL = 0;
 var lastAlertOptions = null;
 var showAlert = function(options, callback) {
 	//options.title
@@ -179,7 +188,6 @@ var showAlert = function(options, callback) {
 		$(crayonAlert).css("height", 150);
 		$(crayonAlertText).css("height", 55);
 	}
-	
 
 	crayonAlertOK.style.display = options.OK ? "block" : "none";
 	crayonAlertCancel.style.display = options.Cancel ? "block" : "none";
@@ -207,12 +215,12 @@ var hideAlert = function() {
 
 var alertOK = function() {
 	hideAlert();
-	if (lastAlertOptions.alertCallback != null) lastAlertOptions.alertCallback(OK);
+	if (lastAlertOptions.callback != null) lastAlertOptions.callback("OK");
 }
 
 var alertCancel = function() {
 	hideAlert();
-	if (lastAlertOptions.alertCallback != null) lastAlertOptions.alertCallback(CANCEL);
+	if (lastAlertOptions.callback != null) lastAlertOptions.callback("Cancel");
 }
 
 /* CRAYON ALERT END */

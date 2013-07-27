@@ -23,6 +23,7 @@
 		<td class="codemirrorTopBar" style="">
 			<span class="crayonButton" onclick="updateUrl()"  style="margin-left:30px">Query</span>
 			<span class="crayonButton" onclick="addSeries()"  style="margin-left:10px">Add/Remove Series</span>
+			<span class="crayonButton" onclick="saveDashboard()"  style="margin-left:10px">Save</span>
 		</td>
 	</tr>
 	<tr>
@@ -303,8 +304,49 @@ var waiting;
 
 setTimeout(updateHints, 100);
 
+function saveDashboardOverwrite(dashboard) {
+	console.log("Saving dashboard...");
+	
+	$.ajax({
+		url: "/saveDashboard",
+		data: js_beautify(JSON.stringify(dashboard)),
+		dataType: "text",
+		type: 'POST',
+		success: function(result) {
+			var resultObject = JSON.parse(result);
+			if (resultObject.error) {
+				showAlert({OK: true, title:"Save Failed", text:"Server Error: " + resultObject.error});
+			} else {
+				showAlert({OK: true, title:"Dashboard Saved", text:"Dashboard saved successfully"});
+				window.reloadDashboardList();
+			}
+		}
+	});
+}
 
-
+function saveDashboard() {
+	var jsonString = editor.getValue();
+  	var dashboard = JSON.parse(jsonString);
+  	if (!dashboard.id) {
+  		showAlert({OK: true, title:"Can't Save Yet", text:"Dashboard id attribute is missing or empty"});
+	} else if (!dashboard.sidebarText) {
+  		showAlert({OK: true, title:"Can't Save Yet", text:"Dashboard sidebarText attribute is missing or empty"});
+  	} else if (dashboard.id.replace(/[a-zA-Z0-9_-]/g,"") != "") {
+  		showAlert({OK: true, title:"Can't Save Yet", text:"Dashboard id invalid: Can contain only letters, digits and dashes"});
+  	} else if (!dashboard.graphs || !dashboard.graphs.length) {
+  		showAlert({OK: true, title:"Can't Save Yet", text:"Dashboard doesn't contain any graphs (use the graphs attribute)"});
+  	} else if (dashboardIDs[dashboard.id] != null) {
+  		showAlert({OK: true, Cancel: true, title:"Confirm Overwrite", text:"a Dashboard with the supplied id exists. Overwrite?", callback: 
+			function(choice) {
+				if (choice == "OK") {
+					saveDashboardOverwrite(dashboard);
+				}
+			}});
+  	} else {
+  		saveDashboardOverwrite(dashboard);
+  	}
+	//dashboardIDs
+}
 
 
 function updateUrl() {
@@ -376,9 +418,24 @@ var loadGraphFromArguments = function() {
 	delete queryArgs.dummy;
 
 	var objectForDashboard = queryArgs;
-	if (queryArgs.from == null && queryArgs.to == null) {
+
+	if (queryArgs.url) {
+		$.ajax({
+			url: queryArgs.url,
+			cache: false,
+			success: function(result) {
+				editor.setValue(js_beautify(result));
+			}
+		});
+
+		return;
+	}
+
+	if (queryArgs.from == null && queryArgs.to == null && queryArgs.url == null) {
 		objectForDashboard = { 
-		    "header": "My new Dashboard!",
+			"id": "dash_" + new Date().toISOString().replace("T","_").replace(/:/g,"-").substring(0,19),
+    		"sidebarText": "New Dashboard!",
+		    "header": "My new Dashboard Header!",
 
 		    "defaultGraphOpts": {
 		       "width": 400,
@@ -400,16 +457,8 @@ var loadGraphFromArguments = function() {
 		    	}
 		    }]
 		}
-	}
+	} 
 
-/*
-	if (queryArgs.from == null) queryArgs.from = "last 10 minutes";
-	if (queryArgs.unit == null) queryArgs.unit = 's';
-	if (queryArgs.graphOpts == null) queryArgs.graphOpts = { 
-		"gapInMinutes": 100,
-	};
-*/
-	//db.names.find({n: {$regex: "[^c]+cpu"}});
 	editor.setValue(js_beautify(JSON.stringify(objectForDashboard)));
 }
 

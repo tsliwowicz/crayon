@@ -9,6 +9,7 @@ function JobManager(logger, mongo) {
 	me.hourTimer = setInterval(function() { me.hourElapsed(); }, 1000*60*60);
 	me.minuteTimer = setInterval(function() { me.minuteElapsed(); }, 1000*60);
 	me.minuteElapsed();
+	me.hourElapsed();
 	if (!me.logger) throw new Error("Logger is undefined");
 }
 
@@ -16,6 +17,9 @@ function JobManager(logger, mongo) {
 JobManager.prototype.minuteElapsed = function() {
 	var me=this;
 
+	var config = configLib.getConfig();
+	if (config.hoursToRetainSamples) me.archive(config.hoursToRetainSamples);
+	
 	// Aggregation
 	// Note: this could be spread accross multiple timers, but because this seems to operate very fast, I'll keep it here
 	// Also note that we add a lag of minutes because we're using write concern 0 and we want to be sure everything flushed

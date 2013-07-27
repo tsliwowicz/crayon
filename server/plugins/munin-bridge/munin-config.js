@@ -7,7 +7,7 @@ var groups = {
 	"Backend": ["prod2-b4","prod2-b5","prod2-b6","wood3","wood4"],
 	"TRC-US": ["water101","water102","water103","water104","water105","water106","water107","water108","water109","water110","water111","water112",
 		"water201","water202","water203","water204","water205","water206","water207","water208","water209"],
-	"Benchmark": ["prod2-t1","prod2-t2","prod2-t3","prod2-t4","prod2-t5","prod2-t6","earth2","fog1"],
+	"Benchmark": ["prod2-t1","prod2-t2","prod2-t3","prod2-t4","prod2-t5","prod2-t6","prod2-t7","earth2","fog1"],
 	"Administration": ["void","void2","void102","void101","void1","hal1","www.taboola.com"],
 	"Gateways": ["air1","air2","air101","air102","air202","air201"],
 	"Cassandra": ["csa3","csa4","csa5","csa6","csa7","fire10","fire11","fire110","fire111","fire112","fire114","fire12","fire13","fire2",
