@@ -28,6 +28,7 @@ var configLib = require("./configuration.js");
 var pluginManager = new (require("./pluginManager.js").PluginManager)(logger,contextLib,mongo);
 var JobManager = require("./jobManager.js").JobManager;
 var mail = require("./crayonMail.js");
+var rabbitmq = require("./rabbitmq-util.js");
 
 // Pass global instances to sub modules
 contextLib.setLogger(logger);
@@ -82,6 +83,8 @@ mail.connect(function(err) {
 					return measurements.matchSeriesName(callContext);
 				} else if (callContext.uri == "/getPort") {
 					return callContext.respondText(200, serverPort.toString());
+				} else if (callContext.uri == "/echo") {
+					return callContext.respondJson(200, callContext.args||{});
 				} else if (callContext.uri == "/getConfig") {
 					return callContext.respondJson(200,configLib.getConfig());
 				} else if (callContext.uri == "/setConfig") {
@@ -105,6 +108,8 @@ mail.connect(function(err) {
 
 		if (isJobManager) {
 			var jobManager = new JobManager(logger,mongo);
+		} else {
+			rabbitmq.connect();
 		}
 	});
 });

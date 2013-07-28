@@ -27,8 +27,10 @@ What does it do ?
 * Crayon graphs are not a picture, they are fully interactive with zooming and auto updating without any extra configuration
 * Crayon can be fed with multiple metrics at once to improve performance or even already aggregated metrics if aggregate them yourself
 * Crayon performs programmable realtime monitoring with json alert definitions and mail notification using [emailjs][]
+* Crayon integrated with third parties for getting metrics (besides the HTTP interface), for example the queuing system [RabbitMQ][]
 
 [emailjs]: https://github.com/eleith/emailjs
+[RabbitMQ]: https://github.com/postwait/node-amqp
 
 What's the REST ? (API)
 -----------------------
@@ -145,6 +147,7 @@ Since it's only javascript, there's also no need for compilation.
    d. `npm install mongodb` - Native driver for NodeJS to communicate with MongoDB  
    e. `npm install glob` - Helper file system library for munin plugin  
    f. `npm install emailjs` - Allows sending mail notifications on alerts
+   g. `npm install amqp` - Allows getting metrics from rabbitmq
    
 2. Setting up mongo:  
    a. `service mongod start` - Starts the MongoDB storage layer  
@@ -216,6 +219,8 @@ Stack and Licenses
 *Used for communicating with Mongo DB*
 * [npm] emailjs (MIT) - 
 *Used for sending mail for alerts*
+* [npm] amqp (BSD)
+*Used for getting metrics from RabbitMQ*
 * jQuery (MIT) - 
 *Used throughout the client side javascripts*
 
