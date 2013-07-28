@@ -71,45 +71,65 @@ CodeMirror.commands.autocomplete = function(cm) {
 	CodeMirror.showHint(cm,function() {
 		var cur = editor.getCursor();
 		var token = editor.getTokenAt(cur);
+		console.log(token);
+		if (token.className == "string property") {
+			var firstMatchIndex = 0;
+		 	var autoCompleteList = [];
+		 	CodeMirror.extraClass = {};
+		 	var keys = Object.keys(staticAutoComplete);
+		 	keys.sort();
+		 	var effectiveKeyIndex = -1;
+		 	for (keyIndex in keys) {
+		 		effectiveKeyIndex++;
+				var key = keys[keyIndex];
 
-	 	var autoCompleteList = [];
-	 	CodeMirror.extraClass = {};
-	 	for (key in staticAutoComplete) {
+		 		// Apply type image
+		 		var content = staticAutoComplete[key];
+		 		var typeStart = content.indexOf("Type:");
+		 		if (typeStart != -1) {
+		 			var typeLine = content.substring(typeStart).split('<br>')[0];
+		 			if (typeLine.indexOf("function") != -1) {
+		 				effectiveKeyIndex--;
+		 				CodeMirror.extraClass[key] = "imgFunction";
 
-	 		// Apply type image
-	 		var content = staticAutoComplete[key];
-	 		var typeStart = content.indexOf("Type:");
-	 		if (typeStart != -1) {
-	 			var typeLine = content.substring(typeStart).split('<br>')[0];
-	 			if (typeLine.indexOf("function") != -1) {
-	 				CodeMirror.extraClass[key] = "imgFunction";
+		 				// We're not allowing functions
+		 				continue;
+		 			} else if (typeLine.indexOf("string") != -1) {
+		 				CodeMirror.extraClass[key] = "imgText";
+					} else if (typeLine.indexOf("number") != -1) {
+		 				CodeMirror.extraClass[key] = "imgNumber";
+					} else if (typeLine.indexOf("integer") != -1) {
+		 				CodeMirror.extraClass[key] = "imgNumber";	 				
+		 			} else if (typeLine.indexOf("float") != -1) {
+		 				CodeMirror.extraClass[key] = "imgNumber";
+					} else if (typeLine.indexOf("boolean") != -1) {
+		 				CodeMirror.extraClass[key] = "imgNumber";		 				
+		 			} else {
+		 				CodeMirror.extraClass[key] = "imgJavascript";
+		 			}
+		 		}
 
-	 				// We're not allowing functions
-	 				continue;
-	 			} else if (typeLine.indexOf("string") != -1) {
-	 				CodeMirror.extraClass[key] = "imgText";
-				} else if (typeLine.indexOf("number") != -1) {
-	 				CodeMirror.extraClass[key] = "imgNumber";
-				} else if (typeLine.indexOf("integer") != -1) {
-	 				CodeMirror.extraClass[key] = "imgNumber";	 				
-	 			} else if (typeLine.indexOf("float") != -1) {
-	 				CodeMirror.extraClass[key] = "imgNumber";
-				} else if (typeLine.indexOf("boolean") != -1) {
-	 				CodeMirror.extraClass[key] = "imgNumber";		 				
-	 			} else {
-	 				CodeMirror.extraClass[key] = "imgJavascript";
-	 			}
-	 		}
+		 		if (firstMatchIndex == 0 && key.indexOf(token.string.replace(/["']/g,"")) == 0) {
+		 			firstMatchIndex = effectiveKeyIndex;
+		 		}
 
-	 		autoCompleteList.push(key);
-	 	}
-	    autoCompleteList.sort();
+		 		autoCompleteList.push(key);
+		 	}
 
-		return {
-			list: autoCompleteList,
-			from: CodeMirror.Pos(cur.line, cur.ch),
-	        to: CodeMirror.Pos(cur.line, cur.ch) //token.start
-		};
+			var start = token.start;
+			var end = token.end;
+		    if (token.string.length > 0) {
+		    	if (token.string[0] == '"' || token.string[0] == "'") start++;
+		    	if (token.string[token.string.length - 1] == '"' || token.string[token.string.length - 1] == "'") end--;
+		    	if (end < start) end = start;
+		    }
+			return {
+				list: autoCompleteList,
+				from: CodeMirror.Pos(cur.line, start),
+		        to: CodeMirror.Pos(cur.line, end),
+		        selectedIndex: firstMatchIndex
+			};
+		}
 	});
 }
 var editor = CodeMirror.fromTextArea(document.getElementById("txtConfig"), {

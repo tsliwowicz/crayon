@@ -151,9 +151,12 @@
     this.selectedHint = 0;
 
     var completions = data.list;
+    var activeIndex = data.selectedIndex || 0;
+
     for (var i = 0; i < completions.length; ++i) {
       var elt = hints.appendChild(document.createElement("li")), cur = completions[i];
-      var className = "CodeMirror-hint" + (i ? "" : " CodeMirror-hint-active");
+      var className = "CodeMirror-hint"
+      if (0 == i) className += " CodeMirror-hint-active";
       if (CodeMirror.extraClass && CodeMirror.extraClass[cur]) {
         className += " " + CodeMirror.extraClass[cur];
       }
@@ -163,7 +166,7 @@
       else elt.appendChild(document.createTextNode(cur.displayText || getText(cur)));
       elt.hintId = i;
     }
-
+    
     var pos = cm.cursorCoords(options.alignWithWord !== false ? data.from : null);
     var left = pos.left, top = pos.bottom, below = true;
     hints.style.left = left + "px";
@@ -231,11 +234,16 @@
       setTimeout(function(){cm.focus();}, 20);
     });
 
-    CodeMirror.signal(data, "select", completions[0], hints.firstChild);
+    CodeMirror.signal(data, "select", completions[activeIndex], hints.childNodes[activeIndex]);
 
     if (CodeMirror.hintSelected) {
-        CodeMirror.hintSelected(data, "select", completions[0], hints.firstChild);
+        CodeMirror.hintSelected(data, "select", completions[activeIndex], hints.childNodes[activeIndex]);
     }
+
+    if (activeIndex) {
+      widget.changeActive(activeIndex);
+    }
+
     return true;
   }
 

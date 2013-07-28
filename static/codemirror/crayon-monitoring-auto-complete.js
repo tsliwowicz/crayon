@@ -59,6 +59,16 @@ staticAutoComplete["enabled"] = ' \
   <br> </div> \
 ';
  
+staticAutoComplete["noMail"] = ' \
+<div class="option"><a name="noMail"></a><b>noMail</b><br> \
+  <p>Allows disabling alert notification via mail. Should be used in combination with other forms of alerting</p> \
+  <i><span class="dyDescType">Type:</span> boolean</i><br> \
+  <i><span class="dyDescType">Default:</span> true</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
 staticAutoComplete["minutesBetweenAlerts"] = ' \
 <div class="option"><a name="minutesBetweenAlerts"></a><b>minutesBetweenAlerts</b><br> \
   <p>A silence period once an alert had occured to prevent further alerting during that time</p> \
@@ -74,6 +84,16 @@ staticAutoComplete["description"] = ' \
   <p>A short sentence which describes what it means when the alert is fired</p> \
   <i><span class="dyDescType">Type:</span> string</i><br> \
   <i><span class="dyDescType">Default:</span> warning message about this missing attribute</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["mailTo"] = ' \
+<div class="option"><a name="noMail"></a><b>noMail</b><br> \
+  <p>Allows overriding default mail receipients by specifying per-alert email</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \
