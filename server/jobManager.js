@@ -80,10 +80,13 @@ JobManager.prototype.checkThresholds = function() {
 					var desc = (threshold.description||"[no description] missing threshold 'description' attribute");
 					me.logger.info("Threshold Alert: ".colorRed() + desc + "\n" + alertData);
 
-					mail.send({
-						text:    "Threshold definition:\n" +  JSON.stringify(threshold) + "\n\nAlert Data:\n" + alertData, 
-						subject: "[Crayon] Threshold Passed: " + desc
-					});
+					if (!threshold.noMail) {
+						mail.send({
+							text:    "Threshold definition:\n" +  JSON.stringify(threshold) + "\n\nAlert Data:\n" + alertData, 
+							subject: "[Crayon] Threshold Passed: " + desc,
+							mailTo: threshold.mailTo
+						});
+					}
 				}
 			});
 		}

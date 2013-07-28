@@ -89,10 +89,10 @@ var minigraphClicked = function(el) {
 	try {if (newQueryArgs.from) query += "&from=" + newQueryArgs.from; } catch (ex) {}
 	try {if (newQueryArgs.to) query += "&to=" + newQueryArgs.to; } catch (ex) {}
 	try {if (newQueryArgs.unit) query += "&unit=" + newQueryArgs.unit; } catch (ex) {}
-	try {if (newQueryArgs.names) query += "&names=" + JSON.stringify(newQueryArgs.names); } catch (ex) {}
-	try {if (newQueryArgs.components) query += "&components=" + JSON.stringify(newQueryArgs.components); } catch (ex) {}
-	try {if (newQueryArgs.server) query += "&server=" + JSON.stringify(newQueryArgs.server); } catch (ex) {}
-	try {if (newQueryArgs.graphOpts) query += "&graphOpts=" + JSON.stringify(newQueryArgs.graphOpts); } catch (ex) {}
+	try {if (newQueryArgs.names) query += "&names=" + encodeURIComponent(JSON.stringify(newQueryArgs.names)); } catch (ex) {}
+	try {if (newQueryArgs.components) query += "&components=" + encodeURIComponent(JSON.stringify(newQueryArgs.components)); } catch (ex) {}
+	try {if (newQueryArgs.server) query += "&server=" + encodeURIComponent(JSON.stringify(newQueryArgs.server)); } catch (ex) {}
+	try {if (newQueryArgs.graphOpts) query += "&graphOpts=" + encodeURIComponent(JSON.stringify(newQueryArgs.graphOpts)); } catch (ex) {}
 	//window.location.search = query;
 
   	var win=window.open(window.location.origin + "/designer.html" + query, '_blank');

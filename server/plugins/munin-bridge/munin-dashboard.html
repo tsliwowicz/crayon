@@ -234,11 +234,14 @@ var lastBenchmarkTime = null;
 					}
 
 					if (graph["graph_vlabel"]) {
-						extraOptions["vlabelSuffix"] = graph["graph_vlabel"];
+						extraOptions["ylabel"] = graph["graph_vlabel"].replace("${graph_period}",pageQuery.unit);
 					}
 
 					var graphData = [];
+					var countOfLineStyleAttributes = {};
+					var seriesCount = 0;
 					for (seriesName in graph.series) {
+						seriesCount++;
 						var lineStyle = { match: seriesName };
 
 						var fullSeriesName = series_prefix + "#" + seriesName;
@@ -265,9 +268,38 @@ var lastBenchmarkTime = null;
 
 						if (seriesConfig.type && seriesConfig.type.toLowerCase().indexOf("derive") != -1) {
 							lineStyle.isDelta = true;
+							lineStyle.divideBySecondsSinceLastSample = true;
 						}
 
 						extraOptions.lineStyles.push(lineStyle);
+
+						for (style in lineStyle) {
+							//won't work for objects [TODO]
+							var key = style + ":" + lineStyle[style];
+							if (!countOfLineStyleAttributes[key]) countOfLineStyleAttributes[key] = 1;
+							else countOfLineStyleAttributes[key] += 1;
+						}
+					}
+
+					// Consolidate the same line styles to graph level
+					for (kv in countOfLineStyleAttributes) {
+						if (countOfLineStyleAttributes[kv] == seriesCount) {
+							var kvSplitIndex = kv.indexOf(":");
+							var styleKey = kv.substring(0, kvSplitIndex);
+							var styleValue = kv.substring(kvSplitIndex + 1);
+							extraOptions[styleKey] = styleValue;
+
+							for (styleIndex in extraOptions.lineStyles) {
+								delete extraOptions.lineStyles[styleIndex][styleKey]
+							}
+						}
+					}
+
+					// Remove empty line styles
+					for (var i = extraOptions.lineStyles.length - 1; i >= 0; --i)  {
+						if (Object.keys(extraOptions.lineStyles[i]).length < 2) {
+							extraOptions.lineStyles.pop();
+						}
 					}
 
 
@@ -322,7 +354,7 @@ var lastBenchmarkTime = null;
 		if (isMini) {
 			//queryData(dateFrom, dateTo, 'm', hosts, componenets, names, fields, extraQueryArgs, callback);
 			pageBody.prepend("<H1 style='margin-top:80px'>Last hour in tiny graphs</H1>");
-			new Query({
+			pageQuery = new Query({
 				dateFrom: startFrom, 
 				dateTo: now,
 				unit: queryArgs.unit || 'm',
@@ -334,10 +366,11 @@ var lastBenchmarkTime = null;
 				callback: plotGraphs,
 				tailSecondsInterval: 5,
 				tailCallback: updateGraphs
-			}).queryData();
+			});
+			pageQuery.queryData();
 		} else {
 			pageBody.prepend("<H1 style='margin-top:80px'>This week</H1>");
-			new Query({
+			pageQuery = new Query({
 				dateFrom: startFrom, 
 				dateTo: now,
 				unit: queryArgs.unit || 'h',
@@ -347,10 +380,12 @@ var lastBenchmarkTime = null;
 				//names: requiredSeriesNames,
 				fields: onlyFieldsRequiredForPlot, // projections, field to select
 				callback: plotGraphs,
-			}).queryData();
+			});
+			pageQuery.queryData();
 		}	
 	}
 
+	var pageQuery = null;
 
 	var updateGraphs  = function(updatedData) {
 		if (updatedData == null || updatedData.length == 0) return;

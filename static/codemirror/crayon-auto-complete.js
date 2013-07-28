@@ -1,4 +1,83 @@
 var staticAutoComplete = {};
+
+
+staticAutoComplete["from"] = ' \
+<div class="option"><a name="from"></a><b>from</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The time to draw the metric from, could be either ISO time, epoch time or free text such as "5 hours ago"</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["to"] = ' \
+<div class="option"><a name="to"></a><b>to</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The time to draw the metric to, could be either ISO time, epoch time or free text such as "5 hours ago"</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["unit"] = ' \
+<div class="option"><a name="unit"></a><b>unit</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The time unit for the graph which indicates the level of aggregation (second, minute, hour, day)</p> \
+  <i><span class="dyDescType">Type:</span> string ["s","m","h","d"]</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["servers"] = ' \
+<div class="option"><a name="servers"></a><b>servers</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The servers the metrics drawn will belong to. null means all servers.</p> \
+  <i><span class="dyDescType">Type:</span> string or array </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["components"] = ' \
+<div class="option"><a name="components"></a><b>components</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The components the metrics drawn will belong to. null means all components.</p> \
+  <i><span class="dyDescType">Type:</span> string or array </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["names"] = ' \
+<div class="option"><a name="names"></a><b>names</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The names of the metrics that will be drawn. null means all metrics.</p> \
+  <i><span class="dyDescType">Type:</span> string or array </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["tailSecondsInterval"] = ' \
+<div class="option"><a name="tailSecondsInterval"></a><b>tailSecondsInterval</b><br> \
+  <a parentName="graphs"></a>\
+  <p>The amount of seconds for which the graph will auto-update itself. null means no auto-update.</p> \
+  <i><span class="dyDescType">Type:</span> int</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
 staticAutoComplete["annotationClickHandler"] = ' \
 <div class="option"><a name="Annotations"></a><a name="annotationClickHandler"></a><b>annotationClickHandler</b><br> \
   <p>If provided, this function is called whenever the user clicks on an annotation.</p> \
@@ -1486,77 +1565,10 @@ staticAutoComplete["valueMultiplier"] = ' \
   <br> </div> \
 ';
 
-staticAutoComplete["from"] = ' \
-<div class="option"><a name="from"></a><b>from</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The time to draw the metric from, could be either ISO time, epoch time or free text such as "5 hours ago"</p> \
+staticAutoComplete["yLabelSuffix"] = ' \
+<div class="option"><a name="yLabelSuffix"></a><b>yLabelSuffix</b><br> \
+  <p>Additional string describing the Y axis</p> \
   <i><span class="dyDescType">Type:</span> string</i><br> \
-  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["to"] = ' \
-<div class="option"><a name="to"></a><b>to</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The time to draw the metric to, could be either ISO time, epoch time or free text such as "5 hours ago"</p> \
-  <i><span class="dyDescType">Type:</span> string</i><br> \
-  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["unit"] = ' \
-<div class="option"><a name="unit"></a><b>unit</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The time unit for the graph which indicates the level of aggregation (second, minute, hour, day)</p> \
-  <i><span class="dyDescType">Type:</span> string ["s","m","h","d"]</i><br> \
-  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["servers"] = ' \
-<div class="option"><a name="servers"></a><b>servers</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The servers the metrics drawn will belong to. null means all servers.</p> \
-  <i><span class="dyDescType">Type:</span> string or array </i><br> \
-  <i><span class="dyDescType">Default:</span> null</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["components"] = ' \
-<div class="option"><a name="components"></a><b>components</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The components the metrics drawn will belong to. null means all components.</p> \
-  <i><span class="dyDescType">Type:</span> string or array </i><br> \
-  <i><span class="dyDescType">Default:</span> null</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["names"] = ' \
-<div class="option"><a name="names"></a><b>names</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The names of the metrics that will be drawn. null means all metrics.</p> \
-  <i><span class="dyDescType">Type:</span> string or array </i><br> \
-  <i><span class="dyDescType">Default:</span> null</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["tailSecondsInterval"] = ' \
-<div class="option"><a name="tailSecondsInterval"></a><b>tailSecondsInterval</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The amount of seconds for which the graph will auto-update itself. null means no auto-update.</p> \
-  <i><span class="dyDescType">Type:</span> int</i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \

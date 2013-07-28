@@ -220,8 +220,8 @@ CodeMirror.commands.autocomplete = function(cm) {
 	CodeMirror.showHint(cm,function() {
 		var cur = editor.getCursor();
 		var token = editor.getTokenAt(cur);
-		console.log(token);
-		if (token.className == "string property") {
+		//console.log(token);
+		if (token.className == "string property" || token.className == "string") {
 			var firstMatchIndex = 0;
 		 	var autoCompleteList = [];
 		 	CodeMirror.extraClass = {};

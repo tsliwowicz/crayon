@@ -88,7 +88,7 @@ module.exports.find = function(callContext) {
 			var namesEncounteredArr = [];
 
 			if (docs && docs.length > 0 ) {
-				logger.debug("First doc selected: " + JSON.stringify(docs[0]));
+				logger.debug("First doc out of " + (docs.length.toString()).colorMagenta() + " docs selected: " + (JSON.stringify(docs[0])).colorBlue());
 			}
 
 			for (docNum in docs) {

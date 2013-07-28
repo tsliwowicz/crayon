@@ -38,7 +38,7 @@ function send(options) {
 	server.send({
 	   text:    options.text, 
 	   from:    config.crayonReplyAddress, 
-	   to:      config.defaultAlertReceipients.join(","),
+	   to:      (options.mailTo || config.defaultAlertReceipients.join(",")),
 	   subject: options.subject
 	}, function(err, message) { 
 		if (err) {

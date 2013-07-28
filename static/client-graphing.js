@@ -429,6 +429,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		var aggregative = lineStyle.aggregative || divCache.graphOptions.aggregative;
 		var isDelta = lineStyle.isDelta || divCache.graphOptions.isDelta;
 		var valueMultiplier = lineStyle.valueMultiplier || divCache.graphOptions.valueMultiplier;
+		var divideBySecondsSinceLastSample = lineStyle.divideBySecondsSinceLastSample || divCache.graphOptions.divideBySecondsSinceLastSample;
 		
 		if (aggregative == 'ave') { valObj[0] = counter.A; valObj[1] = counter.V; }
 		else if (aggregative == 'min') valObj[0] = counter.m;
@@ -439,7 +440,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 			if (isNaN(valObj[0])) {
 			} else if (divCache.deltaHelper[seriesObj.index] == null) {
 				divCache.deltaHelper[seriesObj.index] = valObj[0];
-				valObj[0] = noValue;
+				valObj[0] = NaN;
 			} else {	
 				var temp = valObj[0];
 				if (valObj[0] < divCache.deltaHelper[seriesObj.index]) {
@@ -455,6 +456,21 @@ var populateTimeSlotArr = function(divCache, graphData) {
 					divCache.deltaHelper[seriesObj.index] = temp;
 				}
 			}
+		}
+
+		if (divCache.lastTimeslot == null) divCache.lastTimeslot = {};
+		if (divideBySecondsSinceLastSample) {
+			var lastTimeslot = divCache.lastTimeslot[seriesObj.index];
+			if (lastTimeslot) {
+				var msDiff = timeSlot[0].getTime() - lastTimeslot[0].getTime();
+				if (msDiff > 0) {
+					valObj[0] /= msDiff * 0.001;
+				} else {
+					valObj[0] = NaN;
+				}
+			}
+
+			divCache.lastTimeslot[seriesObj.index] = timeSlot;
 		}
 
 		if (valueMultiplier && !isNaN(valObj[0])) {
