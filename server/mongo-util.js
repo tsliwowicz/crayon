@@ -397,7 +397,7 @@ module.exports.checkThreshold = function(threshold, sourceUnit, callback) {
 */
 
 	var scol = collectionByUnit[sourceUnit].col;
-	var dateString = dates.getSecondBulk(new Date().addSeconds(-threshold.duration));
+	var dateString = dates.getSecondBulk(new Date().addSeconds(-(threshold.duration||300)));
 
 	// Build original match phrase
 	var originalMatch = {n: threshold.metric, t:{$gt: dateString}};
