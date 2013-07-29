@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, first commit & last update on 2013-07-27).  
+(readme.md update in progress, first commit & last update on 2013-07-29).  
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
