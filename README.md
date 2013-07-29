@@ -148,7 +148,7 @@ Since it's only javascript, there's also no need for compilation.
    e. `npm install glob` - Helper file system library for munin plugin  
    f. `npm install emailjs` - Allows sending mail notifications on alerts
    g. `npm install amqp` - Allows getting metrics from rabbitmq
-   
+  
 2. Setting up mongo:  
    a. `service mongod start` - Starts the MongoDB storage layer  
    b. `mongo` - A command which opens the mongo shell  
@@ -221,11 +221,22 @@ Stack and Licenses
 *Used for sending mail for alerts*
 * [npm] amqp (BSD)
 *Used for getting metrics from RabbitMQ*
+* Nostradamus (MIT)
+*Used for predicting metric future values*
 * jQuery (MIT) - 
 *Used throughout the client side javascripts*
 
+[Nostradamus]: https://github.com/thick/Nostradamus.js
+
 Change Log
 ----------
+
+2013-07-29 - 
+* Added a simple prediction algorithm
+
+2013-07-28 - 
+* Added integration with RabbitMQ
+* Fixed problems with deltas
 
 2013-07-27 - 
 * Added the graph context menu and get image operation

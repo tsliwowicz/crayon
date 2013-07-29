@@ -128,6 +128,7 @@ body.append('<div class="graphMenuOptions" style="width: 55px">	\
 					<li onclick="doActionOnGraphDiv(this)">View Code</li>	\
 					<li onclick="doActionOnGraphDiv(this)">Hide</li>	\
 					<li onclick="doActionOnGraphDiv(this)">Get Image</li>	\
+					<li onclick="doActionOnGraphDiv(this)">Predict</li>	\
 				</ul>	\
 			</div>');
 var graphMenuOptionsJQ = $(".graphMenuOptions");
@@ -154,6 +155,8 @@ function doActionOnGraphDiv(graphMenuOptionItem) {
 		window.codeGraph(graphDivMenuIsShownTo);
 	} else if (action == "Hide") {
 		window.hideGraph(graphDivMenuIsShownTo.parentNode);
+	} else if (action == "Predict") {
+		window.addPrediction(graphDivMenuIsShownTo,0.5, 0.4, 0.6, 4, 4)
 	} else if (action == "Get Image") {
 		html2canvas(graphDivMenuIsShownTo.parentNode, {
 		  onrendered: function(canvas) {

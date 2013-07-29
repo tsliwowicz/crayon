@@ -339,7 +339,7 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 	divCache.dygraph = lastGraph;
 }
 
-var updateDrawnGraph = function(graphDiv, graphData) {
+var updateDrawnGraph = function(graphDiv, graphData, enlargeWindow) {
 	var divCache = cacheByDiv[graphDiv.id];
 	if (!divCache) return;
 	graphData.sort(function (g1,g2) { return (g1.t < g2.t ? -1 : 1) });
@@ -350,10 +350,12 @@ var updateDrawnGraph = function(graphDiv, graphData) {
 	var lenAfter = divCache.timeSlotArr.length;
 
 	// Keep a sliding window model
-	for (var i = 0; i < (lenAfter - lenBefore); ++i) {
-		var dumpedTimeslot = divCache.timeSlotArr.shift();
-		if (dumpedTimeslot != null) {
-			delete divCache.byTimeSeriesValues[dumpedTimeslot];
+	if (!enlargeWindow) {
+		for (var i = 0; i < (lenAfter - lenBefore); ++i) {
+			var dumpedTimeslot = divCache.timeSlotArr.shift();
+			if (dumpedTimeslot != null) {
+				delete divCache.byTimeSeriesValues[dumpedTimeslot];
+			}
 		}
 	}
 
@@ -431,50 +433,53 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		var valueMultiplier = lineStyle.valueMultiplier || divCache.graphOptions.valueMultiplier;
 		var divideBySecondsSinceLastSample = lineStyle.divideBySecondsSinceLastSample || divCache.graphOptions.divideBySecondsSinceLastSample;
 		
-		if (aggregative == 'ave') { valObj[0] = counter.A; valObj[1] = counter.V; }
-		else if (aggregative == 'min') valObj[0] = counter.m;
-		else if (aggregative == 'max') valObj[0] = counter.M;
-		else if (aggregative == 'sum') valObj[0] = counter.S;
-		else if (aggregative == 'count') valObj[0] = counter.N;
-		if (isDelta) {
-			if (isNaN(valObj[0])) {
-			} else if (divCache.deltaHelper[seriesObj.index] == null) {
-				divCache.deltaHelper[seriesObj.index] = valObj[0];
-				valObj[0] = NaN;
-			} else {	
-				var temp = valObj[0];
-				if (valObj[0] < divCache.deltaHelper[seriesObj.index]) {
+		if (counter.forcedValue != null) { valObj[0] = counter.forcedValue; }
+		else {
+			if (aggregative == 'ave') { valObj[0] = counter.A; valObj[1] = counter.V; }
+			else if (aggregative == 'min') valObj[0] = counter.m;
+			else if (aggregative == 'max') valObj[0] = counter.M;
+			else if (aggregative == 'sum') valObj[0] = counter.S;
+			else if (aggregative == 'count') valObj[0] = counter.N;
+			if (isDelta) {
+				if (isNaN(valObj[0])) {
+				} else if (divCache.deltaHelper[seriesObj.index] == null) {
 					divCache.deltaHelper[seriesObj.index] = valObj[0];
-					valObj[0] = divCache.deltaHelper[seriesObj.index];
-					// possible reset of counter
-
-				} else {
-				//if (Math.abs(valObj[0] - divCache.deltaHelper[seriesObj.index]) > 10000) {
-				//	console.log("Big Delta");
-				//}
-					valObj[0] -= divCache.deltaHelper[seriesObj.index];
-					divCache.deltaHelper[seriesObj.index] = temp;
-				}
-			}
-		}
-
-		if (divCache.lastTimeslot == null) divCache.lastTimeslot = {};
-		if (divideBySecondsSinceLastSample) {
-			var lastTimeslot = divCache.lastTimeslot[seriesObj.index];
-			if (lastTimeslot) {
-				var msDiff = timeSlot[0].getTime() - lastTimeslot[0].getTime();
-				if (msDiff > 0) {
-					valObj[0] /= msDiff * 0.001;
-				} else {
 					valObj[0] = NaN;
+				} else {	
+					var temp = valObj[0];
+					if (valObj[0] < divCache.deltaHelper[seriesObj.index]) {
+						divCache.deltaHelper[seriesObj.index] = valObj[0];
+						valObj[0] = divCache.deltaHelper[seriesObj.index];
+						// possible reset of counter
+
+					} else {
+					//if (Math.abs(valObj[0] - divCache.deltaHelper[seriesObj.index]) > 10000) {
+					//	console.log("Big Delta");
+					//}
+						valObj[0] -= divCache.deltaHelper[seriesObj.index];
+						divCache.deltaHelper[seriesObj.index] = temp;
+					}
 				}
 			}
 
-			divCache.lastTimeslot[seriesObj.index] = timeSlot;
-		}
+			if (divCache.lastTimeslot == null) divCache.lastTimeslot = {};
+			if (divideBySecondsSinceLastSample) {
+				var lastTimeslot = divCache.lastTimeslot[seriesObj.index];
+				if (lastTimeslot) {
+					var msDiff = timeSlot[0].getTime() - lastTimeslot[0].getTime();
+					if (msDiff > 0) {
+						valObj[0] /= msDiff * 0.001;
+					} else {
+						valObj[0] = NaN;
+					}
+				}
 
-		if (valueMultiplier && !isNaN(valObj[0])) {
-			valObj[0] *= valueMultiplier;
+				divCache.lastTimeslot[seriesObj.index] = timeSlot;
+			}
+
+			if (valueMultiplier && !isNaN(valObj[0])) {
+				valObj[0] *= valueMultiplier;
+			}
 		}
 		
 		// Put the series sample in the series slot in the timeslot (e.g. series B was null but C had values)
@@ -546,4 +551,77 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		debugger;
 	}
 	//}
+}
+
+function addPrediction(graphDiv, alpha, beta, gamma, period, m) {
+	var divCache = cacheByDiv[graphDiv.id];
+	if (divCache.timeSlotArr.length == 0) return;
+
+	// collect input
+	var forecastInputBySeries = {};
+
+	// TODO: don't consolidate stepping for all series lines
+	var averageStep = NaN;
+	var timeSamples = 0;
+	var lastTime = NaN;
+
+	for (var timeSlotIndex = 0; timeSlotIndex < divCache.timeSlotArr.length; ++timeSlotIndex) {
+		var timeSlot = divCache.timeSlotArr[timeSlotIndex];
+		var time = timeSlot[0];
+		
+		if (isNaN(lastTime)) {
+			lastTime = time.getTime();
+		} else if (timeSamples == 0) {
+			averageStep = time.getTime() - lastTime;
+			timeSamples = 1;
+		} else {
+			var step = time.getTime() - lastTime;
+			averageStep = ((averageStep * timeSamples) + step) / (timeSamples + 1);
+			timeSamples++;
+			lastTime = time.getTime();
+		}
+
+		for (series in divCache.seriesFound) {
+			var inputArr = forecastInputBySeries[series];
+			if (inputArr == null) {
+				inputArr = [];
+				forecastInputBySeries[series] = inputArr;
+			}
+
+			var index = divCache.seriesFound[series].index;
+			var val = timeSlot[index];
+			if (!isNaN(val)) inputArr.push(val);
+		}
+	}
+
+	if (lastTime == NaN) return;
+
+	var isStackedGraph = divCache.graphOptions["stackedGraph"];
+
+	// process forecast
+	var newGraphData = [];
+	var forecastOutputBySeries = {};
+	for (series in divCache.seriesFound) {
+		var inputArr = forecastInputBySeries[series];
+		if (inputArr != null) {
+
+			if (inputArr.length % period != 0) {
+				inputArr = inputArr.splice(inputArr.length % period);
+			}
+
+			var forecastArr = forecast(inputArr, alpha, beta, gamma, period, m);
+			forecastOutputBySeries[series] = forecastArr;
+
+			for (valIndex in forecastArr) {
+				val = forecastArr[valIndex];
+				if (isStackedGraph && isNaN(val)) val = 0;
+
+				timeSlotTime = new Date((valIndex * averageStep) + lastTime);
+				newGraphData.push({t: timeSlotTime, forcedValue: val, n: series});
+			}
+		}
+	}
+
+	updateDrawnGraph(graphDiv, newGraphData, true);
+	//forecast(forecastInput, 0.5, 0.4, 0.6, 4, 4);
 }

@@ -4,6 +4,7 @@
 	<script type="text/javascript" src="../../client-graphing.js"></script>
 	<script type="text/javascript" src="../../client-querying.js"></script>
 	<script type="text/javascript" src="../../dygraph-combined.js"></script> 
+	<script type="text/javascript" src="/forecasting/nostradamus-combined.js"></script> 
 </head>
 <body>
 <div id="pageBody" class="frameBody">
@@ -99,6 +100,7 @@ var minigraphClicked = function(el) {
   	win.focus();
 }
 
+var defaultHeight = 250;
 var loadDashboard = function() {
 	//$(pageBody).append("<div id='invisibleDiv' style='display: none; position:fixed; z-index:-1; width:0px, height:0px'></div>");
 	//invisibleDivEl = $("#invisibleDiv").get()[0];
@@ -128,7 +130,6 @@ var loadDashboard = function() {
 
 		// Title
 		var title = graph.graphOpts.title || "Untitled (Add 'title' under graphOpts)";
-		var defaultHeight = 250;
 		var graphWidth = graph.graphOpts.width || 500;
 		var graphHeight = graph.graphOpts.height || defaultHeight;
 	    graph.graphOpts.legendWidth = graph.graphOpts.legendWidth || 230;

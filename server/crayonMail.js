@@ -16,6 +16,7 @@ module.exports.connect = function(callback) {
 	   ssl:     false
 	});
 
+	/*
 	send({
 		text:    "Crayon instance just started on port " + crayonId, 
 		subject: "Crayon Instance (" + crayonId + ") Initializing",
@@ -30,6 +31,7 @@ module.exports.connect = function(callback) {
 			}
 		}
 	});
+	*/
 }
 
 function send(options) {
