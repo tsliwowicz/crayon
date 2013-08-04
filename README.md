@@ -8,12 +8,20 @@ Crayon
 * Crayon's stack consists of [NodeJS][] as server, file system as storage and [dyGraphs][] as charting control. 
 * Crayon aims to be at least as scalable and flexible as graphite.
 
+Screenshots: 
+* [Crayon System Dashboard][] - Where we get insight on what's going inside crayon  
+* [Dashboard Designer][] - Where we do our magic and build our mighty informative graphs  
+* [Munin Plugin][] - Where we view our good old munin dashboard but in a new and cool way  
+
 [Taboola]: http://www.taboola.com
 [NodeJS]: http://nodejs.org
 [MongoDB]: https://github.com/mongodb/mongo
 [dyGraphs]: http://dygraphs.com
 [Graphite]: https://github.com/graphite-project
 [Munin]: http://munin-monitoring.org/
+[Crayon System Dashboard]: https://raw.github.com/shai-d/crayon/master/docs/images/CrayonSystemDashboard.png
+[Dashboard Designer]: https://raw.github.com/shai-d/crayon/master/docs/images/DashboardDesigner.png
+[Munin Plugin]: https://raw.github.com/shai-d/crayon/master/docs/images/MuninDashboard.png
 
 What does it do ?
 -----------------

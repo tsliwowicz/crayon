@@ -1,27 +1,7 @@
 // In the format 
 // var groups = { groupName: [ hostnames in short format ] }
 var groups = {
-	"FDBs": ["Combined","csa8","csa9","csa10","earth1","earth3","earth4","earth5","earth6","earth7","earth8",
-		"earth101","earth102","earth103","earth104","earth201","earth202","earth203","earth204","macron1","master-db"],
-	"TRC-IL": ["prod2-f1","prod2-f2","prod2-f3","prod2-f4","prod2-f5","prod2-f6","prod2-f7","prod2-f8","prod2-f9","prod2-f10","prod2-f11","prod2-f13","prod2-f14"],
-	"Backend": ["prod2-b4","prod2-b5","prod2-b6","wood3","wood4"],
-	"TRC-US": ["water101","water102","water103","water104","water105","water106","water107","water108","water109","water110","water111","water112",
-		"water201","water202","water203","water204","water205","water206","water207","water208","water209"],
-	"Benchmark": ["prod2-t1","prod2-t2","prod2-t3","prod2-t4","prod2-t5","prod2-t6","prod2-t7","earth2","fog1"],
-	"Administration": ["void","void2","void102","void101","void1","hal1","www.taboola.com"],
-	"Gateways": ["air1","air2","air101","air102","air202","air201"],
-	"Cassandra": ["csa3","csa4","csa5","csa6","csa7","fire10","fire11","fire110","fire111","fire112","fire114","fire12","fire13","fire2",
-		"fire201","fire202","fire203","fire204","fire205","fire206","fire207","fire208","fire3","fire4"],
-	"MasterDB": ["backend-db1"],
-	"Hypervisors": ["bucket1"],
-	"Elasticsearch": ["es1", "es2"],
-	"IMG-SRC": ["img-src1", "img-src2", "img-src3"],
-	"Munin": ["lava3"],
-	"Cisco_Switches": ["192.168.10.8", "192.168.10.9"],
-	"Ops": ["lava2","lava201","eye101"],
-	"Switches": ["192.168.10.5", "192.168.10.6"],
-	"NetApp": ["storage2"],
-	"Storage": ["storage3"],
+	"Group": ["Server1", "Server2"]
 }
 
 var graphList = [];
