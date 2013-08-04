@@ -107,21 +107,46 @@ Query.prototype.queryData = function() {
 		success: function(resultString) {
 		
 			var rows = resultString.split('\n');
+			if (rows.length == 1 && rows[0].indexOf("error") != -1) {
+				var err = JSON.parse(rows[0]).error;
+				if (err.indexOf("maxBuffer exceeded") != -1) {
+					console.error("Data was too big to fit in server buffer, use 'bufferMB' attribute to specify a larger buffer");
+				} else {
+					console.error(err);
+				}
+				return;
+			}
 
 			var docs = [];
 			var docsByKey = {};
 
+			var currentDS = null;
 			for (rowNum in rows) {
 				try {
 					var row = rows[rowNum];
 					var parts = row.split(' ');
-					if (parts.length < 2) continue;
 
-					
+					if (parts.length == 1) {
+						var dsIndex = Number(parts[0]);
+						currentDS = me.dataSources[dsIndex];
+						continue;
+					}
+					if (parts.length < 2) continue;
 
 					if (parts.length == 8) {
 						var doc = {};
-						doc.t = new Date(parts[0].substring(0,15) + "0:00Z");
+
+						if (currentDS.unit == "h") {
+							doc.t = new Date(parts[0].substring(0,13) + ":00:00Z");
+						} else {
+							doc.t = new Date(parts[0].substring(0,15) + "0:00Z");
+						}
+
+						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
+						if (currentDS.shiftHours) doc.t=doc.t.addHours(currentDS.addHours);
+						if (currentDS.shiftMinutes) doc.t=doc.t.addHours(currentDS.addMinutes);
+						if (currentDS.shiftDays) doc.t=doc.t.addHours(currentDS.addDays);
+						
 						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
 							me.lastDateInResponse = doc.t;
 						}
@@ -150,9 +175,16 @@ Query.prototype.queryData = function() {
 					} else {
 						var doc = {};
 						doc.t = new Date(parts[0] + "Z");
+
 						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
 							me.lastDateInResponse = doc.t;
 						}
+
+						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
+						if (currentDS.shiftHours) doc.t=doc.t.addHours(currentDS.addHours);
+						if (currentDS.shiftMinutes) doc.t=doc.t.addHours(currentDS.addMinutes);
+						if (currentDS.shiftDays) doc.t=doc.t.addHours(currentDS.addDays);
+
 						doc.n = parts[1];
 
 						doc.A = doc.M = doc.m = doc.S = Number(parts[2]);

@@ -41,6 +41,9 @@ module.exports.getUnitCollectionName = function(unit) {
 
 // Connects to the mongo db database and keeps an instance of all collections
 var connect = function(callback) {
+	callback(null);
+	return;
+	
 	logger.info("Connecting to mongo: " + mongoServer + mongoDBName);
 	MongoClient.connect(mongoServer + mongoDBName,{db: {w: 0}} ,function(err, db) { 
 		if (err) {

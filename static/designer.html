@@ -43,7 +43,7 @@
 </div>
 
 <!-- add series dialog -->
-<div class="slidingOverlay" id="addSeriesDialog" style="left: -200px; top: 40px; width:300px; height: 400px;">
+<div class="slidingOverlay" id="addSeriesDialog" style="left: -750px; top: 40px; width:750px; height: 500px;">
   <h2>Add series</h2>
 
   <p>
@@ -51,7 +51,7 @@
     <input id="matchRegex" style="width:240px"/><span class="crayonButton" onclick="searchSeries()" style="margin-left:10px">go</span>
   </p>
 
-  <div id="matchBox" class="listBox" style="width:100%; height:250px;">
+  <div id="matchBox" class="listBox" style="width:100%; height:350px;">
   	<table id='matchTable' class="listTable" style='border-collapse: separate;text-align: left;width:100%;'>
 
   	</table>
@@ -93,10 +93,19 @@ function updateMatchingSeriesList(nameDocs) {
 		sb += "<tr class='listItemRow'><td class='listItemCellSelected' onclick='toggleSeriesInList(this)'>" + name + "</td></tr>";
 	}
 
-	for (nameDocIndex in nameDocs) {
-		var nameDoc = nameDocs[nameDocIndex];
-		if (namesInList[nameDoc.n]) continue;
-		sb += "<tr class='listItemRow'><td class='listItemCell' onclick='toggleSeriesInList(this)'>" + nameDoc.n + "</td></tr>";
+	if (typeof nameDocs == "string") {
+		var nameLines = nameDocs.split('\n');
+		for (nameDocIndex in nameLines) {
+			var nameDoc = nameLines[nameDocIndex];
+			if (namesInList[nameDoc]) continue;
+			sb += "<tr class='listItemRow'><td class='listItemCell' onclick='toggleSeriesInList(this)'>" + nameDoc + "</td></tr>";
+		}
+	} else {
+		for (nameDocIndex in nameDocs) {
+			var nameDoc = nameDocs[nameDocIndex];
+			if (namesInList[nameDoc.n]) continue;
+			sb += "<tr class='listItemRow'><td class='listItemCell' onclick='toggleSeriesInList(this)'>" + nameDoc.n + "</td></tr>";
+		}
 	}
 
 	matchTable.innerHTML = sb;
@@ -110,14 +119,9 @@ function getMatchingSeriesNames(regex, callback) {
 	$.ajax({
 		url: "/matchSeriesName",
 		data: "limit=9999&regex=" + encodeURIComponent(regex),
-		dataType: 'json',
 		headers: { "Accept-Encoding" : "gzip" },
 		success: function(resultObject) {
-			if (resultObject.error) {
-				console.error(resultObject.error);
-			} else {
-				callback(resultObject.names)
-			}
+			callback(resultObject);
 		}
 	});
 }
@@ -167,7 +171,7 @@ function addSeries_cancel() {
 }
 function addSeries_close() {
 	matchTable.innerHTML = "";
-	$("#addSeriesDialog").css("left", "-200");
+	$("#addSeriesDialog").css("left", "-750");
 	setTimeout(function() {
 		$("#addSeriesDialog").css("display", "none");
 	}, 500);

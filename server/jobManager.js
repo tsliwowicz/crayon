@@ -83,17 +83,17 @@ JobManager.prototype.minuteElapsed = function(now) {
 
 			// Aggregate previous 10 minutes
 			
-			var minuteStrToAggregate = "";
+			var inputForAggregation = "";
 			for (i = -10; i < 0; ++i) {
 				var timeAgo = now.addMinutes(i);
-				minuteStrToAggregate += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
+				inputForAggregation += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
 			}
 
-			exec("mawk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + minuteStrToAggregate, function(error, out, err) {  
+			exec("mawk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + inputForAggregation, function(error, out, err) {  
 				if (error) {
-					me.logger.error("Failed aggregating minutes " + minuteStrToAggregate + ": " + error);
+					me.logger.error("Failed aggregating minutes " + inputForAggregation + ": " + error);
 				} else if (err) {
-					me.logger.error("Error aggregating minutes " + minuteStrToAggregate + ": " + error);
+					me.logger.error("Error aggregating minutes " + inputForAggregation + ": " + error);
 				} else {
 					me.logger.debug(out);
 				}
@@ -111,6 +111,38 @@ JobManager.prototype.minuteElapsed = function(now) {
 
 JobManager.prototype.hourElapsed = function(now) {
 	var me=this;
+
+	if (now.getUTCHours() % 3 == 0) {
+		try {
+			var msBefore = new Date().getTime();
+			me.logger.info("Started aggregating hours");
+
+			// Aggregate previous 10 minutes
+			
+			var inputForAggregation = "";
+			for (i = -18; i < 0; ++i) {
+				var timeAgo = now.addMinutes(i*10);
+				inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
+			}
+
+			exec("mawk -v suffix="+ now.getUTCHours() +" -f aggregateHours.sh " + inputForAggregation, function(error, out, err) {  
+				if (error) {
+					me.logger.error("Failed aggregating hours " + inputForAggregation + ": " + error);
+				} else if (err) {
+					me.logger.error("Error aggregating hours " + inputForAggregation + ": " + error);
+				} else {
+					me.logger.debug(out);
+				}
+
+				var msAfter = new Date().getTime();
+				var duration = msAfter-msBefore;
+				me.logger.info("Finished aggregating hours within " + (duration + "ms").colorMagenta());
+				countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Aggregation ms", "crayon").addSample(duration);
+			});
+		} catch (ex) {
+			me.logger.error("Exception aggregating hours: " + ex.stack);
+		}
+	}
 }
 
 

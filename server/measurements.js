@@ -68,17 +68,28 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 		var mainFolder = "";
 
 		var plan = "";
+		var planSuffix = "";
 		if (ds.unit == 'r') {
-			plan += "cd minutes_ram;";
+			plan += "cd minutes_ram;echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				inputFilesString += " " + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard;
 				dateCursor = dateCursor.addMinutes(1);
 			}
+			if (ds.aggregateOnServer) {
+				 planSuffix += " | mawk -f ../aggregateMinutesInline.sh"
+			}
 		} else if (ds.unit == 'm') {
-			plan += "cd minutes;";
+			plan += "cd minutes;echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				inputFilesString += " " + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
 				dateCursor = dateCursor.addMinutes(10);
+			}
+		} else if (ds.unit == 'h') {
+			plan += "cd hours;echo '" + ds.originalIndex + "';";
+			dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
+			while (dateCursor <= dateTo) {
+				inputFilesString += " " + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
+				dateCursor = dateCursor.addHours(3);
 			}
 		} else {
 			callContext.respondJson(200, {error: "Invalid unit: " + ds.unit });
@@ -86,7 +97,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			return;
 		}
 
-		plan += "egrep -s -h '[^ ]* " + ds.name + "' " + inputFilesString + " | awk '{if ($1 > \"" + dateFromStr + "\" && $1 < \"" + dateToStr + "\") print;}'"
+		plan += "egrep -s -h '[^ ]* " + ds.name + "' " + inputFilesString + " | mawk '{if ($1 > \"" + dateFromStr + "\" && $1 < \"" + dateToStr + "\") print;}'" + planSuffix
 		logger.info("Executing raw query plan: " + plan.colorBlue());
 		//var d = new Date().getTime(); exec("egrep '[^ ]* Inserts ' 4 5 6 | awk '{if ($1 > \"2013-07-31_10:04:50\") print;}'", function(error, out, err) {  console.log(new Date().getTime()-d); });
 
@@ -125,7 +136,7 @@ module.exports.find = function(callContext) {
 
 	// Validate & cast all input arguments to their proper form
 	if (!args.ds || args.ds.length == 0) {
-		callContext.respondText(400, "Error: No dataSources supplied for querying");
+		callContext.respondText(400, "Error: No dataSources supplied for querying: " + JSON.stringify(args));
 		return;
 	}
 
@@ -151,6 +162,12 @@ module.exports.find = function(callContext) {
 	var startQueryMs = new Date().getTime();
 
 	// Expand datasources which represent multiple queries
+	for (dsIndex in args.ds) {
+		if (typeof args.ds[dsIndex] == "object") {
+			args.ds[dsIndex].originalIndex = dsIndex;
+		}
+	}
+
 	var dataSourcesCopy = args.ds;
 	var dataSources = [];
 
@@ -477,16 +494,30 @@ function combineRows(existingRow, newRow) {
 }
 
 module.exports.matchSeriesName = function(callContext) {
-	callContext.numberifyArg("limit");
-
 	if (!callContext.args.regex) {
 		callContext.respondJson(200,{error:"Argument regex is missing"});
 		return;
 	}
 
-	mongo.matchSeriesName(callContext.args, function(err, docs) {
-		callContext.respondJson(200,{names:docs});
-		return;
+	var plan = "egrep -s -h '" + callContext.args.regex + "' minutes_ram/metrics | sort"
+	logger.info("Executing match series name: " + plan.colorBlue());
+	var maxBufferMB = 10;
+	var execConfig = {
+	    maxBuffer: maxBufferMB * 1024 * 1024,
+	    env: {
+	    }
+	};
+
+	exec(plan, execConfig, function(error, out, err) {  
+
+		// If we failed querying
+		if (error) {
+			callContext.respondJson(200, {error: "Failed querying: " + error.stack});
+			logger.error("Match series failed: " + error.stack, "utf-8");
+			return;
+		}
+
+		callContext.respondText(200, out||"");
 	});
 }
 

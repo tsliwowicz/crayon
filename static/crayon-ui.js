@@ -26,9 +26,9 @@ var body = $("body");
 /* CRAYON MAIN UI START */
 body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png">' +
 	  '<span id="themeSelectBlock">Theme:<select onchange="selectTheme()" id="themeSelect">' +
+	  '<option>default</option>' +
 	  '<option>ambiance</option>' +
 	  '<option>ambiance-big</option>' +
-	  '<option>default</option>' +
 	  '</select></span></div>');
 
 head.append('<script type="text/javascript" src="/html2canvas.js"></script>');

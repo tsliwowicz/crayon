@@ -3,7 +3,7 @@ var staticAutoComplete = {};
 
 staticAutoComplete["from"] = ' \
 <div class="option"><a name="from"></a><b>from</b><br> \
-  <a parentName="graphs"></a>\
+  <a parentName="dataSource"></a>\
   <p>The time to draw the metric from, could be either ISO time, epoch time or free text such as "5 hours ago"</p> \
   <i><span class="dyDescType">Type:</span> string</i><br> \
   <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
@@ -14,7 +14,7 @@ staticAutoComplete["from"] = ' \
 
 staticAutoComplete["to"] = ' \
 <div class="option"><a name="to"></a><b>to</b><br> \
-  <a parentName="graphs"></a>\
+  <a parentName="dataSource"></a>\
   <p>The time to draw the metric to, could be either ISO time, epoch time or free text such as "5 hours ago"</p> \
   <i><span class="dyDescType">Type:</span> string</i><br> \
   <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
@@ -25,7 +25,7 @@ staticAutoComplete["to"] = ' \
 
 staticAutoComplete["unit"] = ' \
 <div class="option"><a name="unit"></a><b>unit</b><br> \
-  <a parentName="graphs"></a>\
+  <a parentName="dataSource"></a>\
   <p>The time unit for the graph which indicates the level of aggregation (second, minute, hour, day)</p> \
   <i><span class="dyDescType">Type:</span> string ["s","m","h","d"]</i><br> \
   <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
@@ -34,10 +34,10 @@ staticAutoComplete["unit"] = ' \
   <br> </div> \
 ';
 
-staticAutoComplete["servers"] = ' \
+staticAutoComplete["server"] = ' \
 <div class="option"><a name="servers"></a><b>servers</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The servers the metrics drawn will belong to. null means all servers.</p> \
+  <a parentName="dataSource"></a>\
+  <p>The servers the metrics drawn will belong to (wildcard). null means all servers.</p> \
   <i><span class="dyDescType">Type:</span> string or array </i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
@@ -45,10 +45,10 @@ staticAutoComplete["servers"] = ' \
   <br> </div> \
 ';
 
-staticAutoComplete["components"] = ' \
+staticAutoComplete["component"] = ' \
 <div class="option"><a name="components"></a><b>components</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The components the metrics drawn will belong to. null means all components.</p> \
+  <a parentName="dataSource"></a>\
+  <p>The component the metrics drawn will belong to (wildcard). null means all components.</p> \
   <i><span class="dyDescType">Type:</span> string or array </i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
@@ -56,12 +56,56 @@ staticAutoComplete["components"] = ' \
   <br> </div> \
 ';
 
-staticAutoComplete["names"] = ' \
+staticAutoComplete["name"] = ' \
 <div class="option"><a name="names"></a><b>names</b><br> \
-  <a parentName="graphs"></a>\
-  <p>The names of the metrics that will be drawn. null means all metrics.</p> \
+  <a parentName="dataSource"></a>\
+  <p>The names of the metrics that will be drawn (regex). null means all metrics.</p> \
   <i><span class="dyDescType">Type:</span> string or array </i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["shiftSeconds"] = ' \
+<div class="option"><a name="shiftSeconds"></a><b>shiftSeconds</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>Amount of time to shift the resulting data points (used in order to compare different timeframes)</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["shiftMinutes"] = ' \
+<div class="option"><a name="shiftMinutes"></a><b>shiftMinutes</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>Amount of time to shift the resulting data points (used in order to compare different timeframes)</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["shiftHours"] = ' \
+<div class="option"><a name="shiftHours"></a><b>shiftHours</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>Amount of time to shift the resulting data points (used in order to compare different timeframes)</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["shiftDays"] = ' \
+<div class="option"><a name="shiftDays"></a><b>shiftDays</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>Amount of time to shift the resulting data points (used in order to compare different timeframes)</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> (none)</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \
@@ -69,9 +113,86 @@ staticAutoComplete["names"] = ' \
 
 staticAutoComplete["tailSecondsInterval"] = ' \
 <div class="option"><a name="tailSecondsInterval"></a><b>tailSecondsInterval</b><br> \
-  <a parentName="graphs"></a>\
+  <a parentName="root"></a>\
   <p>The amount of seconds for which the graph will auto-update itself. null means no auto-update.</p> \
   <i><span class="dyDescType">Type:</span> int</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sidebarText"] = ' \
+<div class="option"><a name="sidebarText"></a><b>sidebarText</b><br> \
+  <a parentName="root"></a>\
+  <p>Text to be displayed at the left side bar which links to this dashboard.</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> "New Dashboard!"</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["header"] = ' \
+<div class="option"><a name="header"></a><b>header</b><br> \
+  <a parentName="root"></a>\
+  <p>Header to be displayed at the top bar of this dashboard.</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> "New Dashboard!"</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["defaultGraphOpts"] = ' \
+<div class="option"><a name="defaultGraphOpts"></a><b>defaultGraphOpts</b><br> \
+  <a parentName="root"></a>\
+  <p>A collection of common properties describing the graph&quot;s rendering behavior for all graphs in the dashboard. Values which are specified in any of the graphs directly override the default values.</p> \
+  <i><span class="dyDescType">Type:</span> js key value object</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["defaultDataSourceOpts"] = ' \
+<div class="option"><a name="defaultGraphOpts"></a><b>defaultGraphOpts</b><br> \
+  <a parentName="root"></a>\
+  <p>A collection of common properties describing a data source query to get the graph&quot;s data for all graphs in the dashboard. Values which are specified in any of the graph dataSources directly override the default values.</p> \
+  <i><span class="dyDescType">Type:</span> js key value object</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["graphOpts"] = ' \
+<div class="option"><a name="graphOpts"></a><b>graphOpts</b><br> \
+  <a parentName="graph"></a>\
+  <p>A collection of properties describing the graph&quot;s rendering behavior</p> \
+  <i><span class="dyDescType">Type:</span> js key value object</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["dataSources"] = ' \
+<div class="option"><a name="dataSources"></a><b>dataSources</b><br> \
+  <a parentName="graph"></a>\
+  <p>Array of dataSource. dataSource: A collection of properties describing a data source query to get the graph&quot;s data</p> \
+  <i><span class="dyDescType">Type:</span> array of js key value objects or a strings which references a common datasource</i><br> \
+  <i><span class="dyDescType">Default:</span> []</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["variables"] = ' \
+<div class="option"><a name="variables"></a><b>variables</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>A key value object with variables that should be used when running the dashboard (Variable value can be a JSON object as well). Variables are referenced with "$" before their name in the body of the document.</p> \
+  <i><span class="dyDescType">Type:</span> object of the format { varName: varValue }</i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \

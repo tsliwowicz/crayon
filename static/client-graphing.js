@@ -449,18 +449,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 
 	for (fullCounterName in  divCache.seriesFound) {
 		var seriesObj = divCache.seriesFound[fullCounterName];
-
-		if (seriesObj == null) {
-			// We get here if during update another series had joined the graph
-			// Record any new series we're encountering in the data
-			debugger;
-			divCache.seriesFound[fullCounterName] = seriesObj = {};
-			seriesObj.label = "<SPAN class='legendItem'>" + fullCounterName +"</SPAN>";
-			seriesObj.fullCounterName = fullCounterName;
-			divCache.seriesArr.push(seriesObj);
 		
-		}
-
 		var defaultLineStyle = {
 		}
 
