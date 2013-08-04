@@ -176,8 +176,9 @@ Since it's only javascript, there's also no need for compilation.
 3. Clone the git to your machine (either download or use the `git` command line).  
 4. Go to the crayon root directory (The one with the readme.md file)  
 5. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`
-6. Run the crayon service with `node server\server.js --port=54321 --jobmanager`    
-7. Web interface should be available now on  `http://<serverName>:54321/`   
+6. Go into the server directory and run the crayon service `node server.js --port=54320 --jobmanager`
+7. Run another crayon service just because it's easy `node server.js --port=54321`    
+8. Web interface should be available now on  `http://<serverName>:54321/`   
  
 ```javascript
    Note: You can run as many instances as youd like (on different ports of course)
