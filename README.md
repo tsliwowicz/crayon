@@ -5,10 +5,8 @@ Crayon
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
-* Crayon's stack consists of [NodeJS][] as server, [MongoDB][] as storage and [dyGraphs][] as charting control. 
-* Crayon is a smooth migration from old school monitoring systems such as [Munin][] (and soon [Graphite][])
-* Crayon runs both on linux and on windows, simply because NodeJS and MongoDB does :)
-* Crayon is _unique_ in many ways beyond its stack. Some of its features are unavailable in most of today's modern charting systems.
+* Crayon's stack consists of [NodeJS][] as server, file system as storage and [dyGraphs][] as charting control. 
+* Crayon aims to be at least as scalable and flexible as graphite.
 
 [Taboola]: http://www.taboola.com
 [NodeJS]: http://nodejs.org
@@ -23,11 +21,12 @@ What does it do ?
 * Crayon provides a an API for storing/getting metrics, a server for processing them and a website for viewing them.
 * Crayon provides a JSON DSL for defining graphs with well over a hundred keywords (e.g. logarithmic graphs, delta graphs, etc.)
 * Crayon supports realtime analytics up to subsecond latancy as well as aggregated information with configurable retention.
-* Crayon aggregates analytics in multiple ways thanks to Mongo DB's map reduce (e.g. Max, Min, Sum, Average, Count of samples, etc.)
-* Crayon graphs are not a picture, they are fully interactive with zooming and auto updating without any extra configuration
+* Crayon aggregates analytics in multiple ways (e.g. Max, Min, Sum, Average, Count of samples, etc.)
+* Crayon graphs are fully interactive with zooming and auto updating without any extra configuration (with image export supported)
 * Crayon can be fed with multiple metrics at once to improve performance or even already aggregated metrics if aggregate them yourself
 * Crayon performs programmable realtime monitoring with json alert definitions and mail notification using [emailjs][]
 * Crayon integrated with third parties for getting metrics (besides the HTTP interface), for example the queuing system [RabbitMQ][]
+* Crayon provides multiple themes for your convinience
 
 [emailjs]: https://github.com/eleith/emailjs
 [RabbitMQ]: https://github.com/postwait/node-amqp
@@ -54,15 +53,12 @@ How much is large scale ?
 -------------------------
 
 Of course large scale definition differs from one to the next.  
-Our target was a Million or more metrics per minute on 1 node.  
-We were making sure we can always scale out by adding more instances.  
+In crayon, your scale depends on your distribution of data, but it may reach millions of metrics per second.
 
 Our setup includes:  
 * `NGINX` - An open source balancer layer before NodeJS running on port 60000
 * `Crayon Job Manager NodeJS` - Crayon service running on port 54320 and does aggregations
-* `Crayon NodeJS` - Crayon service running on port 54321 receives metrics from NGINX
-* `Crayon NodeJS` - Crayon service running on port 54322 receives metrics from NGINX
-* `MongoDB` - Unsharded Mongo DB with SSD storage for data files and proper indexes ensured
+* `Crayon NodeJS` - 5 Crayon services running on ports 54321-54325 receive metrics from NGINX
 
 ![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Bemchmark.png)
 
@@ -73,15 +69,25 @@ That "code" button on the graph widgets open up the graph "code-behind" in Crayo
 
 ```javascript
 {
-    "from": "last 30 minutes",
-    "unit": "m",
-    "names": ["Inserts"],
-	"tailSecondsInterval": 60,
+    "dataSources": [{
+        "from": "last 30 minutes",
+        "unit": "r",
+        "name": "Inserts",
+	    "tailSecondsInterval": 60
+	}],
+	"calculatedDataSources": [{
+            "match": {
+                "name": ".*"
+            },
+            "name": "Total Inserts",
+            "function": "sum",
+            "insteadOfMatches": true
+    }],
     "graphOpts": {
         "fillGraph": true,
         "aggregative": "max",
         "stackedGraph": true,
-        "title": "Max Insert Time (ms)",
+        "title": "Inserts Per Second (live)",
 		"noLegend": true,
         "width": "wholeLine",
         "height": 100
@@ -92,17 +98,16 @@ That "code" button on the graph widgets open up the graph "code-behind" in Crayo
 * Note how the `from` field understands free text
 * Note that there is no `to` field, this means we want everything until now
 * We can choose any aggregation `unit` from 's','m','h','d' (second, minute, hour, day)
-* `names` is an array which can contain any amount of Metric names.
-* `servers` is also omitted. We will get results from all servers.
-* `components` is also omitted. We will get results from all components.
+* `name` is a regex of Metric names.
+* `server` (wildcard) is also omitted. We will get results from all servers.
+* `component` (wildcard) is also omitted. We will get results from all components.
 * `tailSecondsInterval` indicates we want this graph to update every 60 seconds.
 * `graphOpts` is the container for all the options regarding graph drawing.
 * `graphOpts.lineStyles` allows applying graph options per Metric using a regex match.
 * `aggregative` is one of Crayon's unique features. "Max" means we want the max value from each minute.
 * `width` I wouldn't even mention if it weren't for the "wholeLine" feature which binds the graph size to the window's.
 
-Phew, There are so many... Just one more:  
-Names of servers, components and Metrics can end with '%' like in SQL to indicate "all the names that being with"
+Phew, There are so many... be sure to check out the screen shots to see a few more cool things.
 
 [CodeMirror]: https://github.com/marijnh/CodeMirror
 [JSHint]: https://github.com/jshint/jshint
@@ -141,15 +146,16 @@ Right now there are no RPMs for Crayon.
 Since it's only javascript, there's also no need for compilation.  
 
 1. Get the prerequisits:  
-   a. `yum install nodejs npm mongo` - NodeJS MongoDB and its download manager  
+   a. `yum install nodejs npm mongo` - NodeJS MongoDB and its download manager  (mongo is not in use anymore)
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install mongodb` - Native driver for NodeJS to communicate with MongoDB  
    e. `npm install glob` - Helper file system library for munin plugin  
    f. `npm install emailjs` - Allows sending mail notifications on alerts
    g. `npm install amqp` - Allows getting metrics from rabbitmq
+   g. `npm install mawk` - Used for file system aggregation (faster than gawk)
   
-2. Setting up mongo:  
+2. Setting up mongo:  (Obsolete, soon to be deprecated)
    a. `service mongod start` - Starts the MongoDB storage layer  
    b. `mongo` - A command which opens the mongo shell  
    c. `use crayon` - Switches to database "crayon" which is the name we'll use  
@@ -161,13 +167,14 @@ Since it's only javascript, there's also no need for compilation.
     
 3. Clone the git to your machine (either download or use the `git` command line).  
 4. Go to the crayon root directory (The one with the readme.md file)  
-5. Run the crayon service with `node server\server.js --port=54321 --jobmanager`    
-6. Web interface should be available now on  `http://<serverName>:54321/`   
+5. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`
+6. Run the crayon service with `node server\server.js --port=54321 --jobmanager`    
+7. Web interface should be available now on  `http://<serverName>:54321/`   
  
 ```javascript
    Note: You can run as many instances as youd like (on different ports of course)
          One of these instances should be started with "--jobmanager" to indicate
-		 it is responsible for periodic tasks.
+		 it is responsible for periodic tasks such as archiving and aggregation.
 ```		 
 
 How do I migrate from Munin ?
@@ -223,6 +230,8 @@ Stack and Licenses
 *Used for getting metrics from RabbitMQ*
 * Nostradamus (MIT)
 *Used for predicting metric future values*
+* mawk (MIT)
+*Used for faster aggregation on the filesystem*
 * jQuery (MIT) - 
 *Used throughout the client side javascripts*
 
@@ -230,6 +239,9 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-04 - 
+* Complete re-write using filesystem for higher performance
 
 2013-07-29 - 
 * Added a simple prediction algorithm
