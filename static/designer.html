@@ -371,20 +371,6 @@ function saveDashboard() {
 
 function updateUrl() {
   var jsonString = editor.getValue();
-  var newQueryArgs = JSON.parse(jsonString);
-  var query="?dummy=1";
-
-  try {if (newQueryArgs.from) query += "&from=" + newQueryArgs.from; } catch (ex) {}
-  try {if (newQueryArgs.to) query += "&to=" + newQueryArgs.to; } catch (ex) {}
-  try {if (newQueryArgs.unit) query += "&unit=" + newQueryArgs.unit; } catch (ex) {}
-  try {if (newQueryArgs.names) query += "&names=" + JSON.stringify(newQueryArgs.names); } catch (ex) {}
-  try {if (newQueryArgs.components) query += "&components=" + JSON.stringify(newQueryArgs.components); } catch (ex) {}
-  try {if (newQueryArgs.server) query += "&server=" + JSON.stringify(newQueryArgs.server); } catch (ex) {}
-  try {if (newQueryArgs.graphOpts) query += "&graphOpts=" + encodeURIComponent(JSON.stringify(newQueryArgs.graphOpts)); } catch (ex) {}
-  
-  //var win=window.open(window.location.origin + "/designer_ui.html" + query, '_blank');
-  //win.focus();
-
   var win=window.open(window.location.origin + "/by-json.html?dashboard=" + encodeURIComponent(jsonString), '_blank');
   win.focus();
 }
@@ -431,11 +417,11 @@ var plotGraph = function(allGraphData) {
 
 var loadGraphFromArguments = function() {
 	
-	try {if (queryArgs.names) queryArgs.names = JSON.parse(queryArgs.names); } catch (ex) {}
+	/*try {if (queryArgs.names) queryArgs.names = JSON.parse(queryArgs.names); } catch (ex) {}
 	try {if (queryArgs.components) queryArgs.components = JSON.parse(queryArgs.components); } catch (ex) {}
 	try {if (queryArgs.server || queryArgs.servers) queryArgs.server = JSON.parse(queryArgs.server || queryArgs.servers); } catch (ex) {}
 	try {if (queryArgs.graphOpts) queryArgs.graphOpts = JSON.parse(queryArgs.graphOpts); } catch (ex) {}
-	delete queryArgs.dummy;
+	delete queryArgs.dummy;*/
 
 	var objectForDashboard = queryArgs;
 
@@ -451,33 +437,43 @@ var loadGraphFromArguments = function() {
 		return;
 	}
 
-	if (queryArgs.from == null && queryArgs.to == null && queryArgs.url == null) {
-		objectForDashboard = { 
-			"id": "dash_" + new Date().toISOString().replace("T","_").replace(/:/g,"-").substring(0,19),
-    		"sidebarText": "New Dashboard!",
-		    "header": "My new Dashboard Header!",
+	objectForDashboard = { 
+		"id": "dash_" + new Date().toISOString().replace("T","_").replace(/:/g,"-").substring(0,19),
+		"sidebarText": "New Dashboard!",
+	    "header": "My new Dashboard Header!",
 
-		    "defaultGraphOpts": {
-		       "width": 400,
-		       "height": 200,
-		    },
+		"variables": {
+			"replaceThis": "withThis"
+	    },
+	    "defaultGraphOpts": {
+	       "width": 400,
+	       "height": 200,
+	    },
+	    "defaultDataSourceOpts": {
+	    	"from": "last 10 minutes",
+	    	"unit": "r",
+	    	"tailSecondsInterval": null,
+	    	"aggregative": "ave"
+	    },
 
-		    "graphs":[{
-		    	"from": "10 minutes ago",
-		    	"unit": "s",
-		    	"names": ["crayon_cpu"],
-		    	"servers": null,
-		    	"components": null,
-		    	"tailSecondsInterval": null,
-		    	"graphOpts": {
-		    		"title": "My new Graph!",
-		    		"aggregative": "ave",
-		    		linesStyles: [
-		    		]
-		    	}
-		    }]
-		}
+	    "graphs":[{
+	    	"dataSources": [{
+		    	"name": "my_metric_name_regex",
+		    	"server": "my_server_name_wildcard",
+		    	"component": "my_component_name_wildcard"
+		    }],
+	    	"graphOpts": {
+	    		"title": "My new Graph!",
+	    		linesStyles: [
+	    		]
+	    	}
+	    }]
 	} 
+
+	if (queryArgs.graph) {
+		objectForDashboard.graphs.pop();
+		objectForDashboard.graphs.push(JSON.parse(queryArgs.graph));
+	}
 
 	editor.setValue(js_beautify(JSON.stringify(objectForDashboard)));
 }

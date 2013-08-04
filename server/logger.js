@@ -2,7 +2,7 @@ var sys = require("sys");
 var countersLib = require("./counter.js");
 
 // Keep a counter of errors
-var errorCounter = countersLib.getOrCreateCounter(10, "Errors Logged", "crayon");
+var errorCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Errors Logged", "crayon");
 
 // The log date prefix for each record
 var getLogDate = function() {

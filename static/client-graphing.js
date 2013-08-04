@@ -152,12 +152,25 @@ String.prototype.understandTime = function() {
 }
 
 
-Date.prototype.toMongoDateString = function() { 
-   return this.toISOString().replace("T"," ").substring(0,19)
+Date.prototype.toShellDateString = function(unit) { 
+	return this.toISOString();
 };
 
-String.prototype.toMongoDateString = function() { 
-	return this.understandTime().toMongoDateString();
+String.prototype.toShellDateString = function(unit) { 
+	return this.understandTime().toShellDateString(unit);
+};
+
+
+Date.prototype.toMongoDateString = function(unit) { 
+	//if (unit == 's') {
+	//	return Math.round(this.getTime() / 1000).toString(16);
+	//} else {
+   		return this.toISOString().replace("T","_").substring(0,19)
+   	//}
+};
+
+String.prototype.toMongoDateString = function(unit) { 
+	return this.understandTime().toMongoDateString(unit);
 };
 
 
@@ -173,6 +186,11 @@ window.benchmarkFromLast = function(msg) {
 var dateDiffMinutes = function(date1, date2) {
 	var diff = date1.getTime() - date2.getTime(); 
 	return (diff / (60*1000)); 
+}
+
+var dateDiffSeconds = function(date1, date2) {
+	var diff = date1.getTime() - date2.getTime(); 
+	return (diff / (1000)); 
 }
 
 Date.prototype.toMongoDate = function() {
@@ -197,7 +215,8 @@ String.prototype.toMongoDate = function() {
 var getCounterName = function(seriesData, graphOptions) {
 	var sb = "";
 
-	var indexOfHashInName = seriesData.n.indexOf('#');
+
+	var indexOfHashInName = -1; //seriesData.n.indexOf('#');
 	if (indexOfHashInName == -1) {
 		sb += seriesData.n;
 	} else {
@@ -213,6 +232,52 @@ var getCounterName = function(seriesData, graphOptions) {
 var lastGraph;
 var lastSeries;
 var cacheByDiv = {};
+var highlightLegendDiv = null;
+var highlightLegendTimeout = null;
+
+var lastHighlightAt = new Date().getTime();
+var highlightCallback_ShowSeriesName = function(event, x, points, row, seriesName) {
+	lastHighlightAt = new Date().getTime();
+	clearTimeout(highlightLegendTimeout);
+	highlightLegendTimeout = setTimeout(function() {
+		if (new Date().getTime() - lastHighlightAt > 500) {
+			highlightCallback_ShowSeriesNameOnce(event, x, points, row, seriesName);
+		}
+	}, 600);
+}
+
+var unhighlightCallback_ShowSeriesName = function(event, x, points, row, seriesName) {
+	clearTimeout(highlightLegendTimeout);
+	highlightLegendDiv = highlightLegendDiv || document.getElementById("highlightSeriesLabelDiv");
+	highlightLegendDiv.style.display = "none";
+}
+
+var highlightCallback_ShowSeriesNameOnce = function(event, x, points, row, seriesName) {
+	var point = null;
+	//console.log(name);
+
+	for (i in points) {
+		if (points[i].name == seriesName) { 
+			point = points[i];
+			break;
+		}
+	}
+
+	if (!point) return;
+
+	var name = new Date(point.xval).toLocaleString() + "<br>";
+	name += seriesName.replace(/<[^>]+>/g,'').replace(":","<br>");
+
+	highlightLegendDiv = highlightLegendDiv || document.getElementById("highlightSeriesLabelDiv");
+	highlightLegendDiv.innerHTML = name + "<br>Value: " + point.yval;
+	//$(highlightLegendDiv).position(event.y, event.x);
+	highlightLegendDiv.style.left = event.x;
+	highlightLegendDiv.style.top = event.y + 10;
+	highlightSeriesLabelDiv.style.zIndex = 20
+	highlightLegendDiv.style.display = "block";
+
+	// point.yval;
+}
 
 var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 	var divCache = {};
@@ -228,6 +293,7 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			legend: 'always',
 			strokeWidth: 2.0,
 			labelsDiv: labelsDiv,
+			axisLabelWidth: 80,
 			connectSeparatedPoints: true,
 			drawGapEdgePoints: true,
 			showAxis: true,
@@ -240,15 +306,21 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			includeComponentInLabel: true,
 			labelsKMG2: true,
 			highlightCircleSize: 3,
-			//highlightSeriesOpts: { strokeWidth: 3, strokeBorderColor: "black" },
-			gapInMinutes: 3,
+			highlightSeriesOpts: { strokeWidth: 4, strokeBorderColor: "black" },
+			gapInSeconds: 180,
 			dateWindowRatio: 0.1,
 			wholeWindow: true,
 			aggregative: "ave",
 			isDelta: false,
 			valueMultiplier: 1,
-			highlightSeriesBackgroundAlpha: 0
+			highlightSeriesBackgroundAlpha: 1,
+			highlightCallback: highlightCallback_ShowSeriesName,
+			unhighlightCallback: unhighlightCallback_ShowSeriesName
 		};
+
+	if (divCache.graphOptions.gapInMinutes)
+		divCache.graphOptions.gapInSeconds = divCache.graphOptions.gapInMinutes * 60;
+
 
 	// Override default options
 	for (option in userOptions) {
@@ -378,6 +450,17 @@ var populateTimeSlotArr = function(divCache, graphData) {
 	for (fullCounterName in  divCache.seriesFound) {
 		var seriesObj = divCache.seriesFound[fullCounterName];
 
+		if (seriesObj == null) {
+			// We get here if during update another series had joined the graph
+			// Record any new series we're encountering in the data
+			debugger;
+			divCache.seriesFound[fullCounterName] = seriesObj = {};
+			seriesObj.label = "<SPAN class='legendItem'>" + fullCounterName +"</SPAN>";
+			seriesObj.fullCounterName = fullCounterName;
+			divCache.seriesArr.push(seriesObj);
+		
+		}
+
 		var defaultLineStyle = {
 		}
 
@@ -489,7 +572,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 	// Fill empty counter values with NaN (Makes dygraph draw gaps instead of 0 values)
 	var lastDate = null;
 	function realizeGap(atTime, where) {
-		if (lastDate && atTime && dateDiffMinutes(lastDate, atTime) < -divCache.graphOptions.gapInMinutes) {
+		if (lastDate && atTime && dateDiffSeconds(lastDate, atTime) < -divCache.graphOptions.gapInSeconds) {
 			var edgeDateEarly = lastDate.addMinutes(1);
 			var edgeDateLate = atTime.addMinutes(-1);
 		
@@ -542,7 +625,11 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		}
 
 		if (lastDate != null) {
-			realizeGap(lastDate.addMinutes(divCache.graphOptions.gapInMinutes), "end");
+			//if (divCache.graphOptions.upToDate) {
+			//	realizeGap(lastDate.addMinutes(divCache.graphOptions.gapInMinutes), "end");
+			//} else {
+				realizeGap(lastDate.addSeconds(divCache.graphOptions.gapInSeconds), "end");
+			//}
 		}
 
 	if (divCache.timeSlotArr.length > 1 && 

@@ -77,3 +77,105 @@ Number.prototype.toHex = function() {
 	if (str.length < 8) str = ("00000000" + str).slice(-8);
     return str;
 }
+
+
+var secondsInUnit = [];
+secondsInUnit["seconds"] = 1;
+secondsInUnit["second"] = 1;
+secondsInUnit["sec"] = 1;
+secondsInUnit["secs"] = 1;
+secondsInUnit["minutes"] = 60*secondsInUnit["sec"];
+secondsInUnit["minute"] = 60*secondsInUnit["sec"];
+secondsInUnit["min"] = 60*secondsInUnit["sec"];
+secondsInUnit["mins"] = 60*secondsInUnit["sec"];
+secondsInUnit["hours"] = 60*secondsInUnit["min"];
+secondsInUnit["hour"] = 60*secondsInUnit["min"];
+secondsInUnit["days"] = 24*secondsInUnit["hour"];
+secondsInUnit["day"] = 24*secondsInUnit["hour"];
+secondsInUnit["weeks"] = 7*secondsInUnit["day"];
+secondsInUnit["week"] = 7*secondsInUnit["day"];
+secondsInUnit["months"] = 30*secondsInUnit["day"];
+secondsInUnit["month"] = 30*secondsInUnit["day"];
+secondsInUnit["years"] = 12*secondsInUnit["month"];
+secondsInUnit["year"] = 12*secondsInUnit["month"];
+numberNames = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+Number.prototype.understandTime = function(num) {return num.toString().understandTime();}
+Date.prototype.understandTime = function(date) {return date;}
+String.prototype.understandTime = function() {
+	str = this;
+
+	// No time
+	if (str == null) return null;
+
+	// Is Number
+	if (!isNaN(Number(str))) {
+		
+		// Epoch
+		time = new Date(Number(str));
+
+		// Adjustment for unix date +%s
+		if (time.getUTCFullYear() < 2000) {
+			time = new Date(Number(str*1000));
+		}
+
+		return time;
+	} 
+
+	// Is String
+	strLower = str.toLowerCase();
+	if (strLower == "now") return new Date();
+	if (strLower == "lasthour") return new Date().addHours(-1);
+	if (strLower == "lastday") return new Date().addDays(-1);
+	if (strLower == "lastmonth") return new Date().addDays(-30);
+
+	var wordsLower = strLower.split(' ');
+	
+	function understandRelativeTime() {
+		if (wordsLower.length == 0) return null;
+		
+		// Assume default unit is "1" unless specified a number (e.g. minute ago)
+		var unit = 1
+		if (wordsLower.length > 1) {
+			var numberNameIndex = numberNames.indexOf(wordsLower[0]);
+			var asNumber = Number(wordsLower[0]);
+			if (numberNameIndex != -1) {
+				unit = numberNameIndex;
+			} else if (!isNaN(asNumber)) {
+				unit = asNumber;
+			} else {
+				return null;
+			}
+
+			wordsLower.shift();
+		}
+
+		var secondsMultiplier = secondsInUnit[wordsLower[0]];
+		if (secondsMultiplier == null) return null;
+
+		return new Date(new Date().getTime() - (unit * secondsMultiplier * 1000));
+	}
+
+	// last X unit
+	if (wordsLower[0] == "last") {
+		wordsLower.shift();
+
+		// Do the time parsing
+		return understandRelativeTime();
+
+	// X unit ago
+	} 
+
+	if (wordsLower[wordsLower.length - 1] == "ago") {
+		wordsLower.pop();
+		if (wordsLower.length == 0) return null;
+
+		// an Hour ago, a minute ago
+		if (wordsLower[0] == "a" || wordsLower[0] == "an") wordsLower.shift();
+
+		// Do the time parsing
+		return understandRelativeTime();
+	}
+
+	// Default new date
+	return new Date(strLower);
+}

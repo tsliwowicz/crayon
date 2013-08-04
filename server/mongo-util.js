@@ -12,9 +12,9 @@ var logger;
 
 
 // Counters to measure inserts, updates, and collisions when upserting samples
-var insertCounter = countersLib.getOrCreateCounter(10, "Inserts", "crayon");
-var updateCounter = countersLib.getOrCreateCounter(10, "Updates", "crayon");
-var etagCollisionCounter = countersLib.getOrCreateCounter(10, "Etag Collisions", "crayon");
+var insertCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Inserts", "crayon");
+var updateCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Updates", "crayon");
+var etagCollisionCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Etag Collisions", "crayon");
 
 // Method group for setting variables
 module.exports.setDB = function(name) { mongoDBName=name; }
@@ -24,7 +24,8 @@ module.exports.setLogger = function(l) { logger = l; };
 var unitCount = 0;
 var namesCol;
 var collectionByUnit = {
-	"s": { name: "samples_sec" },
+	//"s": { name: "samples_sec" },
+	"s": { name: "capped_sec" },
 	"m": { name: "samples_min" },
 	"h": { name: "samples_hour" },
 	"d": { name: "samples_day" }
@@ -56,6 +57,7 @@ var connect = function(callback) {
 			namesCol = db.collection("names");
 
 			logger.info("Connected to Mongo DB");
+			setInterval(bulkInsertPendingWithoutErrors, 1000);
 			callback(null);
 		}
 	});
@@ -67,26 +69,26 @@ var connect = function(callback) {
 var usedHashedNames = {};
 module.exports.addName = function(name) { 
 
-	var hashObj = cityhash.hash64(name);
+	if (usedHashedNames[name]) return;
+	usedHashedNames[name] = true;
 
-	// We already have it in RAM, we don't need to insert it
-	if (usedHashedNames[hashObj.low] == hashObj.high) return;
-	
-	// From now, do the following only once, even if we fail (until next restart)
-	usedHashedNames[hashObj.low] = hashObj.high;
+	return;
+	var hashObj = cityhash.hash64(name);
 
 	var hex = (("0000000000000000" + hashObj.value).slice(-16)) + "00000000";
 	var id = new ObjectID(hex);
 
-	namesCol.insert({_id:id, n:name}, function(err) {
-		// If the code is 11000, we got a duplicate exception this means it's just our cache which wasn't populated
-		// This is going to happen everytime we start our service again (we should populate the names when we begin)
-		if (err != null && err.code != 11000) {
+	if (namesCol != null) {
+		namesCol.insert({_id:id, n:name}, function(err) {
+			// If the code is 11000, we got a duplicate exception this means it's just our cache which wasn't populated
+			// This is going to happen everytime we start our service again (we should populate the names when we begin)
+			if (err != null && err.code != 11000) {
 
-			// It's a different error than a duplicate, we don't know what it is.
-			logger.error("Failed inserting sample name to names collection: " + err);
-		}
-	});
+				// It's a different error than a duplicate, we don't know what it is.
+				logger.error("Failed inserting sample name to names collection: " + err);
+			}
+		});
+	}
 };
 
 
@@ -145,7 +147,7 @@ module.exports.archive = function(unit, timeToArchiveUntil) {
 	logger.info("Archiving of collection " + colObj.name + " started (Anything older than '" + secondString.colorMagenta() +"')");
 	colObj.col.remove({ "t": {"$lt": secondString}}, function(err) {
 		var msAfter = new Date().getTime();
-		countersLib.getOrCreateCounter(10, "Archive ms for " + colObj.name, "crayon").addSample(msAfter-msBefore);
+		countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Archive ms for " + colObj.name, "crayon").addSample(msAfter-msBefore);
 
 		if (err) {
 			logger.error("Archiving of collection " + colObj.name + " failed within " + ((msAfter-msBefore) + "ms") + "\n" + err);
@@ -307,19 +309,22 @@ function upsertWithCollisionHandling(unit, newRow, combine, callback) {
 	});
 }
 
-module.exports.upsertIncrement = function(unit, args, callback) {
-	collectionByUnit[unit].col.update(args, { $inc: { "N": args.N, "S": args.S }}, {upsert: true}, function(err) {
-		if (err) {
-			logger.error("Failed upsert-increment: " + JSON.stringify(err));
-		}
-
-		callback();
-	});
-}
+var secondsBulk = [];
 
 function bulkInsertWithoutErrors(unit, obj, callback) {
+	//secondsBulk = secondsBulk.concat(obj);
+	//callback();
+	//db.collection(collectionByUnit[unit].name).insert(obj, {continueOnError: true}, callback);
 	collectionByUnit[unit].col.insert(obj, {continueOnError: true}, callback);
+	//callback();
 	insertCounter.increment(obj.length||1);
+}
+
+function bulkInsertPendingWithoutErrors() {
+	if (secondsBulk.length > 0) {
+		collectionByUnit['s'].col.insert(secondsBulk, {continueOnError: true}, function() {});
+		secondsBulk = [];
+	}
 }
 
 module.exports.save = function(unit, obj, callback) {

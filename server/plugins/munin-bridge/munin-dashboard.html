@@ -89,9 +89,148 @@ var lastBenchmarkTime = null;
 			}
 		}
 	}
-
 	var allGraphs;
-	var buildGraphList = function(server, graphs) {
+
+	var buildGraphList = function(server, graphs, unit) {
+		
+		var dashboard = { 
+			"id": "munin_generated_" + new Date().toISOString().replace("T","_").replace(/:/g,"-").substring(0,19),
+			"sidebarText": "{auto_generated}",
+		    "header": "Munin Dashboard for " + server,
+
+			"variables": {				
+		    },
+		    "defaultGraphOpts": {
+		       "width": 500,
+		       "height": 250,
+		    },
+		    "defaultDataSourceOpts": {
+		    	"from": ( unit == 'r' ? "last 60 minutes" : "last 24 hours"),
+		    	"unit": unit,
+		    	"tailSecondsInterval": null,
+		    	"aggregative": "ave",
+		    	"server": server,
+		    	"component": "-"
+		    },
+
+		    "graphs":[
+		    ]
+		} 
+
+		for (graphNum in graphs) {
+	    	var graphObj = {dataSources: []};
+	    	var extraOptions = {lineStyles:[]};
+	    	graphObj.graphOpts = extraOptions;
+			dashboard.graphs.push(graphObj);
+			var graph = graphs[graphNum];
+
+			// Title
+			var title = graph.graph_name;
+			if (graph.graph_title) {
+				title = graph.graph_title + " <span style='font-size:12px'>(" + graph.graph_name + ")</span>"
+			}
+			graphObj.graphOpts.title = title;
+
+			var series_prefix = graph.graph_name.trim().replace(/ /g,"."); 
+			graph.series_prefix = series_prefix;
+			graph.graph_name = graph.graph_name.trim().replace(/ /g,"_"); 
+	
+			if (graph["graph_args"]) {
+				var graph_args_parts = graph["graph_args"].split(' ');
+				for (var arg_part_num in graph_args_parts) {
+					var arg_part = graph_args_parts[arg_part_num];
+				
+					if (arg_part == "--lower-limit" || arg_part == "-l") {
+						if (!extraOptions.valueRange) extraOptions.valueRange = [NaN, NaN];
+						extraOptions.valueRange[0] = graph_args_parts[arg_part_num+1];
+					} else if (arg_part == "--upper-limit" || arg_part == "-u") {
+						if (!extraOptions.valueRange) extraOptions.valueRange = [NaN, NaN];
+						extraOptions.valueRange[1] = graph_args_parts[arg_part_num+1];
+					} else if (arg_part == "--base") {
+						if (graph_args_parts[arg_part_num+1] == "1000") {
+							extraOptions.labelsKMG2 = false;
+							extraOptions.labelsKMB = true;
+						}
+						else if (graph_args_parts[arg_part_num+1] == "1024") {
+							extraOptions.labelsKMG2 = true;
+							extraOptions.labelsKMB = false;
+						}
+					} else if (arg_part == "--logarithmic") {
+						extraOptions.logscale = true; // doesn't work well
+					}
+				}
+			}
+
+			if (graph["graph_vlabel"]) {
+				extraOptions["ylabel"] = graph["graph_vlabel"].replace("${graph_period}",unit);
+			}
+
+			var countOfLineStyleAttributes = {};
+			var seriesCount = 0;
+			for (seriesName in graph.series) {
+				seriesCount++;
+				var lineStyle = { match: seriesName };
+
+				var fullSeriesName = series_prefix.replace(/_config/,"_data") + "#" + seriesName;
+				graphObj.dataSources.push({name: fullSeriesName});
+				
+				var seriesConfig = graph.series[seriesName]
+				if (seriesConfig.draw) {
+					if (seriesConfig.draw.toLowerCase().indexOf("area") != -1) {
+						extraOptions.fillGraph = true;
+						extraOptions.errorBars = false;
+					}
+					if (seriesConfig.draw.toLowerCase().indexOf("stack") != -1) {
+						extraOptions.stackedGraph = true;
+					}
+				} 
+
+				if (seriesConfig.type && seriesConfig.type.toLowerCase().indexOf("derive") != -1) {
+					lineStyle.isDelta = true;
+					lineStyle.aggregative = "max";
+					lineStyle.divideBySecondsSinceLastSample = true;
+				}
+
+				extraOptions.lineStyles.push(lineStyle);
+
+				for (style in lineStyle) {
+					//won't work for objects [TODO]
+					var key = style + ":" + lineStyle[style];
+					if (!countOfLineStyleAttributes[key]) countOfLineStyleAttributes[key] = 1;
+					else countOfLineStyleAttributes[key] += 1;
+				}
+			}
+
+			// Consolidate the same line styles to graph level
+			for (kv in countOfLineStyleAttributes) {
+				if (countOfLineStyleAttributes[kv] == seriesCount) {
+					var kvSplitIndex = kv.indexOf(":");
+					var styleKey = kv.substring(0, kvSplitIndex);
+					var styleValue = kv.substring(kvSplitIndex + 1);
+					extraOptions[styleKey] = styleValue;
+
+					for (styleIndex in extraOptions.lineStyles) {
+						delete extraOptions.lineStyles[styleIndex][styleKey]
+					}
+				}
+			}
+
+			// Remove empty line styles
+			for (var i = extraOptions.lineStyles.length - 1; i >= 0; --i)  {
+				if (Object.keys(extraOptions.lineStyles[i]).length < 2) {
+					extraOptions.lineStyles.pop();
+				}
+			}
+	
+			extraOptions.includeComponentInLabel = false;
+			extraOptions.includeServerInLabel = false;
+			extraOptions.gapInSeconds = 1000;
+		}
+
+  		window.location.href = window.location.origin + "/by-json.html?dashboard=" + encodeURIComponent(JSON.stringify(dashboard));
+	}
+	
+	var buildGraphList_OLD_INPLACE = function(server, graphs) {
 		allGraphs = graphs;
 		var pageTable = $('#pageTable');
 		var pageBody = $('#pageBody');
@@ -268,6 +407,7 @@ var lastBenchmarkTime = null;
 
 						if (seriesConfig.type && seriesConfig.type.toLowerCase().indexOf("derive") != -1) {
 							lineStyle.isDelta = true;
+							lineStyle.aggregative = "max";
 							lineStyle.divideBySecondsSinceLastSample = true;
 						}
 
@@ -462,7 +602,7 @@ var lastBenchmarkTime = null;
 		var queryLine = 
 			"?from=" + startFrom.toISOString() + 
 			"&to=" + upUntil.toISOString() + 
-			"&unit=m&server=" + queryArgs.server + 
+			"&unit=h&server=" + queryArgs.server + 
 			"&names=" + encodeURIComponent(JSON.stringify(seriesNames)) + 
 			"&graphOpts=" + encodeURIComponent(JSON.stringify(extraOptions));
 
@@ -482,13 +622,13 @@ setHeader(pageHeader);
 	if (!queryArgs.server) {
 		buildServersList();
 	} else {
-		showLoadingGraphDataOverlay();
+		//showLoadingGraphDataOverlay();
 		$.ajax({
 			url: "getMuninConfig",
 			data: 'server=' + queryArgs.server,
 			dataType: 'json',
 			success: function(resultObject) {
-				buildGraphList(queryArgs.server, resultObject);
+				buildGraphList(queryArgs.server, resultObject, queryArgs.unit || 'm');
 			}
 		});
 	}

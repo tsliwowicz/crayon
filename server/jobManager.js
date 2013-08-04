@@ -4,6 +4,7 @@ var prototypes = require("./prototypes.js");
 var ObjectID = require('mongodb').ObjectID;
 var countersLib = require("./counter.js");
 var mail = require("./crayonMail.js");
+var exec = require('child_process').exec;
 var fs = require('fs');
 var staticDir = __dirname + '/../static'
 var minutesDelayLagAssuranceForAggregation = 1;
@@ -13,16 +14,107 @@ function JobManager(logger, mongo) {
 	
 	me.logger = logger;
 	me.mongo = mongo;
-	me.hourTimer = setInterval(function() { me.hourElapsed(); }, 1000*60*60);
-	me.minuteTimer = setInterval(function() { me.minuteElapsed(); }, 1000*60);
-	me.minuteElapsed();
-	me.hourElapsed();
+	me.hourTimer = setInterval(function() { me.hourElapsed(new Date()); }, 1000*60*60);
+	me.minuteTimer = setInterval(function() { me.minuteElapsed(new Date()); }, 1000*60);
+	me.halfMinuteTimer = setInterval(function() { me.halfMinuteElapsed(new Date()); }, 1000*30);
+	me.halfMinuteElapsed(new Date());
+	me.minuteElapsed(new Date());
+	me.hourElapsed(new Date());
 
 	//me.minuteTimer = setInterval(function() { me.checkThresholds(); }, 1000*5);
 	//me.checkThresholds();
 	if (!me.logger) throw new Error("Logger is undefined");
 }
 
+JobManager.prototype.halfMinuteElapsed = function(now) {
+	var me=this;
+
+	try {
+		var msBefore = new Date().getTime();
+				
+		var config = configLib.getConfig();
+
+		var hoursToKeepRawData = 1;
+		if (config.hoursToRetainSamples && config.hoursToRetainSamples.raw) hoursToKeepRawData = config.hoursToRetainSamples.raw;
+		var rawTime = new Date().addMinutes(-60 * hoursToKeepRawData).toISOString().substring(0,16);
+		var rawFolder = "minutes_ram";
+		var rawCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Archive ms", "crayon")
+		me.archive(msBefore, rawTime, rawFolder, rawCounter);
+
+		var hoursToKeepMinutesData = 24;
+		if (config.hoursToRetainSamples && config.hoursToRetainSamples.minutes) hoursToKeepMinutesData = config.hoursToRetainSamples.minutes;
+		var mTime = new Date().addMinutes(-60 * hoursToKeepMinutesData).toISOString().substring(0,15);
+		var mFolder = "minutes";
+		var mCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Archive ms", "crayon")
+		me.archive(msBefore, mTime, mFolder, mCounter);
+
+	} catch (ex) {
+		me.logger.error("Exception removing minute dir: " + ex.stack);
+	}
+}
+
+JobManager.prototype.archive = function(msBefore, time, folder, counter) {
+	if (!folder) return;
+
+	var me=this;
+
+	var cmd = "rm -rf $(ls "+folder+"/ | awk '{if ($1 < \"" + time + "\") print}' | sed 's|^|./"+ folder +"/|')";
+	me.logger.info("Starting archive with command: " + cmd.colorBlue());
+	exec(cmd, function(error, out, err) {  
+		if (error) {
+			me.logger.error("Failed archiving " + time + ": " + error);
+		} else if (err) {
+			me.logger.error("Error archiving " + time + ": " + error);
+		}
+
+		var msAfter = new Date().getTime();
+		var duration = msAfter-msBefore;
+		counter.addSample(duration);
+	});
+}
+
+JobManager.prototype.minuteElapsed = function(now) {
+	var me=this;
+
+	if (now.getUTCMinutes() % 10 == 0) {
+		try {
+			var msBefore = new Date().getTime();
+			me.logger.info("Started aggregating minutes");
+
+			// Aggregate previous 10 minutes
+			
+			var minuteStrToAggregate = "";
+			for (i = -10; i < 0; ++i) {
+				var timeAgo = now.addMinutes(i);
+				minuteStrToAggregate += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
+			}
+
+			exec("mawk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + minuteStrToAggregate, function(error, out, err) {  
+				if (error) {
+					me.logger.error("Failed aggregating minutes " + minuteStrToAggregate + ": " + error);
+				} else if (err) {
+					me.logger.error("Error aggregating minutes " + minuteStrToAggregate + ": " + error);
+				} else {
+					me.logger.debug(out);
+				}
+
+				var msAfter = new Date().getTime();
+				var duration = msAfter-msBefore;
+				me.logger.info("Finished aggregating minutes within " + (duration + "ms").colorMagenta());
+				countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Aggregation ms", "crayon").addSample(duration);
+			});
+		} catch (ex) {
+			me.logger.error("Exception aggregating minutes: " + ex.stack);
+		}
+	}
+}
+
+JobManager.prototype.hourElapsed = function(now) {
+	var me=this;
+}
+
+
+/*
 var previousAlerts = {};
 
 JobManager.prototype.checkThresholds = function() {
@@ -105,11 +197,7 @@ JobManager.prototype.minuteElapsed = function() {
 	// Note: this could be spread accross multiple timers, but because this seems to operate very fast, I'll keep it here
 	// Also note that we add a lag of minutes because we're using write concern 0 and we want to be sure everything flushed
 	me.aggregateSecondsToMinutes(function() { 
-		setTimeout(function() {
-			me.aggregateMinutesToHours(function() {
-				setTimeout(function() { me.aggregateHoursToDays(function() {}); }, 10000 );
-			});
-		}, 10000)
+		
 	});
 
 	me.checkThresholds();
@@ -125,6 +213,13 @@ JobManager.prototype.hourElapsed = function() {
 
 		// Archive
 		if (config.hoursToRetainSamples) me.archive(config.hoursToRetainSamples);
+
+		// Aggregate
+		setTimeout(function() {
+			me.aggregateMinutesToHours(function() {
+				setTimeout(function() { me.aggregateHoursToDays(function() {}); }, 10000 );
+			});
+		}, 10000)
 
 	} catch (ex) {
 		me.logger.error("Failed performing hour elapsed tasks\n" + ex.stack);
@@ -183,5 +278,6 @@ JobManager.prototype.aggregateHoursToDays = function(callback) {
 	}
 }
 
+*/
 
 module.exports.JobManager = JobManager;

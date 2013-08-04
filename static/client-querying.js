@@ -25,46 +25,33 @@ Query.prototype.stopTailing = function() {
 	delete me.tailSecondsInterval;
 }
 
-Query.prototype.queryDataCombine = function() {
-	var me=this;
+Query.prototype.toRegex = function(val) {
+	if (val == null) {
+		return "[^ ]*";
+	} else if (val.join == null)  {
+		return val; // scalar
+	} else if (val.length == 1) {
+		return val[0]; //array of 1 item
+	} else {
+		return "(" + val.join("|") + ")";
+	}
+}
 
-	var highResMinutesBackLimit = 300;
-	var noMinutesEarlierThanThisDate = me.dateTo.addMinutes(-highResMinutesBackLimit);
-
-	if (noMinutesEarlierThanThisDate < me.dateFrom) {
-		me.unit = 'm';
-		me.queryData();
-	}  else {
-		var remaining = 2;
-		var combinedGraph = [];
-		var combineHoursResults = function(graphDataPart) {
-			combinedGraph = graphDataPart.concat(combinedGraph);
-			if (--remaining == 0) me.callback(combinedGraph);
-		}
-		var combineMinutesResults = function(graphDataPart) {
-			combinedGraph = combinedGraph.concat(graphDataPart);
-			if (--remaining == 0) me.callback(combinedGraph);
-		}
-
-		var hourQuery = new Query(me);
-		delete hourQuery.tailCallback;
-		delete hourQuery.tailSecondsInterval;
-		hourQuery.unit = 'h';
-		hourQuery.dateTo = noMinutesEarlierThanThisDate;
-		hourQuery.callback = combineHoursResults;
-		hourQuery.queryData(hourQuery);
-
-		var minuteQuery = new Query(me);
-		minuteQuery.unit = 'm';
-		minuteQuery.dateFrom = noMinutesEarlierThanThisDate;
-		minuteQuery.callback = combineMinutesResults;
-		minuteQuery.queryData(minuteQuery);
+Query.prototype.toWildcard = function(val) {
+	if (val == null) {
+		return "*";
+	} else if (val.join == null)  {
+		return val; // scalar
+	} else if (val.length == 1) {
+		return val[0]; //array of 1 item
+	} else {
+		throw new Error("multiple values are not supported in wildcards");
+		//return "(" + val.join("|") + ")";
 	}
 }
 
 Query.prototype.updateQueryConditionsForField = function(queryConditions, field, possibleValues) {
-	if (possibleValues) {
-		
+	if (possibleValues) {	
 		
 		var addToQueryAndExpand = function(val) {
 			if (typeof val != "string" || val.length == 0 || val[val.length - 1] != '%') {
@@ -99,77 +86,97 @@ Query.prototype.updateQueryConditionsForField = function(queryConditions, field,
 
 Query.prototype.queryData = function() {
 	var me=this;
+	var dataLine = '';
 
-	if (!me.unit) {
-		throw new Error("Unit must be provided in order to query the server (possible options: 's','m','h','d'...)");
+	var realDataSources = 0;
+	for (i in me.dataSources) {
+		if (typeof me.dataSources[i] != "string") realDataSources++;
 	}
+	if (realDataSources == 0) return;
 
-	var startDateString = me.dateFrom.toMongoDateString();
-	me.dateFrom = startDateString.toMongoDate();
+	dataLine = "ds=" + encodeURIComponent(JSON.stringify(me.dataSources));
 
-	var endDateString = "9999";
-	if (me.dateTo != null) {
-		endDateString = me.dateTo.toMongoDateString();
-		me.dateTo = endDateString.toMongoDate();
-	}
-
-	var queryConditions = [];
-	
-	// Filter by host (with a tiny query optimization)
-	me.updateQueryConditionsForField(queryConditions, "s", me.servers || me.hosts);
-	me.updateQueryConditionsForField(queryConditions, "c", me.components);
-	me.updateQueryConditionsForField(queryConditions, "n", me.names);
-	queryConditions.push({ t: { $gte: startDateString} }, { t: { $lt: endDateString} });
-	
-	var mongoQuery = { $and: queryConditions };
-	//console.log(JSON.stringify(mongoQuery));
-	
-	if (me.fields == null) me.fields = { _id: 0 };
-	//options={"$hint":{"t":1}}&
-	var dataLine = 'unit=' + me.unit + '&query=' + encodeURIComponent(JSON.stringify(mongoQuery)) + 
-		'&limit=999999&sort=[["t","asc"]]&minifyMeasurements=1&fields=' + encodeURIComponent(JSON.stringify(me.fields));
 	var myTrigger = null;
+	me.beforeQueryMs = new Date().getTime();
 
 	$.ajax({
 		url: "/find",
 		data: dataLine,
-		dataType: 'json',
+		//dataType: 'json',
 		headers: { "Accept-Encoding" : "gzip" },
-		success: function(resultObject) {
-			if (resultObject.error) {
-				console.error(resultObject.error);
-			} else {
+		success: function(resultString) {
+		
+			var rows = resultString.split('\n');
 
-				// If it was minified
-				if (resultObject.names != null) {
+			var docs = [];
+			var docsByKey = {};
 
-					for (seriesDataIndex in resultObject.result) {
-						var seriesData = resultObject.result[seriesDataIndex];
+			for (rowNum in rows) {
+				try {
+					var row = rows[rowNum];
+					var parts = row.split(' ');
+					if (parts.length < 2) continue;
 
-						// De-Minify name
-						seriesData.n = resultObject.names[seriesData.n];
+					
 
-						// De-Minify time
-						if (seriesData.t) {
-							previousTime = seriesData.t;
-						} else {
-							seriesData.t = previousTime;
+					if (parts.length == 8) {
+						var doc = {};
+						doc.t = new Date(parts[0].substring(0,15) + "0:00Z");
+						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
+							me.lastDateInResponse = doc.t;
 						}
+						doc.n = parts[1];
 
-						if (seriesData.A == null) seriesData.A = 0;
-						if (seriesData.N == null) seriesData.N = 0;
-						if (seriesData.M == null) seriesData.M = 0;
-						if (seriesData.m == null) seriesData.m = 0;
+						if (parts[2] != "-") doc.s = parts[2];
+						if (parts[3] != "-") doc.c = parts[3];
+						doc.S = Number(parts[4]);
+						doc.N = Number(parts[5]);
+						doc.M = Number(parts[6]);
+						doc.m = Number(parts[7]);
+						doc.A = doc.S / doc.N;
+
+						var docKey = doc.s + doc.c + doc.n + doc.t.toISOString();
+						var prevDoc = docsByKey[docKey];
+						if (prevDoc) {
+							prevDoc.S += doc.S;
+							prevDoc.N += doc.N;
+							prevDoc.A = prevDoc.S / prevDoc.N;
+							if (doc.M > prevDoc.M) prevDoc.M = doc.M;
+							if (doc.m < prevDoc.m) prevDoc.m = doc.m;
+						} else {
+							docsByKey[docKey] = doc;
+							docs.push(doc);
+						}
+					} else {
+						var doc = {};
+						doc.t = new Date(parts[0] + "Z");
+						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
+							me.lastDateInResponse = doc.t;
+						}
+						doc.n = parts[1];
+
+						doc.A = doc.M = doc.m = doc.S = Number(parts[2]);
+						if (parts[3] != "-") doc.s = parts[3];
+						if (parts[4] != "-") doc.c = parts[4];
+						docs.push(doc);
 					}
-				}
 
-				console.log("Queried " + resultObject.result.length + " documents within " + resultObject.ms + "ms");
-				if (me.iterations == 0) {
-					me.callback(resultObject.result)
-				} else {
-					me.tailCallback(resultObject.result);
+				} catch (ex) {
+					console.error("Failed parsing row: " + ex.stack);
 				}
 			}
+
+			me.ms = new Date().getTime() - me.beforeQueryMs;
+			console.log("Queried " + rows.length + " data points within " + me.ms + "ms");
+
+			if (me.iterations == 0) {
+				me.callback(docs)
+			} else {
+				me.tailCallback(docs);
+			}
+		},
+		error: function(xhr, status, error) {
+			if (xhr && xhr.responseText) console.error(xhr.responseText);
 		},
         complete: function ()
         {
@@ -177,9 +184,15 @@ Query.prototype.queryData = function() {
 				setTimeout(function() {
 					me.iterations++;
 
-					me.dateFrom = me.dateTo || new Date();
+					/*if (me.lastDateInResponse) {
+						me.dateFrom = me.lastDateInResponse;
+						me.dateFrom = me.dateFrom.addSeconds((me.iterations == 1) ? -60 : (-me.tailSecondsInterval*5));
+					} else {
+						me.dateFrom = me.dateTo || new Date();
+						me.dateFrom = me.dateFrom.addSeconds((me.iterations == 1) ? -60 : (-me.tailSecondsInterval*5));
+					}*/
+
 					me.dateTo = null;
-					me.dateFrom = me.dateFrom.addSeconds((me.iterations == 1) ? -60 : (-me.tailSecondsInterval*5));
 					me.queryData();
 
 				},me.tailSecondsInterval*1000);

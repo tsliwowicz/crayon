@@ -11,6 +11,7 @@
 <table id="pageTable" cellSpacing="5" cellpadding="0" style="margin: 20px;"></table>
 </div>
 <div id='invisibleDiv' style='display: none; position:fixed; z-index:-1; width:0px, height:0px'></div>
+<div id='highlightSeriesLabelDiv' style='display: none; position:fixed; z-index:-1; width:0px, height:0px'></div>
 </body>
 <script type="text/javascript" src="../../crayon-ui.js"></script>
 <script type="text/javascript">
@@ -23,11 +24,18 @@ var seriesByName = {};
 var dashboard = {
 }
 
+var aggregativeFunctions = {
+	max: function(prevValue,newValue) { return (prevValue < newValue ? newValue : prevValue); },
+	min: function(prevValue,newValue) { return (prevValue > newValue ? newValue : prevValue); },
+	sum: function(prevValue,newValue) { return (prevValue + newValue); },
+	ave: function(prevValue,newValue,prevCount) { return (((prevCount*prevValue) + newValue) / (prevCount + 1)); }
+};
+
 var plotGraph = function(allGraphData, graph) {
 	try {
 
 		var pageTable = $("#pageTable");
-
+		/*
 		var seriesLinesByName = {}
 		for (var seriesIndex in allGraphData) {
 			var series = allGraphData[seriesIndex];
@@ -36,14 +44,106 @@ var plotGraph = function(allGraphData, graph) {
 				seriesLinesByName[series.n] = seriesLines = [];
 			}
 			seriesLines.push(series);
+		}*/
+		
+		var totalMatches = 0;
+		var totalMismatches = 0;
+		if (graph.calculatedDataSources && graph.calculatedDataSources.length > 0) {
+			for (cdsIndex in graph.calculatedDataSources) {
+				var cds = graph.calculatedDataSources[cdsIndex];
+				
+				// Check if it is a reference to a common calculated datasource
+				if (typeof cds == "string") {
+					if (dashboard && dashboard.calculatedDataSources) {
+						for (commonCdsIndex in dashboard.calculatedDataSources) {
+							var commonCds = dashboard.calculatedDataSources[commonCdsIndex];
+							if (commonCds.name == cds) {
+								cds = commonCds;
+							}
+						}
+					}
+				}
+
+				if (!cds.function) {
+					console.error("Missing function attribute on calculatedDataSource: " + JSON.stringify(cds));
+					continue;
+				}
+
+				if (!cds.match) {
+					console.error("Missing match attribute on calculatedDataSource: " + JSON.stringify(cds));
+					continue;
+				}
+
+				var func = aggregativeFunctions[cds.function];
+				if (func == null) {
+					console.error("Unknown function attribute on calculatedDataSource: " + JSON.stringify(cds));
+					continue;
+				}
+
+				var byTime = {};
+				for (var dataPointIndex in allGraphData) {
+					var dataPoint = allGraphData[dataPointIndex];
+					var matchObj = cds.match;
+					var isMatch = false;
+					for (k in cds.match) {
+						var minifiedK = k;
+						if (k == "name") minifiedK = "n";
+						if (k == "server") minifiedK = "s";
+						if (k == "component") minifiedK = "c";
+
+						isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(cds.match[k])
+						if (isMatch) break;
+					}
+
+					if (isMatch) {
+						totalMatches++;
+						var aggregatedPoint = byTime[dataPoint.t]
+						if (!aggregatedPoint) {
+							aggregatedPoint = {};
+							for (k in dataPoint) aggregatedPoint[k] = dataPoint[k];
+							aggregatedPoint.N = aggregatedPoint.N || 1;
+							aggregatedPoint.n = cds.name||JSON.stringify(cds);
+							aggregatedPoint.c = null;
+							aggregatedPoint.s = null;
+							aggregatedPoint.isAggregated = true;
+							allGraphData.push(aggregatedPoint);
+							byTime[dataPoint.t] = aggregatedPoint;
+						} else {
+							aggregatedPoint.A = func(aggregatedPoint.A, dataPoint.A, aggregatedPoint.N);
+							aggregatedPoint.S = func(aggregatedPoint.S, dataPoint.S, aggregatedPoint.N);
+							aggregatedPoint.M = func(aggregatedPoint.M, dataPoint.M, aggregatedPoint.N);
+							aggregatedPoint.m = func(aggregatedPoint.m, dataPoint.m, aggregatedPoint.N);
+							aggregatedPoint.N += 1;
+						}
+
+						if (cds.insteadOfMatches) dataPoint.remove = true;
+					} else {
+						totalMismatches++;
+					}
+					/*var seriesLines = seriesLinesByName[series.n];
+					if (!seriesLines) {
+						seriesLinesByName[series.n] = seriesLines = [];
+					}
+					seriesLines.push(series);*/
+				}
+				
+				/*
+				for (lineName in seriesLinesByName) {
+					if (lineName.match(seriesName)) {
+						var lines = seriesLinesByName[lineName];
+						if (lines != null && lines.length > 0) {
+							graphData = graphData.concat(lines);
+						}
+					}
+				}
+				*/
+			}
 		}
 
-		var graphData = [];
-		for (nameIndex in graph.names) {
-			var seriesName = graph.names[nameIndex];
-			var lines = seriesLinesByName[seriesName];
-			if (lines != null && lines.length > 0) {
-				graphData = graphData.concat(lines);
+		var graphData = []
+		for (i in allGraphData) {
+			if (!allGraphData[i].remove) {
+				graphData.push(allGraphData[i]);
 			}
 		}
 
@@ -73,31 +173,31 @@ var hideGraphOverlay = function(graphToQuery) {
 var hideGraph = function(gDiv) {
 	$(gDiv).css("display", "none")
 }
-var codeGraph = function(gDiv) {
-	minigraphClicked(gDiv);
+var codeGraph = function(el) {
+	var graph = el.graph;
+
+	var graphCodeObj = {};
+	for (k in graph) {	
+		if (k == "div") continue;
+		if (k == "graphAndLegendDivString") continue;
+		if (k == "graphDivString") continue;
+		if (k == "graphOpts") continue;
+		if (k == "legendDiv") continue;
+		if (k == "legendDivString") continue;
+		if (k == "dyGraphTitle") continue;
+		if (k == "overlay") continue;
+		if (k == "overlayText") continue;
+		if (k == "query") continue;
+		graphCodeObj[k] = graph[k];
+	}
+
+	var query = "?graph=" + encodeURIComponent(JSON.stringify(graphCodeObj));
+  	var win=window.open(window.location.origin + "/designer.html" + query, '_blank');
+  	win.focus();
 }
 var refreshGraph = function(gDiv) {
 	var graph = gDiv.graph;
 	graph.query.queryData();
-}
-
-var minigraphClicked = function(el) {
-	
-	var graph = el.graph;
-	
-	var newQueryArgs = graph;
-	var query="?dummy=1";
-	try {if (newQueryArgs.from) query += "&from=" + newQueryArgs.from; } catch (ex) {}
-	try {if (newQueryArgs.to) query += "&to=" + newQueryArgs.to; } catch (ex) {}
-	try {if (newQueryArgs.unit) query += "&unit=" + newQueryArgs.unit; } catch (ex) {}
-	try {if (newQueryArgs.names) query += "&names=" + encodeURIComponent(JSON.stringify(newQueryArgs.names)); } catch (ex) {}
-	try {if (newQueryArgs.components) query += "&components=" + encodeURIComponent(JSON.stringify(newQueryArgs.components)); } catch (ex) {}
-	try {if (newQueryArgs.server) query += "&server=" + encodeURIComponent(JSON.stringify(newQueryArgs.server)); } catch (ex) {}
-	try {if (newQueryArgs.graphOpts) query += "&graphOpts=" + encodeURIComponent(JSON.stringify(newQueryArgs.graphOpts)); } catch (ex) {}
-	//window.location.search = query;
-
-  	var win=window.open(window.location.origin + "/designer.html" + query, '_blank');
-  	win.focus();
 }
 
 var defaultHeight = 250;
@@ -112,7 +212,7 @@ var loadDashboard = function() {
 	var lastCell = $("#graphs_cell");
 
 	setHeader(dashboard.header || "Untitled (Add 'header' at the root of your dashboard JSON)");
-	
+
 	//showLoadingGraphDataOverlay()
 	for (graphNum in dashboard.graphs) {
 		var graph = dashboard.graphs[graphNum];
@@ -123,9 +223,20 @@ var loadDashboard = function() {
 		}
 
 		// We're not going to query the entire database
-		if (!graph.server && !graph.components && !graph.names) {
-			console.error("Skipping graph because it contains no filters. Full database querying is not allowed. At least server/components/name must be specified.");
+		if (!graph.dataSources || graph.dataSources.length == 0) {
+			console.error("Skipping graph because it contains no dataSources attribute with things to query");
 			return;	
+		}
+
+		for (opt in dashboard.defaultDataSourceOpts) {
+			for (dsIdx in dashboard.dataSources) {
+				if (dashboard.dataSources[dsIdx][opt] == null)
+					dashboard.dataSources[dsIdx][opt] = dashboard.defaultDataSourceOpts[opt];
+			}
+			for (dsIdx in graph.dataSources) {
+				if (graph.dataSources[dsIdx][opt] == null)
+					graph.dataSources[dsIdx][opt] = dashboard.defaultDataSourceOpts[opt];
+			}
 		}
 
 		// Title
@@ -143,7 +254,7 @@ var loadDashboard = function() {
 		var graphAndLegendStyle= "";
 		if (graph.graphOpts.width == "wholeLine") {
 			graphAndLegendStyle += "display:block;";
-			graphWidth = 100;
+			graphWidth = getWholeLineWidth(graph);
 		}
 
 		graphHtmlToAdd += '<div id="grpah_and_legend_' + graphNum + '" class="graphAndLegendDiv" style="' + graphAndLegendStyle + '">'
@@ -158,14 +269,14 @@ var loadDashboard = function() {
 			graph.graphDivString+')" class="crayonButton" style="float:right;margin-right:10px">Options</span>';
 		
 		graphHtmlToAdd += '</div>';
-		graphHtmlToAdd += '<div id="graphOverlay_' + graphNum + '" class="graphOverlay" style="width:' + (graphWidth + graph.graphOpts.legendWidth - 10) + '; height:' + (graphHeight - 5) + '">';
+		graphHtmlToAdd += '<div id="graphOverlay_' + graphNum + '" class="graphOverlay" style="width:' + (graphWidth + graph.graphOpts.legendWidth) + '; height:' + (graphHeight - 5) + '">';
 		graphHtmlToAdd += '<span id="graphOverlayText_' + graphNum + '" class="graphOverlayText">Loading</span>';
 		graphHtmlToAdd += '</div>';
 
 		// Graph and legend
 		graphHtmlToAdd += '<div id="graph_' + graphNum + '" class="graphDiv" style="width:' + graphWidth + '; height:' + graphHeight + '"></div>';
 		if (!graph.graphOpts.noLegend) {
-			graphHtmlToAdd += '<div id="legend_' + graphNum + '" class="legendDiv"></div>';
+			graphHtmlToAdd += '<div id="legend_' + graphNum + '" class="legendDiv" style="width:' + graph.graphOpts.legendWidth + ';"></div>';
 		} 
 
 		graphHtmlToAdd += '</div>'
@@ -184,39 +295,120 @@ var loadDashboard = function() {
 		graph.overlay = $("#graphOverlay_" + graphNum);
 		graph.overlayText = $("#graphOverlayText_" + graphNum);
 
+		// Register for common data sources
+		for (var dsIndex in graph.dataSources) {
+			var ds = graph.dataSources[dsIndex];
+			if (typeof ds == "string") {
+				if (!graphsByDataSource[ds]) graphsByDataSource[ds] = [];
+				graphsByDataSource[ds].push(graph);
+			}
+		}
+
 		var queryGraph = function(graphToQuery) {
 			if (graphToQuery.graphOpts.width == "wholeLine") {
 				$(window).resize(function() { resizeGraphByDiv(graphToQuery); });
 			}
 
-			graphToQuery.query = new Query({
-				dateFrom: (graphToQuery.from?graphToQuery.from:null), 
-				dateTo: (graphToQuery.to?graphToQuery.to:null),
-				unit: graphToQuery.unit,
-				hosts: graphToQuery.server, 
-				components: graphToQuery.components, // Don't filter components
-				names: graphToQuery.names, // Don't filter counters
-				fields: allFields, // projections, field to select
-				tailSecondsInterval: graphToQuery.tailSecondsInterval,
-				tailCallback: function(data) { plotGraph(data,graphToQuery); },
-				callback: function(data) { 
-					plotGraph(data,graphToQuery); 
+			var shouldTail = false;;
+			for (dsIndex in graphToQuery.dataSources) {
+				if (graphToQuery.dataSources[dsIndex].tailSecondsInterval != null) {
+					shouldTail = true;
+					break;
 				}
-		    });
-			graphToQuery.query.queryData();
+			}
 
-			setTimeout(function() {
-				resizeGraphByDiv(graphToQuery);
-			}, 100);
+			if (shouldTail) {
+				for (dsIndex in graphToQuery.dataSources) {
+					var dsToQuery = graphToQuery.dataSources[dsIndex];
+					function queryDataSource(ds) {
+						graphToQuery.query = new Query({
+							dataSources: [ds],
+							tailSecondsInterval: ds.tailSecondsInterval,
+							tailCallback: function(data) { 
+								plotGraph(data,graphToQuery); 
+							},
+							callback: function(data) { 
+								plotGraph(data,graphToQuery); 
+							}
+					    });
+						graphToQuery.query.queryData();
+					}
+					queryDataSource(dsToQuery);
+				}
+			} else {
+				graphToQuery.query = new Query({
+					dataSources: graphToQuery.dataSources,
+					tailCallback: function(data) { 
+						plotGraph(data,graphToQuery); 
+					},
+					callback: function(data) { 
+						plotGraph(data,graphToQuery); 
+					}
+			    });
+				graphToQuery.query.queryData();
+			}
+
+			//setTimeout(function() {
+			//	resizeGraphByDiv(graphToQuery);
+			//}, 100);
 		}
 		queryGraph(graph);
 	}
+
+	if (dashboard.dataSources != null && dashboard.dataSources.length > 0)  {
+		for (commonDsIndex in dashboard.dataSources) {
+			var commonDs = dashboard.dataSources[commonDsIndex];
+
+			function commonDataSourceQuery(ds) {
+				commonQuery[ds.id] = new Query({
+					dataSources: [ds],
+					tailSecondsInterval: ds.tailSecondsInterval,
+					tailCallback: function(data) { 
+						commonDataSourceQueryOver(data,ds.id); 
+					},
+					callback: function(data) { 
+						commonDataSourceQueryOver(data,ds.id); 
+					}
+			    });
+				commonQuery[ds.id].queryData();
+			}
+
+			commonDataSourceQuery(commonDs);
+		}
+	}
 }
 
+function commonDataSourceQueryOver(data, dsId) {
+	var regeisteredGraphs = graphsByDataSource[dsId];
+	for (dsNum in regeisteredGraphs) {
+		
+		var dataCopy = [];
+		for (i in data) {
+			var source = data[i];
+			var clone = {};
+			for (key in source) {
+				clone[key] = source[key];
+			}
+			dataCopy.push(clone);
+		}
+		plotGraph(dataCopy,regeisteredGraphs[dsNum]);
+	}
+}
+var graphsByDataSource = {};
+var commonQuery = {};
+
+var getWholeLineWidth = function(graphObj) {
+	var newTotalWidth = $(window).width() - 300;
+	return newTotalWidth - graphObj.graphOpts.legendWidth;
+}
 function resizeGraphByDiv(graphObj) {
-	graphObj.graphOpts.width= $(graphObj.div.parentNode).width() - 10;
-	$(graphObj.div).width(graphObj.graphOpts.width);
+	//graphObj.graphOpts.width= $(graphObj.div.parentNode).width() - 10;
+	if (graphObj.graphOpts.width != "wholeLine") return;
+	var newGraphWidth = getWholeLineWidth(graphObj);
+	
+	$(graphObj.div).width(graphObj.graphOpts.width = newGraphWidth);
 	$(graphObj.overlay).width(graphObj.graphOpts.width + graphObj.graphOpts.legendWidth);
+
 	if (cacheByDiv && cacheByDiv[graphObj.div.id]) {
 		cacheByDiv[graphObj.div.id].dygraph.resize(graphObj.graphOpts.width, graphObj.graphOpts.height || defaultHeight)
 	}
@@ -253,13 +445,45 @@ function codeDashboard() {
   	win.focus();
 }
 
+var originalDashboardStr = null;
+function applyVariablesParse(str) {
+	originalDashboardStr = str;
+	var obj = JSON.parse(str);
+
+	// Apply variables
+	if (obj.variables) {
+		var varArr = Object.keys(obj.variables);
+		varArr.sort(function(v1,v2) { return v2.length - v1.length});
+
+		for (varIndex in varArr) {
+			var variable = varArr[varIndex];
+			var value = obj.variables[variable];
+			if (typeof value == "object") {
+				str = str.replace(new RegExp("\"\\$" + variable + "\"", 'g'), JSON.stringify(value));
+			} else {
+				str = str.replace(new RegExp("\\$" + variable, 'g'), value);
+			}
+		}
+	}
+
+	// reparse
+	try {
+		obj = JSON.parse(str);
+	} catch (ex) {
+		console.error("Failed applying variables, they cause invalid JSON: " + ex);
+		return;
+	}
+
+	return obj;
+}
+
 if (queryArgs.url) {
 	$.ajax({
 		url: queryArgs.url,
 		cache: false,
 		success: function(result) {
 			try {
-				dashboard = JSON.parse(result);
+				dashboard = applyVariablesParse(result);
 			} catch (ex) {
 				console.error("Dasbhoard json is invalid: " + ex.stack);
 			}
@@ -281,8 +505,9 @@ if (queryArgs.url) {
 		}
 	});
 } else if (queryArgs.dashboard) {
+
 	try {
-		dashboard = JSON.parse(queryArgs.dashboard);
+		dashboard = applyVariablesParse(queryArgs.dashboard);
 		if (!dashboard.graphs) {
 			var newDashboard = {
 				graphs: [dashboard]

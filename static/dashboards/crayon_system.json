@@ -1,0 +1,97 @@
+{
+    "id": "crayon_system",
+    "sidebarText": "Crayon System",
+    "header": "Crayon System Status Live Dashboard",
+    "defaultGraphOpts": {
+        "noLegend": true,
+        "width": 500,
+        "height": 100,
+        "gapInSeconds": 10,
+        "connectSeparatedPoints": false,
+        "fillGraph": true,
+        "aggregative": "max",
+        "stackedGraph": true
+    },
+    "defaultDataSourceOpts": {
+        "tailSecondsInterval": 60,
+        "unit": "r",
+        "from": "last 5 minutes",
+        "component": "crayon*",
+        "server": "-"
+    },
+    "graphs": [{
+        "dataSources": [{
+            "name": "API_call_ms_to_/addRaw"
+        }],
+        "graphOpts": {
+            "stackedGraph": false,
+            "title": "Max Insert Time (live)"
+        }
+    }, {
+        "dataSources": [{
+            "name": "Inserts"
+        }],
+        "calculatedDataSources": [{
+            "match": {
+                "name": ".*"
+            },
+            "name": "Total Inserts",
+            "function": "sum",
+            "insteadOfMatches": true
+        }],
+        "graphOpts": {
+            "title": "Inserts Per Second (live)"
+        }
+    }, {
+        "dataSources": [{
+            "component": "*",
+            "server": "metric1",
+            "name": "crayon_cpu"
+        }],
+        "graphOpts": {
+            "title": "Max CPU Per Second (Live)"
+        }
+    }, {
+        "dataSources": [{
+            "name": "folder-creations-attempts"
+        }],
+        "graphOpts": {
+            "title": "Folder creation attempts"
+        }
+    }, {
+        "dataSources": [{
+            "name": "Query_Plan_Execution_ms"
+        }],
+        "graphOpts": {
+            "title": "Max Query Plan Execution ms"
+        }
+    }, {
+        "dataSources": [{
+            "name": "Errors_Logged"
+        }],
+        "graphOpts": {
+            "title": "Total Errors Logged /s"
+        }
+    }, {
+        "dataSources": [{
+            "name": "Raw_Archive_ms"
+        }],
+        "graphOpts": {
+            "title": "Raw Archive ms"
+        }
+    }, {
+        "dataSources": [{
+            "name": "Raw_Aggregation_ms"
+        }],
+        "graphOpts": {
+            "title": "Raw Aggregation ms"
+        }
+    }, {
+        "dataSources": [{
+            "name": "rabbitMQ_messages"
+        }],
+        "graphOpts": {
+            "title": "Rabbit MQ messages /s"
+        }
+    }]
+}

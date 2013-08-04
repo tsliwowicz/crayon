@@ -2,6 +2,9 @@ var dates = require("./dates.js");
 var prototypes = require("./prototypes.js");
 var ObjectID = require('mongodb').ObjectID;
 var countersLib = require("./counter.js");
+var fs = require('fs');
+var exec = require('child_process').exec;
+var cityhash = require("cityhash");
 
 // Set the global services for this module
 var logger;
@@ -46,122 +49,174 @@ var validateTimeField = function(args, callContext) {
 	}
 }
 
+function queryDataSource(ds, callContext, onDatasourceQueryDone) {
+	try {
+		var now = new Date();
+
+		var dateFrom = now;
+		if (ds.from) dateFrom = ds.from.understandTime();
+		var dateTo = now;
+		if (ds.to) dateTo = ds.to.understandTime();		
+		var dateFromStr = dateFrom.toISOString().substring(0,19);
+		var dateToStr = dateTo.toISOString().substring(0,19);
+		var serverWildcard = ds.server || "*";
+		var componentWildcard = ds.component || "*";
+		var maxBufferMB = ds.bufferMB || 4;
+
+		var dateCursor = dateFrom;
+		var inputFilesString = "";
+		var mainFolder = "";
+
+		var plan = "";
+		if (ds.unit == 'r') {
+			plan += "cd minutes_ram;";
+			while (dateCursor <= dateTo) {
+				inputFilesString += " " + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard;
+				dateCursor = dateCursor.addMinutes(1);
+			}
+		} else if (ds.unit == 'm') {
+			plan += "cd minutes;";
+			while (dateCursor <= dateTo) {
+				inputFilesString += " " + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
+				dateCursor = dateCursor.addMinutes(10);
+			}
+		} else {
+			callContext.respondJson(200, {error: "Invalid unit: " + ds.unit });
+			logger.error("Query plan failed: " + error.stack, "utf-8");
+			return;
+		}
+
+		plan += "egrep -s -h '[^ ]* " + ds.name + "' " + inputFilesString + " | awk '{if ($1 > \"" + dateFromStr + "\" && $1 < \"" + dateToStr + "\") print;}'"
+		logger.info("Executing raw query plan: " + plan.colorBlue());
+		//var d = new Date().getTime(); exec("egrep '[^ ]* Inserts ' 4 5 6 | awk '{if ($1 > \"2013-07-31_10:04:50\") print;}'", function(error, out, err) {  console.log(new Date().getTime()-d); });
+
+		var execConfig = {
+		    maxBuffer: maxBufferMB * 1024 * 1024,
+		    env: {
+		    }
+		};
+
+		exec(plan, execConfig, function(error, out, err) {  
+
+			// If we failed querying
+			if (error) {
+				callContext.respondJson(200, {error: "Failed querying: " + error.stack});
+				logger.error("Query plan failed: " + error.stack, "utf-8");
+				return;
+			}
+
+			if (err) {
+				//callContext.respondJson(200, {error: "Failed querying: " + err});
+				logger.error("Query plan error: " + err, "utf-8");
+				//return;
+			}
+
+			onDatasourceQueryDone(ds, out);
+		});
+	} catch (ex) {
+		callContext.respondJson(500, {error: "Failed querying raw data: " + ex.stack});
+		//logger.error("Failed querying raw data: " + ex);
+	}
+}
+
 // Exposes the mongo db records to the client 
 module.exports.find = function(callContext) {
 	var args = callContext.args;
 
 	// Validate & cast all input arguments to their proper form
-	if (!callContext.jsonifyArg("query") ||
-		!callContext.jsonifyArg("fields") ||
-		!callContext.jsonifyArg("sort") ||
-		!callContext.jsonifyArg("options") ||
-		!callContext.numberifyArg("limit") ||
-		!callContext.numberifyArg("skip") 
-		) return;
-
-	if (!mongo.isValidUnit(args.unit)) {
-		callContext.respondText(400, "Invalid unit: " + args.unit);
+	if (!args.ds || args.ds.length == 0) {
+		callContext.respondText(400, "Error: No dataSources supplied for querying");
 		return;
 	}
 
-	// Start measuring the mongo query time
-	var startQueryMs = new Date().getTime();
+	try {
+		args.ds = JSON.parse(args.ds);
+	} catch (ex) {
+		callContext.respondText(400, "Error: Invalid dataSources supplied");
+		return;
+	}
 
-	// Perform the find on the database using the mongo service
-	mongo.find(args, function(err, docs) {
-
-		// Stop measuring the mongo query time
-		var endQueryMs = new Date().getTime();
-
-		// If we failed querying mongo
-		if (err) {
-			callContext.respondJson(200, {error: "Failed querying: " + err.stack});
-			logger.error("Mongo selection failed: " + err.stack, "utf-8");
+	// Validate
+	for (dsIndex in args.ds) {
+		var ds = args.ds[dsIndex];
+		if (typeof ds == "string") {
+			// ignore strings they are filtered out in the next block
+		} else if (!ds.unit) {
+			callContext.respondText(400, "Error: Missing unit attribute for data source: " + JSON.stringify(args));
 			return;
 		}
+	}
 
-		var prevTime = null;
-		if (args.minifyMeasurements) {
-			// Perform minification
+	// Start measuring the query plan time
+	var startQueryMs = new Date().getTime();
 
-			var namesEncountered = {};
-			var namesEncounteredArr = [];
+	// Expand datasources which represent multiple queries
+	var dataSourcesCopy = args.ds;
+	var dataSources = [];
 
-			if (docs && docs.length > 0 ) {
-				logger.debug("First doc out of " + (docs.length.toString()).colorMagenta() + " docs selected: " + (JSON.stringify(docs[0])).colorBlue());
+	// Expand servers (first pass)
+	for (dsIndex in dataSourcesCopy) {
+		var dataSource = dataSourcesCopy[dsIndex];
+		if (typeof dataSource == "string") {
+			// ignore strings
+			continue;
+		} else if (dataSource.server && dataSource.server.join != null) {
+			for (serverId in dataSource.server) {
+				var dataSourceCopy = JSON.parse(JSON.stringify(dataSource));
+				dataSourceCopy.server = dataSource.server[serverId];
+				dataSources.push(dataSourceCopy);
 			}
-
-			for (docNum in docs) {
-				var doc = docs[docNum];
-				
-				// If there is variance * n, calculate stdev in v instead
-				//if (doc.V > 0 && doc.N > 0) doc.V = Math.round(Math.sqrt(doc.V / doc.N)*100)/100;
-
-				if (doc.S != null && doc.N != null) {
-					doc.A = doc.S/doc.N;
-				}
-				// No ave means zero ave, and truncate the decimal points
-				if (doc.A != null) {
-					if (doc.A == 0) delete doc.A;
-					else doc.A = Math.round(doc.A*100)/100
-				}
-
-				if (doc.M != null) {
-					if (doc.M == 0) delete doc.M;
-					else doc.M = Math.round(doc.M*100)/100
-				}
-
-				if (doc.m != null) {
-					if (doc.m == 0) delete doc.m;
-					else doc.m = Math.round(doc.m*100)/100
-				}
-
-				if (doc.N != null) {
-					if (doc.N == 0) delete doc.N;
-					else doc.N = Math.round(doc.N*100)/100
-				}
-
-				// No time means no change in time
-				if (prevTime != doc.t) prevTime = doc.t;
-				else delete doc.t;
-					
-				// Replace the name with the name index
-				var nameIndex = namesEncountered[doc.n];
-				if (nameIndex == null) {
-					namesEncountered[doc.n] = nameIndex = namesEncounteredArr.length;
-					namesEncounteredArr.push(doc.n);
-				}
-				doc.n = nameIndex
-			}
-
-			// Respond
-			callContext.respondJson(200, {names: namesEncounteredArr, ms: endQueryMs-startQueryMs, result: docs});
-
 		} else {
-			callContext.respondJson(200, {ms: endQueryMs-startQueryMs, result: docs});
+			dataSources.push(dataSource);
 		}
-	});
+	}
+
+	// Expand component (second pass)
+	dataSourcesCopy = dataSources;
+	dataSources = [];
+	for (dsIndex in dataSourcesCopy) {
+		var dataSource = dataSourcesCopy[dsIndex];
+		if (dataSource.component && dataSource.component.join != null) {
+			for (componentId in dataSource.component) {
+				var dataSourceCopy = JSON.parse(JSON.stringify(dataSource));
+				dataSourceCopy.component = dataSource.component[componentId];
+				dataSources.push(dataSourceCopy);
+			}
+		} else {
+			dataSources.push(dataSource);
+		}
+	}
+
+	var remainingDatasources = dataSources.length;
+	var combinedOutput = "";
+	var onDatasourceQueryDone = function(ds, out) {
+		combinedOutput += out;
+
+		var endQueryMs = new Date().getTime();
+		logger.info("Datasource (" + ds.index + ") query plan ended within " + ((endQueryMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + out.length);
+
+		if (--remainingDatasources > 0) return;
+
+		// Stop measuring the mongo query time
+		var endTotalMs = new Date().getTime();
+
+		logger.info("Combined query plan ended within " + ((endTotalMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + combinedOutput.length);
+		countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Query Plan Execution ms", "crayon").addSample(endTotalMs-startQueryMs);
+		callContext.respondText(200, combinedOutput);
+	}
+
+	// Iterate over the datasources and 
+	for (dsIndex in dataSources) {
+		var dataSource = dataSources[dsIndex];
+		dataSource.index = dsIndex;
+		queryDataSource(dataSource, callContext, onDatasourceQueryDone);
+	}
 }
 
 // Adding a raw sample is adding a sample which is not aggregated (basically only time & name & value)
 // When we add a raw value, we simulate an aggregative value of 1 sample based on this raw value
 // and call addAggregate
 module.exports.addRaw = function(callContext) {
-
-	// If the value is not a list, make it a list (simpler code for processing both cases)
-	if (!callContext.args.length) callContext.args = [callContext.args];
-	
-	// Convert to aggregated samples
-	for (argsNum in callContext.args) {
-		var args = callContext.args[argsNum];
-		callContext.numberifyArg("val", argsNum);
-		args.N = 1;
-		args.S = args.val;
-		args.M = args.val;
-		args.m = args.val;
-		delete args.val;
-	}
-	
 	addAggregate(callContext);
 }
 
@@ -172,8 +227,8 @@ var addAggregate = function(callContext) {
 	if (!callContext.args.length) callContext.args = [callContext.args];
 	if (!validateSamples(callContext)) return;
 
-	countersLib.getOrCreateCounter(10, "Added Metrics", "crayon").increment(callContext.args.length);
-	addBulkTimeslotsByDate(callContext.args);
+	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Added Metrics", "crayon").increment(callContext.args.length);
+	addBulkTimeslotsByDate(callContext.body.length, callContext.args);
 
 	callContext.respondText(200, "OK");
 }
@@ -186,10 +241,10 @@ function validateSamples(callContext) {
 
 		// Minify the arguments and validate their value
 		callContext.minifyArgNames(args);
-		callContext.numberifyArg("N",argsNum);
+		//callContext.numberifyArg("N",argsNum);
 		callContext.numberifyArg("S",argsNum);
-		callContext.numberifyArg("M",argsNum);
-		callContext.numberifyArg("m",argsNum);
+		//callContext.numberifyArg("M",argsNum);
+		//callContext.numberifyArg("m",argsNum);
 		
 		// Validate that the name field exists
 		if (!args.n) {
@@ -209,56 +264,145 @@ function validateSamples(callContext) {
 
 // Adds a sample to all the timeslots by calling addTimeslot with different units
 // We're doing it sequencial on the table order because we don't want to duplicate the rows in memory
-function addBulkTimeslotsByDate(argsArr, caller) {
+function addBulkTimeslotsByDate(dataSize, argsArr, caller, callback) {
 
 	// Should do only if day is inserted to reduce times
-	for (var i=0; i <argsArr.length; ++i) {
-		mongo.addName(argsArr[i].n);
-	}
+	//for (var i=0; i <argsArr.length; ++i) {
+	//	mongo.addName(argsArr[i].n);
+	//}
 
-	addTimeslotBulk(new Date().getTime(), dates.getSecondBulk, 's', argsArr, function() {
-		if (caller != "counter") {
-			return;
-			var dateToAggregate = new Date().addMinutes(-2);
-			fromStr = dateToAggregate.toISOString().replace("T", " ").substring(0,16);
-			toStr = dateToAggregate.addMinutes(1).toISOString().replace("T", " ").substring(0,16);
-			mongo.aggregate(fromStr, toStr, "s", "m");
-		}
+	addTimeslotBulk(dataSize, new Date().getTime(), dates.getSecondBulk, 's', argsArr, function() {
+		if (callback != null) callback();
 	});
 }
 
 // Performing a "pessimistic concurrency" upsert for the timeslot
-function addTimeslotBulk(beforeMs, timeFormatter, unit, argsArr, callback) {
+function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callback) {
+	var metricsCameFrom = null;
+	if (argsArr.length > 0) metricsCameFrom = argsArr[0].s;
+	
+	// Start log message
+	var startLogMessage = "Starting dump of " + (argsArr.length.toString()).colorMagenta() + " metrics";
+	if (metricsCameFrom) startLogMessage += " that came from " + metricsCameFrom.colorBlue();
+	logger.debug(startLogMessage);
 
-	// Prepare the collection specific uniqeness per row variables
-	if (unit == 's') {
-		for (var i=0; i <argsArr.length; ++i) {
-			var args = argsArr[i];
-			args.t = timeFormatter(args.t);
-			args._id = Math.round(Math.random()*9000000000000000);
-		}
-	}
+	var crayonId = countersLib.getCrayonId();
+	insertCounter = insertCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Inserts", "crayon");
+	createFolderCounter = createFolderCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "folder-creations-attempts", "crayon");
+	//twoBytesCrayonId = twoBytesCrayonId || crayonId.toString(16).length;
+	//var fourBytesSecondsSinceEpoch = (Math.round(beforeMs / 1000)).toString(16);
+	//var idPrefix = fourBytesSecondsSinceEpoch + twoBytesCrayonId;
+	var remaining = argsArr.length;
 
 	var onSaveCompleted = function() {
 		var afterMs = new Date().getTime();
 		var colName = mongo.getUnitCollectionName(unit);
-		countersLib.getOrCreateCounter(10, "Upsert ms to " + colName, "crayon").addSample(afterMs-beforeMs);
+		countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Upsert ms to " + colName, "crayon").addSample(afterMs-beforeMs);
+
+		// Start log message
+		var endLogMessage = "Dump of " + (argsArr.length.toString()).colorMagenta() + " metrics";
+		if (metricsCameFrom) endLogMessage += " that came from " + metricsCameFrom.colorBlue();
+		endLogMessage += " took " + ((afterMs-beforeMs) + "ms").colorMagenta();
+		logger.debug(endLogMessage);
+
 		callback();
 	};
 
-	// For "seconds" we assume there are not going to be collisions (we use a random id generator).
-	// Instead of colission we are going to add the same second "twice" with different data
-	// Note that this is improbable that we will get the same sample twice in the same second
+
+	var pathHash = {};
+
+	// Prepare the collection specific uniqeness per row variables
+	var lastBufObj = null;
+	var lastKey = null;
+	var minuteStr = new Date().toISOString().substring(0,16);
+
 	if (unit == 's') {
-		mongo.bulkInsertWithoutErrors('s', argsArr, function(err) {
-			if (err) {
-				logger.error("Failed saving seconds bulk: " + err);
+		for (var i=0; i <argsArr.length; ++i) {
+			var args = argsArr[i];
+			//args.t = timeFormatter(args.t);
+			
+			var valString = args.S.toString();
+			var compString = (args.c ? args.c.replace(/ /g,"_") : "-")
+			var serverString = (args.s ? args.s.replace(/ /g,"_") : "-")
+			var timeString = args.t.toISOString().substring(0,19);
+
+			var key = serverString + "/" + compString;
+
+			var bufObj = lastBufObj;
+			if (key != lastKey) {
+				lastKey = key;
+				bufObj = pathHash[key];
+
+				// Create first encountered dir
+				if (!dirHash[minuteStr + serverString]) {
+					dirHash[minuteStr + serverString] = new Date();
+					logger.debug("Trying to create dir for " + serverString);
+					try { fs.mkdirSync("minutes_ram/" + minuteStr); } catch (e) {}
+					try { fs.mkdirSync("minutes_ram/" + minuteStr + "/" + serverString); } catch (e) {}
+					createFolderCounter.increment();
+				}
 			}
 
-			onSaveCompleted();
+			if (bufObj == null) {
+				bufObj = {};
+				bufObj.buf = new Buffer(dataSize || 10*1024);
+				bufObj.pos = 0;
+				pathHash[key] = bufObj;
+			}
+			lastBufObj = bufObj;
+
+			bufObj.pos += bufObj.buf.write(timeString,bufObj.pos);
+			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
+			bufObj.pos += bufObj.buf.write(args.n.replace(/ /g,"_"),bufObj.pos);
+			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
+			bufObj.pos += bufObj.buf.write(valString,bufObj.pos);
+			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
+			bufObj.pos += bufObj.buf.write(serverString,bufObj.pos);
+			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
+			bufObj.pos += bufObj.buf.write(compString,bufObj.pos);
+			bufObj.pos += bufObj.buf.write("\n",bufObj.pos);
+			//allTextToWrite += JSON.stringify(args) + "\n";
+		}
+	}
+
+	for (key in pathHash) {
+		var bufObj = pathHash[key]
+		fs.appendFile('minutes_ram/' + minuteStr + "/" + key, bufObj.buf.slice(0, bufObj.pos), function (err) {
+			if (err) {
+				logger.error("Failed saving seconds bulk: " + err);
+
+				//try { fs.mkdirSync("minutes_ram/" + server + "/" + component + "/" + name); } catch (e) {}
+			}
+
+			if (--remaining == 0) {
+				onSaveCompleted();
+			}
+			
 		});
-	} 
+	}
+
+	insertCounter.increment(argsArr.length);
 }
+
+
+var dirHash = {};
+setInterval(function() {
+	try {
+		var hashKeys = Object.keys(dirHash);
+		for (i in hashKeys) {
+			if (dirHash[hashKeys[i]].addMinutes(2) < new Date()) {
+				delete hashKeys[i];
+			}
+		}
+	} catch (ex) {
+		logger.error("Failed archiving hashed dir creation keys");
+	}
+}, 60000);
+
+var insertCounter;
+var createFolderCounter;
+var twoBytesCrayonId;
+var namePath = {};
 
 // Do the actual math of the aggregatives. Min/Max/Ave/Var or anything else like concat etc.
 function combineRows(existingRow, newRow) {	

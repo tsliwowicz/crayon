@@ -4,6 +4,26 @@ var dates = require("./dates.js");
 var counterByKey = {};
 var crayonId = "";
 
+module.exports.systemCounterDefaultInterval = 1;
+
+setInterval(function() {
+	try {
+	var now = new Date();
+	var allMetrics = [];
+	for (key in counterByKey) {
+		var counter = counterByKey[key];
+		var metric = counter.getMetric();
+		metric.t = now;
+		allMetrics.push(metric);
+		counter.resetCounter();
+	}
+
+	measurements.addBulkTimeslotsByDate(1024*allMetrics.length,allMetrics,"counter", function() {});
+	} catch (ex) {
+		console.log("Cannot flush counters: " + ex.stack);
+	}
+}, 1000)
+
 module.exports.setCrayonId = function(c) { 
 	crayonId = c; 
 }
@@ -44,7 +64,7 @@ function Counter(secondsInterval, name, component, server) {
 	me.args.n = name;
 	me.resetCounter();
 	//logger.info("New Counter Created: " + JSON.stringify(me.args));
-	me.timer = setInterval(function() { me.flushCounter() }, secondsInterval*1000);
+	//me.timer = setInterval(function() { me.flushCounter() }, secondsInterval*1000);
 }
 
 Counter.prototype.resetCounter = function() {
@@ -54,16 +74,40 @@ Counter.prototype.resetCounter = function() {
 	me.args.N = 0;
 	me.args.A = 0;
 	me.args.V = 0;
+	me.args.S = 0;
 	me.incrementLastValue = 0;
+}
+
+Counter.prototype.getMetric = function() {
+	var me=this;
+
+	var argsCopy = {};
+	for (key in me.args) {
+		argsCopy[key] = me.args[key]
+	}
+	return argsCopy;
 }
 
 Counter.prototype.flushCounter = function() {
 	var me=this;
-	if (me.args.N > 0) {
+	//if (me.args.N > 0) {
+
 		me.args.t = new Date();
-		measurements.addBulkTimeslotsByDate([me.args],"counter");
-	}
-	me.resetCounter();
+		try {
+			var argsCopy = {};
+			for (key in me.args) {
+				argsCopy[key] = me.args[key]
+			}
+
+			measurements.addBulkTimeslotsByDate(1024,[argsCopy],"counter", function() {});
+
+			me.resetCounter();
+		} catch (ex) {
+			console.log("Cannot flush counter: " + ex.stack);
+			// counter cannot be written, error is ignored not to spam
+		}
+	//}
+	
 }
 
 Counter.prototype.stop = function() {
@@ -81,6 +125,7 @@ Counter.prototype.addSample = function(newValue) {
 	me.args.M = (me.args.M > newValue ? me.args.M : newValue);
 	me.args.A = ((me.args.N * me.args.A) + (newValue)) / (me.args.N + 1);
 	me.args.N += 1;
+	me.args.S += newValue;
 	me.args.V += (newValue - oldAverage) * (newValue - me.args.A);
 	// STDev S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))
 }
@@ -95,6 +140,7 @@ Counter.prototype.increment = function(count) {
 	me.args.m = me.incrementLastValue;
 	me.args.M = me.incrementLastValue;
 	me.args.A = me.incrementLastValue;
+	me.args.S = me.incrementLastValue;
 	me.args.N += 1;
 	me.args.V = 0;
 }

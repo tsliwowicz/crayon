@@ -1,4 +1,5 @@
 var amqp = require('amqp');
+var fs = require('fs');
 var logger = require("./logger.js");
 var configLib = require("./configuration.js");
 var countersLib = require("./counter.js");
@@ -6,8 +7,11 @@ var measurements = require("./measurements.js");
 var contextLib = require("./callContext.js");
 var crayonId = countersLib.getCrayonId();
 
+var saveLastErrorFileForDebug = true;
 var connection = null;
 var queueResult = null;
+var rabbitMQMessagesCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "rabbitMQ messages", "crayon");
+
 function connect() {
 	var config = configLib.getConfig();
 	if (!config.rabbitMQConnection) {
@@ -34,12 +38,49 @@ function connect() {
 					return;
 				}
 
+				rabbitMQMessagesCounter.increment();
+
 				var messageObj = null;
+				var messageString = "";
 				try {
-					messageObj = JSON.parse(message.data.toString("utf-8"));
+					messageString = message.data.toString("utf-8");
+					messageObj = JSON.parse(messageString);
 				}
 				catch (ex) {
-					logger.error("Invalid message received from RabbitMQ: " + ex.stack);
+					var firstItem = "[message is null]";
+					if (messageString) {
+						firstItem = "[no first item. Message len=" + messageString.trim().length + "]"
+						var endOfFirstItem = messageString.indexOf("}");
+						if (endOfFirstItem > 0 && endOfFirstItem < 3000) {
+							firstItem = messageString.substring(0,endOfFirstItem);
+
+							if (saveLastErrorFileForDebug) {
+								fs.writeFile("lastRabbitMQError.log", messageString, function(err) {
+								    if(err) {
+								        logger.error("Failed saving last RabbitMQ error: " + err);
+								    }
+								}); 
+
+								fs.writeFile("lastRabbitMQError_ex.log", ex.stack, function(err) {
+								    if(err) {
+								        logger.error("Failed saving last RabbitMQ exception: " + err);
+								    }
+								}); 
+
+								saveLastErrorFileForDebug = false;
+							}
+
+						} else {
+							if (messageString.trim() == "") {
+								firstItem += "[message is empty]";
+							} else {
+								var len = 300;
+								if (messageString.trim().length < 300) len = messageString.trim().length;
+								firstItem += "[first } loc is " + endOfFirstItem + ", first 300 chars: "  + messageString.trim().substring(0,len) + " ]"
+							}
+						}
+					}
+					logger.error("Invalid message received from RabbitMQ: " + ex.stack + "\nAttempting to get first item: " + firstItem);
 					return;
 				}
 
@@ -52,6 +93,7 @@ function connect() {
 						},
 						messageObj
 						);
+
 
 					measurements.addRaw(callContext);
 					//logger.info(messageObj);
@@ -93,4 +135,4 @@ function mockCallContext(requestUrl, onEnd, args) {
 
 module.exports.connect = connect;
 
-connect();
+//connect();

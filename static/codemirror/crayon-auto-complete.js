@@ -1547,9 +1547,19 @@ staticAutoComplete["aggregative"] = ' \
 
 staticAutoComplete["isDelta"] = ' \
 <div class="option"><a name="isDelta"></a><b>isDelta</b><br> \
-  <p>Indicates the graph or metric are gauges and only the delta should be rendered</p> \
+  <p>Indicates the graph or metric are gauges and only the delta should be rendered, usually should be paired with the "divideBySecondsSinceLastSample" attribute</p> \
   <i><span class="dyDescType">Type:</span> boolean</i><br> \
   <i><span class="dyDescType">Default:</span> true</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["divideBySecondsSinceLastSample"] = ' \
+<div class="option"><a name="divideBySecondsSinceLastSample"></a><b>divideBySecondsSinceLastSample</b><br> \
+  <p>An additional attribute for "isDelta" which indicates the values should be normalized to the time that passed between samples</p> \
+  <i><span class="dyDescType">Type:</span> boolean</i><br> \
+  <i><span class="dyDescType">Default:</span> false</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \

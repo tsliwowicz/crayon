@@ -8,7 +8,7 @@ var pm = null; // pluginManager
 module.exports.load = function(pluginManager) {
 	pm = pluginManager;
 	pm.registerDashboard("Munin Dashboard", __dirname + "/munin-dashboard.html");
-	pm.registerDashboard("Munin Mini Dashboard", __dirname + "/munin-dashboard.html?&mini=1");
+	//pm.registerDashboard("Munin Mini Dashboard", __dirname + "/munin-dashboard.html?&mini=1");
 	updateMuninConfig(pluginManager);
 }
 

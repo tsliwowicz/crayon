@@ -1,11 +1,13 @@
 // Global members
 var serverPort = 54321;
 var isJobManager = false;
+var uiOnly = false;
 
 for (argIndex in process.argv) {
 	var arg = process.argv[argIndex];
 	if (arg.indexOf("--port=") == 0) serverPort=Number(arg.substring("--port=".length));
 	if (arg.indexOf("--jobmanager") == 0) isJobManager = true;
+	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
 }
 console.log(process.argv);
 
@@ -106,10 +108,12 @@ mail.connect(function(err) {
 		httpServer.listen(serverPort);	
 		logger.info("Server started");
 
-		if (isJobManager) {
-			var jobManager = new JobManager(logger,mongo);
-		} else {
-			rabbitmq.connect();
+		if (!uiOnly) {
+			if (isJobManager) {
+				var jobManager = new JobManager(logger,mongo);
+			} else {
+				rabbitmq.connect();
+			}
 		}
 	});
 });

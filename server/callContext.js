@@ -77,15 +77,15 @@ CallContext.prototype.respondWithHeaders = function(code, headers, msg, msgType)
 
 		// Log the request time and publish it using counters
 		if (!me.isFileServing) {
-			logger.debug("API call to " + me.uri.colorBlue() + " took " + (requestMs + "ms").colorMagenta());
-			countersLib.getOrCreateCounter(10, "API call ms to " + me.uri, "crayon").addSample(requestMs);
+			//logger.debug("API call to " + me.uri.colorBlue() + " took " + (requestMs + "ms").colorMagenta());
+			countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "API call ms to " + me.uri, "crayon").addSample(requestMs);
 		} else {
 			logger.debug("Serving of file " + me.uri.colorBlue() + " took " + (requestMs + "ms").colorMagenta());
 		}
 
 		// Log errors
 		if (code >= 400) {
-			logger.error("Returning status " + code + " for error:\n" + msg.colorRed());
+			logger.error("Returning status " + code + " for error:\n" + JSON.stringify(msg).colorRed());
 		}
 
 		// If there was no messasge (e.g. 304)
