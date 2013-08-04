@@ -1,0 +1,1 @@
+this folder contains raw data and should be mapped to tmpfs (RAM)
