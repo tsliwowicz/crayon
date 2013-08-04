@@ -154,7 +154,7 @@ Right now there are no RPMs for Crayon.
 Since it's only javascript, there's also no need for compilation.  
 
 1. Get the prerequisits:  
-   a. `yum install nodejs npm mongo` - NodeJS MongoDB and its download manager  (mongo is not in use anymore)
+   a. `yum install nodejs npm` - NodeJS MongoDB and its download manager  (mongo is not in use anymore)
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install mongodb` - Native driver for NodeJS to communicate with MongoDB  
@@ -163,7 +163,7 @@ Since it's only javascript, there's also no need for compilation.
    g. `npm install amqp` - Allows getting metrics from rabbitmq
    g. `npm install mawk` - Used for file system aggregation (faster than gawk)
   
-2. Setting up mongo:  (Obsolete, soon to be deprecated)
+2. Setting up mongo:  (deprecated: you can skip this step~)
    a. `service mongod start` - Starts the MongoDB storage layer  
    b. `mongo` - A command which opens the mongo shell  
    c. `use crayon` - Switches to database "crayon" which is the name we'll use  
@@ -250,6 +250,10 @@ Change Log
 
 2013-08-04 - 
 * Complete re-write using filesystem for higher performance
+* Added time shifting properties
+* Added hour aggregation
+* Documented a lot of properties
+* Got rid of mongo
 
 2013-07-29 - 
 * Added a simple prediction algorithm
