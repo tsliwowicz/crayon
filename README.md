@@ -163,16 +163,7 @@ Since it's only javascript, there's also no need for compilation.
    g. `npm install amqp` - Allows getting metrics from rabbitmq
    g. `npm install mawk` - Used for file system aggregation (faster than gawk)
   
-2. Setting up mongo:  (deprecated: you can skip this step~)
-   a. `service mongod start` - Starts the MongoDB storage layer  
-   b. `mongo` - A command which opens the mongo shell  
-   c. `use crayon` - Switches to database "crayon" which is the name we'll use  
-   d. `db.addUser("mng","mng");` - Adds our default user to the database  
-   e. Do the following 3 lines with: `samples_sec`, `samples_min`, `samples_hour`, `samples_day`  
-   f. `db.samples_XXX.ensureIndex({t:1});` - Make selections by time fast  
-   g. `db.samples_XXX.ensureIndex({s:1, t:1});` - *optional* Make selections by server and time fast  
-   h. `db.samples_XXX.ensureIndex({n:1, t:1});` - *optional* Make selections by name and time fast  
-    
+2. (deprecated: you can skip this step, used to be mongo installation but we're not using mongo anymore)  
 3. Clone the git to your machine (either download or use the `git` command line).  
 4. Go to the crayon root directory (The one with the readme.md file)  
 5. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`
@@ -248,6 +239,10 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-05 - 
+* Adjusted hour aggregation
+* Added combined option to munin plugin
 
 2013-08-04 - 
 * Complete re-write using filesystem for higher performance
