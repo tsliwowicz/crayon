@@ -63,20 +63,22 @@ How much is large scale ?
 -------------------------
 
 Of course large scale definition differs from one to the next.  
-In crayon, your scale depends on your distribution of data, but it may reach millions of metrics per second.
+In crayon, your scale depends on your distribution of data, but it may reach millions of metrics per minute.
 
 Our setup includes:  
 * `NGINX` - An open source balancer layer before NodeJS running on port 60000
-* `Crayon Job Manager NodeJS` - Crayon service running on port 54320 and does aggregations
+* `Crayon Job Manager NodeJS` - Crayon service running on port 54320 and does aggregations (started with `--jobmanager`)
 * `Crayon NodeJS` - 5 Crayon services running on ports 54321-54325 receive metrics from NGINX
+* `Crayon NodeJS` - 1 Crayon service running on port 54333 for UI responsiveness (started with `--uiOnly`)
 
 (Refresh if the image doesn't load, it's a GitHub thing)  
 ![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Bemchmark.png)
 
-What's that code button on the graph widget ?
----------------------------------------------
+What's the graph definition language ?
+--------------------------------------
 
-That "code" button on the graph widgets open up the graph "code-behind" in Crayon's graph editor. Crayon's graph editor is a rich editor based on [CodeMirror][] with [JSBeautifier][] formatting and [JSHint][] validation. We've also designed a nice auto-complete that has icons and help for every option with well over a hundred options for graph design. To give you a taste of how simple it is, here is the graph definitions for the benchmark image above:
+Every graph in Crayon, as well as every graph, has a "code" button. Clicking on it shows the "code-behind" in Crayon's graph editor.
+Crayon's graph editor is a rich editor based on [CodeMirror][] with [JSBeautifier][] formatting and [JSHint][] validation. We've also designed a nice auto-complete that has icons and help for every option with well over a hundred options for graph design. To give you a taste of how simple it is, here is the graph definitions for the benchmark image above:
 
 ```javascript
 {
@@ -108,7 +110,7 @@ That "code" button on the graph widgets open up the graph "code-behind" in Crayo
 
 * Note how the `from` field understands free text
 * Note that there is no `to` field, this means we want everything until now
-* We can choose any aggregation `unit` from 's','m','h','d' (second, minute, hour, day)
+* We can choose any aggregation `unit` from 'r','m','h','d' (second, minute, hour, day)
 * `name` is a regex of Metric names.
 * `server` (wildcard) is also omitted. We will get results from all servers.
 * `component` (wildcard) is also omitted. We will get results from all components.
@@ -157,13 +159,13 @@ Right now there are no RPMs for Crayon.
 Since it's only javascript, there's also no need for compilation.  
 
 1. Get the prerequisits:  
-   a. `yum install nodejs npm` - NodeJS and its download manager  (mongo is not in use anymore)
+   a. `yum install nodejs npm` - NodeJS and its download manager  (mongo is not in use anymore)  
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install glob` - Helper file system library for munin plugin  
-   e. `npm install emailjs` - Allows sending mail notifications on alerts
-   f. `npm install amqp` - Allows getting metrics from rabbitmq
-   g. `npm install mawk` - Used for file system aggregation (faster than gawk)
+   e. `npm install emailjs` - Allows sending mail notifications on alerts  
+   f. `npm install amqp` - Allows getting metrics from rabbitmq  
+   g. `npm install mawk` - Used for file system aggregation (faster than gawk)  
   
 2. (deprecated: you can skip this step, used to be mongo installation but we're not using mongo anymore)  
 3. Clone the git to your machine (either download or use the `git` command line).  
