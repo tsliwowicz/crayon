@@ -57,7 +57,7 @@ A metric has the following fields:
 
 The 2 most important API's are:
 * `/addRaw` - For Feeding Crayon with metrics using `POST` (e.g. the simple metric above)
-* `/find` - For querying metrics using `GET` arguments (e.g. "query" for mongo query, "fields" for projection and alike)
+* `/find` - For querying metrics using `GET` arguments (e.g. the method is fed with a datasource json object)
 
 How much is large scale ?
 -------------------------
@@ -157,13 +157,12 @@ Right now there are no RPMs for Crayon.
 Since it's only javascript, there's also no need for compilation.  
 
 1. Get the prerequisits:  
-   a. `yum install nodejs npm` - NodeJS MongoDB and its download manager  (mongo is not in use anymore)
+   a. `yum install nodejs npm` - NodeJS and its download manager  (mongo is not in use anymore)
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
-   d. `npm install mongodb` - Native driver for NodeJS to communicate with MongoDB  
-   e. `npm install glob` - Helper file system library for munin plugin  
-   f. `npm install emailjs` - Allows sending mail notifications on alerts
-   g. `npm install amqp` - Allows getting metrics from rabbitmq
+   d. `npm install glob` - Helper file system library for munin plugin  
+   e. `npm install emailjs` - Allows sending mail notifications on alerts
+   f. `npm install amqp` - Allows getting metrics from rabbitmq
    g. `npm install mawk` - Used for file system aggregation (faster than gawk)
   
 2. (deprecated: you can skip this step, used to be mongo installation but we're not using mongo anymore)  
@@ -199,8 +198,7 @@ Are there any known issues ?
 Like anything and especially like anything new, the answer is a hardcoded `yes;`.  
 Here is a list of some of the things which are on my mind (I'll try to keep it updated):
 
-* Archiving data on Mongo DB takes too long, every hour everything freezes for a minute or two due to mongo DB write lock. This happens even though we're using zero writeconcern and issuing only 1 bulk remove operation.
-* Delta graphs (or 'derivative' graphs) are displayed incorrectly when shown after aggregation. The delta's get aggregated and if resets occur within the aggregation, the resulting numbers are completely useless. Up to a minute aggregation it looks fine.
+* Delta graphs (or 'derivative' graphs) are displayed incorrectly when shown after aggregation within the time they were reset. The delta's get aggregated and if resets occur within the aggregation, the resulting numbers are completely useless. Up to a minute or hour aggregation it looks fine.
 
 Stack and Licenses
 ------------------
