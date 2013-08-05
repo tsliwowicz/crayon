@@ -1,3 +1,4 @@
+/*
 var MongoClient = require('mongodb').MongoClient;
 var format = require('util').format;
 var ObjectID = require('mongodb').ObjectID;
@@ -392,17 +393,6 @@ module.exports.checkThreshold = function(threshold, sourceUnit, callback) {
 	
 	logger.info("Checking threshold " + JSON.stringify(threshold).colorBlue());
 
-/* example 
-[{
-    "metric": "trc_rate#trc_request",
-    "duration": "300",
-    "aggregation": "$avg",
-    "condition": {
-        "$lte": "5"
-    },
-    "enabled": true
-}]
-*/
 
 	var scol = collectionByUnit[sourceUnit].col;
 	var dateString = dates.getSecondBulk(new Date().addSeconds(-(threshold.duration||300)));
@@ -445,3 +435,4 @@ module.exports.assertRowsExists = assertRowsExists;
 module.exports.connect = connect;
 module.exports.find = find;
 module.exports.upsertWithCollisionHandling = upsertWithCollisionHandling;
+*/

@@ -1,4 +1,4 @@
-// This file translates a date to a mongo database string representation of that date
+// This file translates a date to a database string representation of that date
 module.exports.getSecondBulk = function(t) {
 	return t.toISOString().replace("T", " ").substring(0,19);
 }

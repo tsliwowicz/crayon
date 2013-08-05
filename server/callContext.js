@@ -40,7 +40,6 @@ CallContext.prototype.minifyArgNames = function(args) {
 	var me = this;
 
 	// Legend for each row (each row properties)
-	// The properties are minified to preserve space (on mongo's performance tips list)
 	// The rational behind the letters is 
 	// Numbers get Large letters (one exception is m=min because M=max and it's appropriate)
 	// m = min

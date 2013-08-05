@@ -1,7 +1,6 @@
 var configLib = require("./configuration.js");
 var dates = require("./dates.js");
 var prototypes = require("./prototypes.js");
-var ObjectID = require('mongodb').ObjectID;
 var countersLib = require("./counter.js");
 var mail = require("./crayonMail.js");
 var exec = require('child_process').exec;
@@ -9,11 +8,10 @@ var fs = require('fs');
 var staticDir = __dirname + '/../static'
 var minutesDelayLagAssuranceForAggregation = 1;
 
-function JobManager(logger, mongo) {
+function JobManager(logger) {
 	var me=this;
 	
 	me.logger = logger;
-	me.mongo = mongo;
 	me.hourTimer = setInterval(function() { me.hourElapsed(new Date()); }, 1000*60*60);
 	me.minuteTimer = setInterval(function() { me.minuteElapsed(new Date()); }, 1000*60);
 	me.halfMinuteTimer = setInterval(function() { me.halfMinuteElapsed(new Date()); }, 1000*30);

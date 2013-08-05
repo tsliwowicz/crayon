@@ -1,12 +1,11 @@
 var glob = require("glob")
 
-function PluginManager(logger, contextLib, mongo) {
+function PluginManager(logger, contextLib) {
 	var me=this;
 	
 	me.plugins = {};
 	me.logger = logger;
 	me.contextLib = contextLib;
-	me.mongo = mongo;
 	me.registeredDashboards = [];
 	me.registeredDashboardsLastModified = new Date();
 }

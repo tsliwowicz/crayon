@@ -2,7 +2,6 @@ var sys = require("sys");
 var my_http = require("http");  
 var path = require("path");
 var fs = require("fs");
-var mongo = require('./mongo-util.js');
 var logger = require("./logger.js");
 require("./prototypes.js");
 var countersLib = require("./counter.js");
@@ -11,15 +10,11 @@ var contextLib = require("./callContext.js");
 var measurements = require("./measurements.js");
 
 contextLib.setLogger(logger);
-mongo.setLogger(logger);
 configLib.setLogger(logger);
-mongo.setDB("crayon_tests");
 measurements.setLogger(logger);
 measurements.setContextLib(contextLib);
-measurements.setMongo(mongo);
 configLib.setConfigValue("decimalPointRounding", null);
 
-var mongoDelayMS = 500;
 var failures = 0;
 var tests = {};
 var testsToRun = [];

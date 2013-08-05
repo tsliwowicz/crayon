@@ -1,6 +1,5 @@
 var dates = require("./dates.js");
 var prototypes = require("./prototypes.js");
-var ObjectID = require('mongodb').ObjectID;
 var countersLib = require("./counter.js");
 var fs = require('fs');
 var exec = require('child_process').exec;
@@ -9,10 +8,8 @@ var cityhash = require("cityhash");
 // Set the global services for this module
 var logger;
 var contextLib;
-var mongo;
 module.exports.setLogger = function(l) { logger = l; };
 module.exports.setContextLib = function(l) { contextLib = l; };
-module.exports.setMongo = function(l) { mongo = l; };
 
 // Converts the time field in the arguments to a valid date object
 var validateTimeField = function(args, callContext) {
@@ -130,7 +127,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 	}
 }
 
-// Exposes the mongo db records to the client 
+// Exposes the docs to the client 
 module.exports.find = function(callContext) {
 	var args = callContext.args;
 
@@ -214,7 +211,7 @@ module.exports.find = function(callContext) {
 
 		if (--remainingDatasources > 0) return;
 
-		// Stop measuring the mongo query time
+		// Stop measuring the query time
 		var endTotalMs = new Date().getTime();
 
 		logger.info("Combined query plan ended within " + ((endTotalMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + combinedOutput.length);
@@ -283,11 +280,6 @@ function validateSamples(callContext) {
 // We're doing it sequencial on the table order because we don't want to duplicate the rows in memory
 function addBulkTimeslotsByDate(dataSize, argsArr, caller, callback) {
 
-	// Should do only if day is inserted to reduce times
-	//for (var i=0; i <argsArr.length; ++i) {
-	//	mongo.addName(argsArr[i].n);
-	//}
-
 	addTimeslotBulk(dataSize, new Date().getTime(), dates.getSecondBulk, 's', argsArr, function() {
 		if (callback != null) callback();
 	});
@@ -313,8 +305,6 @@ function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callb
 
 	var onSaveCompleted = function() {
 		var afterMs = new Date().getTime();
-		var colName = mongo.getUnitCollectionName(unit);
-		countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Upsert ms to " + colName, "crayon").addSample(afterMs-beforeMs);
 
 		// Start log message
 		var endLogMessage = "Dump of " + (argsArr.length.toString()).colorMagenta() + " metrics";
