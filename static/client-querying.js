@@ -133,14 +133,21 @@ Query.prototype.queryData = function() {
 					}
 					if (parts.length < 2) continue;
 
+					var doc = {};
+					doc.n = parts[1];
+					if (currentDS.replaceName && currentDS.replaceName.join && currentDS.replaceName.length == 2) {
+						doc.n = doc.n.replace(new RegExp(currentDS.replaceName[0]), currentDS.replaceName[1]);
+					}
+
 					if (parts.length == 8) {
-						var doc = {};
+						
 
 						if (currentDS.unit == "h") {
 							var oneOrZero = Math.round(new Date(parts[0]).getUTCMinutes() / 60);
 							doc.t = new Date(parts[0].substring(0,13) + ":00:00Z").addHours(oneOrZero);
 						} else {
-							doc.t = new Date(parts[0].substring(0,15) + "0:00Z");
+							//var oneOrZero = Math.round((new Date(parts[0]).getUTCMinutes() % 10) / 10);
+							doc.t = new Date(parts[0].substring(0,15) + "0:00Z").addMinutes(0 * 10);
 						}
 
 						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
@@ -151,7 +158,7 @@ Query.prototype.queryData = function() {
 						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
 							me.lastDateInResponse = doc.t;
 						}
-						doc.n = parts[1];
+					
 
 						if (parts[2] != "-") doc.s = parts[2];
 						if (parts[3] != "-") doc.c = parts[3];
@@ -174,7 +181,7 @@ Query.prototype.queryData = function() {
 							docs.push(doc);
 						}
 					} else {
-						var doc = {};
+					
 						doc.t = new Date(parts[0] + "Z");
 
 						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
@@ -186,19 +193,27 @@ Query.prototype.queryData = function() {
 						if (currentDS.shiftMinutes) doc.t=doc.t.addHours(currentDS.addMinutes);
 						if (currentDS.shiftDays) doc.t=doc.t.addHours(currentDS.addDays);
 
-						doc.n = parts[1];
+						
 
 						doc.A = doc.M = doc.m = doc.S = Number(parts[2]);
 						if (parts[3] != "-") doc.s = parts[3];
 						if (parts[4] != "-") doc.c = parts[4];
 						docs.push(doc);
 					}
-
 				} catch (ex) {
+					debugger;
 					console.error("Failed parsing row: " + ex.stack);
+					break;
 				}
 			}
 
+/*
+			if (currentDS.sort == "descending" || currentDS.sort == "desc") { 
+				docs.sort(function (d1,d2) { return d1.S - d2.S });
+			} else if (currentDS.sort == "ascending" || currentDS.sort == "asc") { 
+				docs.sort(function (d1,d2) { return d2.S - d1.S });
+			} 
+*/
 			me.ms = new Date().getTime() - me.beforeQueryMs;
 			console.log("Queried " + rows.length + " data points within " + me.ms + "ms");
 

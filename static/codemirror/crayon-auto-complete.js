@@ -56,6 +56,28 @@ staticAutoComplete["component"] = ' \
   <br> </div> \
 ';
 
+staticAutoComplete["bufferMB"] = ' \
+<div class="option"><a name="bufferMB"></a><b>bufferMB</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>The amount of MB to allocate on the server side for the result of the query</p> \
+  <i><span class="dyDescType">Type:</span> integer</i><br> \
+  <i><span class="dyDescType">Default:</span> 3</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["replaceName"] = ' \
+<div class="option"><a name="replaceName"></a><b>replaceName</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>Two arguments for performing regex string.replace on each metric name (including capture groups)</p> \
+  <i><span class="dyDescType">Type:</span> array of two strings e.g. ["my (.*) metric clicks","$1 clicks"]</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
 staticAutoComplete["name"] = ' \
 <div class="option"><a name="names"></a><b>names</b><br> \
   <a parentName="dataSource"></a>\
@@ -1488,7 +1510,7 @@ staticAutoComplete["rightGap"] = ' \
  
 staticAutoComplete["width"] = ' \
 <div class="option"><a name="width"></a><b>width</b><br> \
-  <p>Width, in pixels, of the chart. If the container div has been explicitly sized, this will be ignored.</p> \
+  <p>Width, in pixels, of the chart. You can use the value "wholeLine" to indicate the div will expand and stick to the window size.</p> \
   <i><span class="dyDescType">Type:</span> integer</i><br> \
   <i><span class="dyDescType">Default:</span> 480</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <a href="gallery/#g/annotations-gviz">annotations-gviz</a> <a href="gallery/#g/annotations">annotations</a> <a href="gallery/#g/border">border</a> <a href="gallery/#g/callbacks">callbacks</a> <a href="gallery/#g/color-cycle">color-cycle</a> <a href="gallery/#g/color-visibility">color-visibility</a> <a href="gallery/#g/demo">demo</a> <a href="gallery/#g/drawing">drawing</a> <a href="gallery/#g/dynamic-update">dynamic-update</a> <a href="gallery/#g/edge-padding">edge-padding</a> <a href="gallery/#g/highlighted-region">highlighted-region</a> <a href="gallery/#g/highlighted-series">highlighted-series</a> <a href="gallery/#g/highlighted-weekends">highlighted-weekends</a> <a href="gallery/#g/independent-series">independent-series</a> <a href="gallery/#g/interaction">interaction</a> <a href="gallery/#g/linear-regression">linear-regression</a> <a href="gallery/#g/link-interaction">link-interaction</a> <a href="gallery/#g/negative">negative</a> <a href="gallery/#g/no-range">no-range</a> <a href="gallery/#g/plotter">plotter</a> <a href="gallery/#g/range-selector">range-selector</a> <a href="gallery/#g/stock">stock</a> <a href="gallery/#g/styled-chart-labels">styled-chart-labels</a> <a href="gallery/#g/synchronize">synchronize</a> <a href="gallery/#g/temperature-sf-ny">temperature-sf-ny</a> <a href="gallery/#g/two-axes">two-axes</a><br> \
@@ -1626,6 +1648,16 @@ staticAutoComplete["gapInMinutes"] = ' \
   <br> </div> \
 ';
 
+staticAutoComplete["gapInSeconds"] = ' \
+<div class="option"><a name="gapInSeconds"></a><b>gapInSeconds</b><br> \
+  <p>The amount of time in seconds which is considered a gap of data. For a gap of data, the graph will not connect points.</p> \
+  <i><span class="dyDescType">Type:</span> integer</i><br> \
+  <i><span class="dyDescType">Default:</span> 3</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
 staticAutoComplete["dateWindowRatio"] = ' \
 <div class="option"><a name="dateWindowRatio"></a><b>dateWindowRatio</b><br> \
   <p>The percentage of graph data which will be zoomed in upon when rendering. This is useful when combined with "showRangeSelector". Overriden by the "wholeWindow" property.</p> \
@@ -1696,11 +1728,11 @@ staticAutoComplete["valueMultiplier"] = ' \
   <br> </div> \
 ';
 
-staticAutoComplete["yLabelSuffix"] = ' \
-<div class="option"><a name="yLabelSuffix"></a><b>yLabelSuffix</b><br> \
-  <p>Additional string describing the Y axis</p> \
-  <i><span class="dyDescType">Type:</span> string</i><br> \
-  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+staticAutoComplete["sort"] = ' \
+<div class="option"><a name="sort"></a><b>sort</b><br> \
+  <p>Whether the series labels should be sorted by their sum value (relevant for stacked Graphs)</p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc"</i><br> \
+  <i><span class="dyDescType">Default:</span> null (by name)</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \

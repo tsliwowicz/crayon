@@ -46,6 +46,8 @@ var plotGraph = function(allGraphData, graph) {
 			seriesLines.push(series);
 		}*/
 		
+		var graphDataChanged = false;
+
 		var totalMatches = 0;
 		var totalMismatches = 0;
 		if (graph.calculatedDataSources && graph.calculatedDataSources.length > 0) {
@@ -107,6 +109,7 @@ var plotGraph = function(allGraphData, graph) {
 							aggregatedPoint.s = null;
 							aggregatedPoint.isAggregated = true;
 							allGraphData.push(aggregatedPoint);
+							graphDataChanged = true;
 							byTime[dataPoint.t] = aggregatedPoint;
 						} else {
 							aggregatedPoint.A = func(aggregatedPoint.A, dataPoint.A, aggregatedPoint.N);
@@ -120,31 +123,19 @@ var plotGraph = function(allGraphData, graph) {
 					} else {
 						totalMismatches++;
 					}
-					/*var seriesLines = seriesLinesByName[series.n];
-					if (!seriesLines) {
-						seriesLinesByName[series.n] = seriesLines = [];
-					}
-					seriesLines.push(series);*/
 				}
-				
-				/*
-				for (lineName in seriesLinesByName) {
-					if (lineName.match(seriesName)) {
-						var lines = seriesLinesByName[lineName];
-						if (lines != null && lines.length > 0) {
-							graphData = graphData.concat(lines);
-						}
-					}
-				}
-				*/
 			}
 		}
 
 		var graphData = []
-		for (i in allGraphData) {
-			if (!allGraphData[i].remove) {
-				graphData.push(allGraphData[i]);
-			}
+		if (graphDataChanged) {
+			for (i in allGraphData) {
+				if (!allGraphData[i].remove) {
+					graphData.push(allGraphData[i]);
+				}
+			} 
+		} else {
+			graphData = allGraphData;
 		}
 
 		if (cacheByDiv[graph.div.id]) {

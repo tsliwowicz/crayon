@@ -48,6 +48,13 @@ JobManager.prototype.halfMinuteElapsed = function(now) {
 		var mCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Archive ms", "crayon")
 		me.archive(msBefore, mTime, mFolder, mCounter);
 
+		var hoursToKeepHoursData = 336;
+		if (config.hoursToRetainSamples && config.hoursToRetainSamples.hours) hoursToKeepMinutesData = config.hoursToRetainSamples.hours;
+		var hTime = new Date().addMinutes(-60 * hoursToKeepMinutesData).toISOString().substring(0,13);
+		var hFolder = "hours";
+		var hCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Archive ms", "crayon")
+		me.archive(msBefore, hTime, hFolder, hCounter);
+
 	} catch (ex) {
 		me.logger.error("Exception removing minute dir: " + ex.stack);
 	}

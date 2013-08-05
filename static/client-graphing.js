@@ -282,7 +282,6 @@ var highlightCallback_ShowSeriesNameOnce = function(event, x, points, row, serie
 var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 	var divCache = {};
 	cacheByDiv[graphDiv.id] = divCache;
-	graphData.sort(function (g1,g2) { return (g1.t < g2.t ? -1 : 1) });
 
 	divCache.graphOptions = {
 			title: null,
@@ -326,6 +325,19 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 	if (divCache.graphOptions.gapInMinutes)
 		divCache.graphOptions.gapInSeconds = divCache.graphOptions.gapInMinutes * 60;
 
+	/*
+	var isSorted = false;
+	if (divCache.graphOptions.sort == "desc") {
+		graphData.sort(function (g1,g2) { var t1=g1.t.getTime(); var t2=g2.t.getTime(); if (t1 == t2) return (g1.S < g2.S ? 1 : -1); else return (t1 < t2 ? -1 : 1) });
+		isSorted = true;
+	} else if (divCache.graphOptions.sort == "asc") {
+		graphData.sort(function (g1,g2) { var t1=g1.t.getTime(); var t2=g2.t.getTime();  if (t1 == t2) return (g1.S < g2.S ? -1 : 1); else return (t1 < t2 ? -1 : 1) });
+		isSorted = true;
+	} else {
+		graphData.sort(function (g1,g2) { var t1=g1.t.getTime(); var t2=g2.t.getTime(); return (t1 < t2 ? -1 : 1) });
+	}*/
+
+	graphData.sort(function (g1,g2) { var t1=g1.t.getTime(); var t2=g2.t.getTime(); return (t1 < t2 ? -1 : 1) });
 
 	var newHighCapVal = 0;
 	var newLowCapVal = 0;
@@ -360,12 +372,24 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			divCache.seriesFound[fullCounterName] = seriesObj = {};
 			seriesObj.label = "<SPAN class='legendItem'>" + fullCounterName +"</SPAN>";
 			seriesObj.fullCounterName = fullCounterName;
+			seriesObj.S = 0;
+			seriesObj.N = 0;
 			divCache.seriesArr.push(seriesObj);
 		}
+		seriesObj.S += counter.S;
+		seriesObj.N += 1;
 	}
 
 	// Labels should always be displayed in same order
-	divCache.seriesArr.sort(function(s1,s2) { return (s1.label < s2.label ? -1 : 1); });
+	if (divCache.graphOptions.sort == "desc") {
+		divCache.seriesArr.sort(function(s1,s2) { return (s1.S > s2.S ? -1 : 1); });
+	} else if (divCache.graphOptions.sort == "asc") {
+		divCache.seriesArr.sort(function(s1,s2) { return (s1.S < s2.S ? -1 : 1); });
+	} else {
+		divCache.seriesArr.sort(function(s1,s2) { return (s1.label < s2.label ? -1 : 1); });
+		// Default sort is by name
+	}
+
 	for (seriesNum in divCache.seriesArr) {
 		var seriesObj = divCache.seriesArr[seriesNum];
 		labelArr.push(seriesObj.label);
