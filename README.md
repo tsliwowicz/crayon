@@ -179,6 +179,8 @@ Since it's only javascript, there's also no need for compilation.
    Note: You can run as many instances as youd like (on different ports of course)
          One of these instances should be started with "--jobmanager" to indicate
 		 it is responsible for periodic tasks such as archiving and aggregation.
+		 it is also recommended to use a UI dedicated instance with "--uiOnly" since 
+		 node is single threaded and we want the UI to be as responsive as possible
 ```		 
 
 How do I migrate from Munin ?
@@ -205,8 +207,6 @@ Here is a list of some of the things which are on my mind (I'll try to keep it u
 Stack and Licenses
 ------------------
 
-* Mongo DB (GNU AGPL v3.0) - 
-*Used for the storage layer/engine*
 * NodeJS (Apache) - 
 *Used for the server itself*
 * dyGraph (BSD) - 
