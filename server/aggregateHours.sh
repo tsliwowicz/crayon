@@ -5,10 +5,10 @@ BEGIN  {
 {
 	# Calculate time key
 	if (fullTime != $1) {
-		hour=substr($1,12,2);
-		hour=hour - (hour%3);
-		if (hour < 10) hour="0"hour;
-		timeKey=substr($1,0,11) hour;
+		#hour=substr($1,12,2);
+		#hour=hour - (hour%3);
+		#if (hour < 10) hour="0"hour;
+		timeKey=substr($1,0,13); #hour;
 		fullTime=$1
 	}
 

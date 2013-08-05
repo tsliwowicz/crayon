@@ -137,7 +137,8 @@ Query.prototype.queryData = function() {
 						var doc = {};
 
 						if (currentDS.unit == "h") {
-							doc.t = new Date(parts[0].substring(0,13) + ":00:00Z");
+							var oneOrZero = Math.round(new Date(parts[0]).getUTCMinutes() / 60);
+							doc.t = new Date(parts[0].substring(0,13) + ":00:00Z").addHours(oneOrZero);
 						} else {
 							doc.t = new Date(parts[0].substring(0,15) + "0:00Z");
 						}

@@ -318,14 +318,14 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			unhighlightCallback: unhighlightCallback_ShowSeriesName
 		};
 
-	if (divCache.graphOptions.gapInMinutes)
-		divCache.graphOptions.gapInSeconds = divCache.graphOptions.gapInMinutes * 60;
-
-
 	// Override default options
 	for (option in userOptions) {
 		divCache.graphOptions[option] = userOptions[option];
 	}
+
+	if (divCache.graphOptions.gapInMinutes)
+		divCache.graphOptions.gapInSeconds = divCache.graphOptions.gapInMinutes * 60;
+
 
 	var newHighCapVal = 0;
 	var newLowCapVal = 0;

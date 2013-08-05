@@ -86,10 +86,10 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			}
 		} else if (ds.unit == 'h') {
 			plan += "cd hours;echo '" + ds.originalIndex + "';";
-			dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
+			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
 				inputFilesString += " " + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
-				dateCursor = dateCursor.addHours(3);
+				dateCursor = dateCursor.addHours(1);
 			}
 		} else {
 			callContext.respondJson(200, {error: "Invalid unit: " + ds.unit });

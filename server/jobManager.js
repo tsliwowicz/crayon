@@ -107,12 +107,8 @@ JobManager.prototype.minuteElapsed = function(now) {
 			me.logger.error("Exception aggregating minutes: " + ex.stack);
 		}
 	}
-}
 
-JobManager.prototype.hourElapsed = function(now) {
-	var me=this;
-
-	if (now.getUTCHours() % 3 == 0) {
+	if (now.getUTCMinutes() == 5) {
 		try {
 			var msBefore = new Date().getTime();
 			me.logger.info("Started aggregating hours");
@@ -120,8 +116,8 @@ JobManager.prototype.hourElapsed = function(now) {
 			// Aggregate previous 10 minutes
 			
 			var inputForAggregation = "";
-			for (i = -18; i < 0; ++i) {
-				var timeAgo = now.addMinutes(i*10);
+			for (i = -6; i < 0; ++i) {
+				var timeAgo = now.addMinutes(-5).addMinutes(i*10);
 				inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
 			}
 
@@ -143,6 +139,12 @@ JobManager.prototype.hourElapsed = function(now) {
 			me.logger.error("Exception aggregating hours: " + ex.stack);
 		}
 	}
+}
+
+JobManager.prototype.hourElapsed = function(now) {
+	var me=this;
+
+	
 }
 
 
