@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-04).  
+(readme.md update in progress, last update on 2013-08-05).  
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -13,6 +13,9 @@ Screenshots:
 * [Dashboard Designer][] - Where we do our magic and build our mighty informative graphs  
 * [Munin Plugin][] - Where we view our good old munin dashboard but in a new and cool way  
 
+Also, be sure to visit the [Mailing List] if you have any question.
+
+[Mailing List]: https://groups.google.com/forum/#!forum/crayon-mailing-list
 [Taboola]: http://www.taboola.com
 [NodeJS]: http://nodejs.org
 [MongoDB]: https://github.com/mongodb/mongo
