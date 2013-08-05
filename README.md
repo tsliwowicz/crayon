@@ -58,7 +58,6 @@ A metric has the following fields:
 The 2 most important API's are:
 * `/addRaw` - For Feeding Crayon with metrics using `POST` (e.g. the simple metric above)
 * `/find` - For querying metrics using `GET` arguments (e.g. "query" for mongo query, "fields" for projection and alike)
-* `/matchSeriesName` - For query (e.g. "http://prod-us-ny3/matchSeriesName?regex=cpu" )
 
 How much is large scale ?
 -------------------------
@@ -71,6 +70,7 @@ Our setup includes:
 * `Crayon Job Manager NodeJS` - Crayon service running on port 54320 and does aggregations
 * `Crayon NodeJS` - 5 Crayon services running on ports 54321-54325 receive metrics from NGINX
 
+(Refresh if the image doesn't load, it's a GitHub thing)  
 ![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Bemchmark.png)
 
 What's that code button on the graph widget ?
