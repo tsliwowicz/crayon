@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-05).  
+(readme.md update in progress, last update on 2013-08-06).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -243,9 +243,14 @@ Stack and Licenses
 Change Log
 ----------
 
+2013-08-05 -  
+* Fixed support for firefox & changed layouts to be non tabular  
+* Added more keywords  
+
 2013-08-05 - 
 * Adjusted hour aggregation
 * Added combined option to munin plugin
+* Added more keywords  
 
 2013-08-04 - 
 * Complete re-write using filesystem for higher performance
@@ -253,6 +258,7 @@ Change Log
 * Added hour aggregation
 * Documented a lot of properties
 * Got rid of mongo
+* Added more keywords  
 
 2013-07-29 - 
 * Added a simple prediction algorithm
@@ -260,13 +266,14 @@ Change Log
 2013-07-28 - 
 * Added integration with RabbitMQ
 * Fixed problems with deltas
+* Added more keywords  
 
 2013-07-27 - 
 * Added the graph context menu and get image operation
 * Added monitoring
 
 2013-07-26 - 
-* Added the entire JSON programmable dahboard UI
+* Added the entire JSON programmable dashboard UI
 * Added theming
 
 2013-07-25 - 

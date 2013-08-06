@@ -269,7 +269,15 @@ var highlightCallback_ShowSeriesNameOnce = function(event, x, points, row, serie
 	name += seriesName.replace(/<[^>]+>/g,'').replace(":","<br>");
 
 	highlightLegendDiv = highlightLegendDiv || document.getElementById("highlightSeriesLabelDiv");
-	highlightLegendDiv.innerHTML = name + "<br>Value: " + point.yval;
+
+	/*cacheByDiv[
+	var yNum = point.yval;
+	if (divCache.graphOptions.decimalRounding != null) {
+		var num = Math.pow(10,divCache.graphOptions.decimalRounding);
+		yNum = Math.round(yNum * num) / num;
+	}*/
+
+	highlightLegendDiv.innerHTML = name + "<br>Value: " + yNum;
 	//$(highlightLegendDiv).position(event.y, event.x);
 	highlightLegendDiv.style.left = event.x || event.clientX;
 	highlightLegendDiv.style.top = (event.y  || event.clientY) + 10;
@@ -354,6 +362,13 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 		if (field == "time") return new Date(y).toLocaleString();
 		if (!y) return y;
 		var yNum = Number(y);
+
+		
+		if (divCache.graphOptions.decimalRounding != null) {
+			var num = Math.pow(10,divCache.graphOptions.decimalRounding);
+			yNum = Math.round(yNum * num) / num;
+		}
+
 		if (isNaN(yNum)) return y;
 		if (yNum > 1000000000) return (Math.round(yNum/10000000)/100) + "G";
 		if (yNum > 1000000) return (Math.round(yNum/10000)/100) + "M";
@@ -528,7 +543,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		var isDelta = lineStyle.isDelta || divCache.graphOptions.isDelta;
 		var valueMultiplier = lineStyle.valueMultiplier || divCache.graphOptions.valueMultiplier;
 		var divideBySecondsSinceLastSample = lineStyle.divideBySecondsSinceLastSample || divCache.graphOptions.divideBySecondsSinceLastSample;
-		
+		var decimalRounding = lineStyle.decimalRounding || divCache.graphOptions.decimalRounding;
 		if (counter.forcedValue != null) { valObj[0] = counter.forcedValue; }
 		else {
 			if (aggregative == 'ave') { valObj[0] = counter.A; valObj[1] = counter.V; }
@@ -571,6 +586,11 @@ var populateTimeSlotArr = function(divCache, graphData) {
 				}
 
 				divCache.lastTimeslot[seriesObj.index] = timeSlot;
+			}
+
+			if (decimalRounding != null) {
+				var num = Math.pow(10,decimalRounding);
+				valObj[0] = Math.round(valObj[0] * num) / num;
 			}
 
 			if (valueMultiplier && !isNaN(valObj[0])) {
