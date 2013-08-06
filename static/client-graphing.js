@@ -270,8 +270,9 @@ var highlightCallback_ShowSeriesNameOnce = function(event, x, points, row, serie
 
 	highlightLegendDiv = highlightLegendDiv || document.getElementById("highlightSeriesLabelDiv");
 
-	/*cacheByDiv[
 	var yNum = point.yval;
+	/*cacheByDiv[
+	
 	if (divCache.graphOptions.decimalRounding != null) {
 		var num = Math.pow(10,divCache.graphOptions.decimalRounding);
 		yNum = Math.round(yNum * num) / num;
@@ -279,8 +280,8 @@ var highlightCallback_ShowSeriesNameOnce = function(event, x, points, row, serie
 
 	highlightLegendDiv.innerHTML = name + "<br>Value: " + yNum;
 	//$(highlightLegendDiv).position(event.y, event.x);
-	highlightLegendDiv.style.left = event.x || event.clientX;
-	highlightLegendDiv.style.top = (event.y  || event.clientY) + 10;
+	highlightLegendDiv.style.left = (event.x || event.clientX)+ "px";
+	highlightLegendDiv.style.top = ((event.y  || event.clientY) + 10) + "px";
 	highlightSeriesLabelDiv.style.zIndex = 20
 	highlightLegendDiv.style.display = "block";
 

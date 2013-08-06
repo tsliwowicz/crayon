@@ -19,6 +19,10 @@
         "component": "crayon*",
         "server": "-"
     },
+    "dataSources": [{
+        "name": "AddRaw_message_bytes",
+        "id": "messageSizes"
+    }],
     "graphs": [{
         "dataSources": [{
             "name": "API_call_ms_to_/addRaw"
@@ -40,7 +44,44 @@
             "insteadOfMatches": true
         }],
         "graphOpts": {
+            "aggregative": "sum",
             "title": "Inserts Per Second (live)"
+        }
+    }, {
+        "dataSources": ["messageSizes"],
+        "calculatedDataSources": [{
+            "match": {
+                "name": ".*"
+            },
+            "name": "Incoming Bytes",
+            "function": "sum",
+            "insteadOfMatches": true
+        }],
+        "graphOpts": {
+            "aggregative": "sum",
+            "title": "Bytes Per Second (live)"
+        }
+    }, {
+        "dataSources": ["messageSizes"],
+        "graphOpts": {
+            "aggregative": "ave",
+            "stackedGraph": false,
+            "title": "Average message size (live)"
+        }
+    }, {
+        "dataSources": ["messageSizes"],
+        "calculatedDataSources": [{
+            "match": {
+                "name": ".*"
+            },
+            "name": "messageSizesSum",
+            "function": "sum",
+            "insteadOfMatches": true
+        }],
+        "graphOpts": {
+            "aggregative": "count",
+            "stackedGraph": false,
+            "title": "Incoming Messages (live)"
         }
     }, {
         "dataSources": [{

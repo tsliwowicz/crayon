@@ -247,6 +247,7 @@ Change Log
 * Fixed support for firefox & changed layouts to be non tabular  
 * Added more keywords  
 * Added language reference main tab
+* Added DOCTYPE to all htmls and fixed layout problems
 
 2013-08-05 - 
 * Adjusted hour aggregation

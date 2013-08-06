@@ -7,7 +7,6 @@
 .CodeMirror {
   /* Set height, width, borders, and global font properties here */
   font-family: "courier new", monospace;
-  height: 300px;
 }
 .CodeMirror-scroll {
   /* Set scrolling behaviour here */
@@ -108,7 +107,8 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
 .CodeMirror {
   line-height: 1;
   position: relative;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: hidden;
   background: white;
   color: black;
 }
@@ -457,7 +457,7 @@ html,body {
 }
 
 .minigraph {
-	margin: 5;
+	margin: 5px;
 	border-style: solid;
 	padding: 0;
 	border-color: #BCD;
@@ -539,8 +539,8 @@ h1 {
 }	
 
 .overlay {
-	margin-top: 60;
-	margin-left: 185;
+	margin-top: 60px;
+	margin-left: 185px;
 	background-color: rgba(0,0,0,0.8);
 	position: fixed;
 	top: 0; right: 0; bottom: 0; left: 0;
@@ -586,7 +586,7 @@ h1 {
 	width: 230px;
 	display: inline-block;
 	vertical-align: top;
-	margin-top: 40;
+	margin-top: 40px;
 	word-wrap: break-word;
 }
 
@@ -595,7 +595,7 @@ h1 {
 }
 
 .graphAndLegendDiv {
-	margin: 5;
+	margin: 5px;
 	border-style: solid;
 	padding: 0;
 	/* border-color: #BCD;*/
@@ -609,7 +609,7 @@ h1 {
 
 .graphOptionsBar {
 	border-bottom-color: #ddd;
-	border-bottom-width: 1;
+	border-bottom-width: 1px;
 	border-bottom-style: solid;
 	background-color: #f7f7f7; 
 	height: 25px;
@@ -851,7 +851,7 @@ h1 {
 	overflow: auto;
 	border-style: solid;
 	border-color: rgb(170, 170, 170);
-	border-width: 1;
+	border-width: 1px;
 }
 
 .listItemRow:nth-child(even) {
@@ -885,8 +885,8 @@ h1 {
 	background-color:white; 
 	text-align:left;
 	position: fixed; 
-	left:300; 
-	top:200;
+	left:300px; 
+	top:200px;
 	width:300px;
 	height:150px;
 	padding: 0px;
@@ -909,18 +909,18 @@ h1 {
 #crayonAlertUpperBar {
 	background-color:rgb(240, 240, 240);
 	height:20px;
-	padding: 8;
+	padding: 8px;
 	font-size: 15px;
 }
 #crayonAlertText {
 	height: 55px;
-	padding: 10;
+	padding: 10px;
 	overflow:hidden;
 }
 #crayonAlertBottomBar {
 	background-color:rgb(240, 240, 240);
 	height:20px;
-	padding: 10;
+	padding: 10px;
 }
 /* ALERT BOX END */
 
@@ -1000,8 +1000,8 @@ font-size: 10px;
 	font-size: 11px;
 	font: bold 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
 	z-index: 20;
-	width: 400;
-	height: 300;
+	width: 400px;
+	height: 300px;
 	/*
 	border-style: solid;
 	border-width: 1;
@@ -1037,7 +1037,7 @@ font-size: 10px;
 	margin-right: 6px;
 }
 #themeSelect {
-	width: 130;
+	width: 130px;
 	margin-left: 5px;
 }
 
@@ -1072,7 +1072,7 @@ font-size: 10px;
 }
 .graphMenuOptions>ul.list li {
 	border-bottom: solid 1px #ccc;
-	padding-left: 5;
+	padding-left: 5px;
 	font: normal 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
 }
 .graphMenuOptions>ul.list li:hover {
@@ -1108,7 +1108,7 @@ font-size: 10px;
 	background-color: white;
 	display: block;
 	z-index: 20;
-	padding: 5;
+	padding: 5px;
 }
 
 .keywordDiv {

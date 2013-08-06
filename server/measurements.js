@@ -242,6 +242,7 @@ var addAggregate = function(callContext) {
 	if (!validateSamples(callContext)) return;
 
 	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Added Metrics", "crayon").increment(callContext.args.length);
+	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "AddRaw message bytes", "crayon").addSample(callContext.body.length);
 	addBulkTimeslotsByDate(callContext.body.length, callContext.args);
 
 	callContext.respondText(200, "OK");

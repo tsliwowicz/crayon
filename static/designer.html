@@ -1,3 +1,5 @@
+<!doctype html>
+
 <html>
 <head>
 	<!-- CODE MIRROR START -->
@@ -25,9 +27,7 @@
 			<span class="crayonButton" onclick="saveDashboard()"  style="margin-left:10px">Save</span>
 		</div>
 	</div>
-	<div>
-		<textarea id="txtQuery"  class="textAreaWithLines" style="width:600; height:400px; resize:none; "></textarea>
-	</div>
+	<textarea id="txtQuery"></textarea>
 </div>
 
 <div id="graphAndLegendDiv" style="display: none">
@@ -282,11 +282,7 @@ CodeMirror.commands.autocomplete = function(cm) {
 		}
 	});
 }
-var editor = CodeMirror.fromTextArea(document.getElementById("txtQuery"), {
-	lineNumbers: true,
-	extraKeys: {"Ctrl-Space": "autocomplete"},
-	viewportMargin: Infinity
-});
+
 function getCompletions(token, context) {
 	return ["NoCompletions","NoneAtAll"];
 }
@@ -317,13 +313,6 @@ function updateHints() {
   if (info.top + info.clientHeight < after)
     editor.scrollTo(null, after - info.clientHeight + 3);
 }
-var waiting;
-  editor.on("change", function() {
-    clearTimeout(waiting);
-    waiting = setTimeout(updateHints, 500);
-  });
-
-setTimeout(updateHints, 100);
 
 function saveDashboardOverwrite(dashboard) {
 	console.log("Saving dashboard...");
@@ -481,7 +470,19 @@ var loadGraphFromArguments = function() {
 
 //createTextAreaWithLines('txtQuery');
 
+var editor = CodeMirror.fromTextArea(document.getElementById("txtQuery"), {
+	lineNumbers: true,
+	extraKeys: {"Ctrl-Space": "autocomplete"},
+	viewportMargin: Infinity
+});
 
+var waiting;
+  editor.on("change", function() {
+    clearTimeout(waiting);
+    waiting = setTimeout(updateHints, 500);
+  });
+
+setTimeout(updateHints, 100);
 	</script>
 </body>
 <script type="text/javascript" src="../../crayon-ui.js"></script>
@@ -492,7 +493,7 @@ if (theme != null) {
 }
 //if (queryArgs.server) pageHeader += " > " + queryArgs.server;
 setHeader(pageHeader);
-loadGraphFromArguments();
 
+loadGraphFromArguments();
 </script>
 </html>
