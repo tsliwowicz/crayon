@@ -246,6 +246,7 @@ Change Log
 2013-08-05 -  
 * Fixed support for firefox & changed layouts to be non tabular  
 * Added more keywords  
+* Added language reference main tab
 
 2013-08-05 - 
 * Adjusted hour aggregation

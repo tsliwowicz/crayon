@@ -244,3 +244,17 @@ ul.slidingVerticalMenu li a {
   background-color: #463636;
   color: rgb(211, 157, 157);
 }
+
+.keywordDiv {
+background-color: rgba(255, 255, 255, 0.04);
+border-color: rgb(58, 56, 52);
+border-style: solid;
+border-width: 1px;
+margin: 5px;
+color: rgb(202, 202, 202);
+}
+
+
+.keywordDiv a {
+color: rgb(7, 189, 102);
+}

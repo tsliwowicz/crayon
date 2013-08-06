@@ -58,7 +58,7 @@ body.append('<div id="ddblueblockmenu">' +
 				'<ul>' + 
 					'<li><a href="/designer.html">Dashboard Designer</a></li>' + 
 					'<li><a href="/config.html">Configuration</a></li>' + 
-					'<li><a href="/monitoring.html">Monitoring</a></li>' + 
+					'<li><a href="/reference.html">Language Reference</a></li>' + 
 				'</ul>' + 
 				'<div class="menutitle">Dasboards</div>' + 
 				'<ul id="dashboardsUL">' + 

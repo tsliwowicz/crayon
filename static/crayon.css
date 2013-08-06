@@ -993,16 +993,6 @@ overflow: auto;
 font-size: 10px;
 }
 
-#autoCompleteDesc .option b {
-	font-size: 13px;
-	font-weight: bold;
-	color: #277ECE;
-}
-
-.dyDescType {
-	font-weight: bold;
-	color: #196081;
-}
 
 #autoCompleteDesc {
 	background-color:rgb(255, 255, 211);
@@ -1120,6 +1110,38 @@ font-size: 10px;
 	z-index: 20;
 	padding: 5;
 }
+
+.keywordDiv {
+background-color: rgba(255, 255, 255, 0.04);
+border-color: rgb(58, 56, 52);
+border-style: solid;
+border-width: 1px;
+margin: 5px;
+padding:5px;
+}
+
+#referenceList {
+	margin: 10px;
+	margin-top: 75px;
+}
+
+#referenceList b {
+	font-size: 16px;
+	font-weight: bold;
+	color: #277ECE;
+}
+
+#autoCompleteDesc .option b {
+	font-size: 13px;
+	font-weight: bold;
+	color: #277ECE;
+}
+
+.dyDescType {
+	font-weight: bold;
+	color: #B38A09;
+}
+
 /*******************************************************************************************************/
 /*************************************** CRAYON MISC: END **********************************************/
 /*******************************************************************************************************/
