@@ -8,7 +8,8 @@
 </head>
 <body>
 <div id="pageBody" class="frameBody">
-<table id="pageTable" cellSpacing="5" cellpadding="0" style="margin: 20px;"></table>
+<div id="pageTable" style="margin: 20px;">
+</div>
 </div>
 <div id='invisibleDiv' style='display: none; position:fixed; z-index:-1; width:0px, height:0px'></div>
 <div id='highlightSeriesLabelDiv' style='display: none; position:fixed; z-index:-1; width:0px, height:0px'></div>
@@ -198,9 +199,10 @@ var loadDashboard = function() {
 
 	var pageTable = $('#pageTable');
 	var pageBody = $('#pageBody');
-	pageTable.append('<tr id="graphs_row"><td id="graphs_cell"></td></tr>');
-	var lastRow = $("#graphs_row");
-	var lastCell = $("#graphs_cell");
+	lastCell = pageTable;
+	//pageTable.append('<tr id="graphs_row"><td id="graphs_cell"></td></tr>');
+	//var lastRow = $("#graphs_row");
+	//var lastCell = $("#graphs_cell");
 
 	setHeader(dashboard.header || "Untitled (Add 'header' at the root of your dashboard JSON)");
 
@@ -481,12 +483,10 @@ if (queryArgs.url) {
 
 			var pageTable = $("#pageTable");
 			pageTable.append(
-				'<tr> \
-					<td class="codemirrorTopBar" style=""> \
+				'<div class="codemirrorTopBar" style=""> \
 						<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
 						<span class="crayonButton" onclick="deleteDashboard()"  style="margin-left:10px">Delete Dashboard</span> \
-					</td> \
-				</tr> ');
+				</div> ');
 
 			try {
 				loadDashboard();

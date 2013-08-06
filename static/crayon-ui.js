@@ -28,7 +28,6 @@ body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/Crayo
 	  '<span id="themeSelectBlock">Theme:<select onchange="selectTheme()" id="themeSelect">' +
 	  '<option>default</option>' +
 	  '<option>ambiance</option>' +
-	  '<option>ambiance-big</option>' +
 	  '</select></span></div>');
 
 head.append('<script type="text/javascript" src="/html2canvas.js"></script>');

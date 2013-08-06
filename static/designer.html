@@ -18,20 +18,17 @@
 </head>
 <body>
 <div id="pageBody" class="frameBody">
-<table id="pageTable" cellSpacing="0" cellpadding="0" style="width:100%;">
-	<tr>
-		<td class="codemirrorTopBar" style="">
+	<div id="pageTable" style="width:100%;">
+		<div class="codemirrorTopBar" style="">
 			<span class="crayonButton" onclick="updateUrl()"  style="margin-left:30px">Query</span>
 			<span class="crayonButton" onclick="addSeries()"  style="margin-left:10px">Add/Remove Series</span>
 			<span class="crayonButton" onclick="saveDashboard()"  style="margin-left:10px">Save</span>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<textarea id="txtQuery"  class="textAreaWithLines" style="width:600; height:400px; resize:none; "></textarea>
-		</td>
-	</tr>
-</table>
+		</div>
+	</div>
+	<div>
+		<textarea id="txtQuery"  class="textAreaWithLines" style="width:600; height:400px; resize:none; "></textarea>
+	</div>
+</div>
 
 <div id="graphAndLegendDiv" style="display: none">
 	<table cellSpacing="5" cellpadding="0" style="margin: 20px">
