@@ -271,8 +271,8 @@ var highlightCallback_ShowSeriesNameOnce = function(event, x, points, row, serie
 	highlightLegendDiv = highlightLegendDiv || document.getElementById("highlightSeriesLabelDiv");
 	highlightLegendDiv.innerHTML = name + "<br>Value: " + point.yval;
 	//$(highlightLegendDiv).position(event.y, event.x);
-	highlightLegendDiv.style.left = event.x;
-	highlightLegendDiv.style.top = event.y + 10;
+	highlightLegendDiv.style.left = event.x || event.clientX;
+	highlightLegendDiv.style.top = (event.y  || event.clientY) + 10;
 	highlightSeriesLabelDiv.style.zIndex = 20
 	highlightLegendDiv.style.display = "block";
 
