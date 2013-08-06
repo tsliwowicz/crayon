@@ -248,6 +248,7 @@ Change Log
 * Added more keywords  
 * Added language reference main tab
 * Added DOCTYPE to all htmls and fixed layout problems
+* Added compression support for rabbitMQ
 
 2013-08-05 - 
 * Adjusted hour aggregation

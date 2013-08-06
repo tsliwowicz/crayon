@@ -101,6 +101,14 @@
         }
     }, {
         "dataSources": [{
+            "name": "rabbitMQ_messages"
+        }],
+        "graphOpts": {
+            "stackedGraph": true,
+            "title": "Rabbit MQ messages /s"
+        }
+    }, {
+        "dataSources": [{
             "name": "Query_Plan_Execution_ms"
         }],
         "graphOpts": {
@@ -126,13 +134,6 @@
         }],
         "graphOpts": {
             "title": "Raw Aggregation ms"
-        }
-    }, {
-        "dataSources": [{
-            "name": "rabbitMQ_messages"
-        }],
-        "graphOpts": {
-            "title": "Rabbit MQ messages /s"
         }
     }]
 }
