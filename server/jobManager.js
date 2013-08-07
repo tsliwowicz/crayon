@@ -48,10 +48,17 @@ JobManager.prototype.halfMinuteElapsed = function(now) {
 
 		var hoursToKeepHoursData = 336;
 		if (config.hoursToRetainSamples && config.hoursToRetainSamples.hours) hoursToKeepMinutesData = config.hoursToRetainSamples.hours;
-		var hTime = new Date().addMinutes(-60 * hoursToKeepMinutesData).toISOString().substring(0,13);
+		var hTime = new Date().addMinutes(-60 * hoursToKeepHoursData).toISOString().substring(0,13);
 		var hFolder = "hours";
 		var hCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Archive ms", "crayon")
 		me.archive(msBefore, hTime, hFolder, hCounter);
+
+		var hoursToKeepDaysData = 365;
+		if (config.hoursToRetainSamples && config.hoursToRetainSamples.days) hoursToKeepMinutesData = config.hoursToRetainSamples.days;
+		var dTime = new Date().addMinutes(-60 * hoursToKeepDaysData).toISOString().substring(0,10);
+		var dFolder = "days";
+		var dCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Days Archive ms", "crayon")
+		me.archive(msBefore, dTime, dFolder, dCounter);
 
 	} catch (ex) {
 		me.logger.error("Exception removing minute dir: " + ex.stack);
@@ -142,6 +149,38 @@ JobManager.prototype.minuteElapsed = function(now) {
 			});
 		} catch (ex) {
 			me.logger.error("Exception aggregating hours: " + ex.stack);
+		}
+	}
+
+	if (now.getUTCMinutes() == 10 && now.getUTCHours == 0) {
+		try {
+			var msBefore = new Date().getTime();
+			me.logger.info("Started aggregating days");
+
+			// Aggregate previous 10 minutes
+			
+			var inputForAggregation = "";
+			for (i = -24; i < 0; ++i) {
+				var timeAgo = now.addMinutes(-10).addMinutes(i*60);
+				inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,13) + "/*/*";
+			}
+
+			exec("mawk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
+				if (error) {
+					me.logger.error("Failed aggregating days " + inputForAggregation + ": " + error);
+				} else if (err) {
+					me.logger.error("Error aggregating days " + inputForAggregation + ": " + error);
+				} else {
+					me.logger.debug(out);
+				}
+
+				var msAfter = new Date().getTime();
+				var duration = msAfter-msBefore;
+				me.logger.info("Finished aggregating days within " + (duration + "ms").colorMagenta());
+				countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Aggregation ms", "crayon").addSample(duration);
+			});
+		} catch (ex) {
+			me.logger.error("Exception aggregating days: " + ex.stack);
 		}
 	}
 }
