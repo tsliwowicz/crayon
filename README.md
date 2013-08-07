@@ -166,13 +166,12 @@ Since it's only javascript, there's also no need for compilation.
    e. `npm install emailjs` - Allows sending mail notifications on alerts  
    f. `npm install amqp` - Allows getting metrics from rabbitmq  
   
-2. (deprecated: you can skip this step, used to be mongo installation but we're not using mongo anymore)  
-3. Clone the git to your machine (either download or use the `git` command line).  
-4. Go to the crayon server directory (Under root which is the one with the readme.md file)  
-5. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`
-6. Go into the server directory and run the crayon service `node server.js --port=54320 --jobmanager`
-7. Run another crayon service just because it's easy `node server.js --port=54321`    
-8. Web interface should be available now on  `http://<serverName>:54321/`   
+2. `cd /var/lib` and then `git clone git://github.com/shai-d/crayon.git`  
+3. Go to the crayon server directory `cd crayon/server`  
+4. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`  
+5. Before running node, run `export NODE_PATH=/path/to/where/npm/put/the/node_modules/`  
+6. Run a crayon general purpose service `node server.js --port=54321`  
+7. Web interface should be available now on  `http://<serverName>:54321/`  
  
 ```javascript
    Note: You can run as many instances as youd like (on different ports of course)
