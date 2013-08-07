@@ -37,16 +37,6 @@ var plotGraph = function(allGraphData, graph) {
 	try {
 
 		var pageTable = $("#pageTable");
-		/*
-		var seriesLinesByName = {}
-		for (var seriesIndex in allGraphData) {
-			var series = allGraphData[seriesIndex];
-			var seriesLines = seriesLinesByName[series.n];
-			if (!seriesLines) {
-				seriesLinesByName[series.n] = seriesLines = [];
-			}
-			seriesLines.push(series);
-		}*/
 		
 		var graphDataChanged = false;
 
@@ -221,6 +211,33 @@ var codeGraph = function(el) {
 
   	win.focus();
 }
+
+
+var exportCSV = function(el) {
+	var divCache = cacheByDiv[el.id];
+	var sb = "time";
+	for (seriesIndex in divCache.seriesArr) {
+		sb += "," + divCache.seriesArr[seriesIndex].fullCounterName;
+	}
+	sb +="<br>"
+	
+	for (timeIndex in divCache.timeSlotArr) {
+		var timeSlot = divCache.timeSlotArr[timeIndex];
+		var row = [];
+
+		sb += timeSlot[0].toLocaleString();
+		for (var i = 1; i < timeSlot.length; ++i) {
+			sb += "," + timeSlot[i];
+		}
+		sb +="<br>"
+	}
+
+	//var query = "?dashboard=" + encodeURIComponent(JSON.stringify(graphCodeObj));
+  	var win=window.open();
+  	$(win.document.body).html(sb);
+  	win.focus();
+}
+
 var refreshGraph = function(gDiv) {
 	var graph = gDiv.graph;
 	graph.query.queryData();
