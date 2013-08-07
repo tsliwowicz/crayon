@@ -463,6 +463,8 @@ var loadGraphFromArguments = function() {
 	if (queryArgs.graph) {
 		objectForDashboard.graphs.pop();
 		objectForDashboard.graphs.push(JSON.parse(queryArgs.graph));
+	} else if (queryArgs.dashboard) {
+		objectForDashboard = JSON.parse(queryArgs.dashboard);
 	}
 
 	editor.setValue(js_beautify(JSON.stringify(objectForDashboard)));

@@ -166,26 +166,59 @@ var hideGraphOverlay = function(graphToQuery) {
 var hideGraph = function(gDiv) {
 	$(gDiv).css("display", "none")
 }
-var codeGraph = function(el) {
-	var graph = el.graph;
 
-	var graphCodeObj = {};
-	for (k in graph) {	
-		if (k == "div") continue;
-		if (k == "graphAndLegendDivString") continue;
-		if (k == "graphDivString") continue;
-		if (k == "graphOpts") continue;
-		if (k == "legendDiv") continue;
-		if (k == "legendDivString") continue;
-		if (k == "dyGraphTitle") continue;
-		if (k == "overlay") continue;
-		if (k == "overlayText") continue;
-		if (k == "query") continue;
-		graphCodeObj[k] = graph[k];
+
+function graphClicked(el) {
+	var graphCodeObj = getGraphCode(el.graph);
+	if (!graphCodeObj.graphs[0].graphOpts) graphCodeObj.graphs[0].graphOpts = {};
+	graphCodeObj.graphs[0].graphOpts.width = "wholeLine";
+	graphCodeObj.graphs[0].graphOpts.height = "600";
+
+	var query = "?dashboard=" + encodeURIComponent(JSON.stringify(graphCodeObj));
+  	var win=window.open(window.location.origin + "/by-json.html" + query, '_blank');
+
+  	win.focus();
+}
+
+var ignoredGraphKeys = {};
+ignoredGraphKeys["div"] = true;
+ignoredGraphKeys["graphAndLegendDivString"] = true;
+ignoredGraphKeys["graphDivString"] = true;
+ignoredGraphKeys["graphOpts"] = true;
+ignoredGraphKeys["legendDiv"] = true;
+ignoredGraphKeys["legendDivString"] = true;
+ignoredGraphKeys["dyGraphTitle"] = true;
+ignoredGraphKeys["overlay"] = true;
+ignoredGraphKeys["overlayText"] = true;
+ignoredGraphKeys["query"] = true;
+
+function getGraphCode(graph) {
+	var dashboardCopy = JSON.parse(originalDashboardStr);
+	dashboardCopy.graphs = dashboardCopy.graphs.splice(graph.index,1)
+	//for (var i = dashboardCopy.graphs.length - 1; i>=0; --i) {
+		
+	//}
+
+	var g = dashboardCopy.graphs[0];
+	if (dashboardCopy.dataSources) {
+		for (var i = dashboardCopy.dataSources.length - 1; i >=0; --i) {
+			var id = dashboardCopy.dataSources[i].id;
+
+			if (!id || !g.dataSources || g.dataSources.indexOf(id) == -1) {
+				dashboardCopy.dataSources.splice(i,1);
+			}
+		} 
 	}
 
-	var query = "?graph=" + encodeURIComponent(JSON.stringify(graphCodeObj));
+	return dashboardCopy;
+}
+
+var codeGraph = function(el) {
+	var graphCodeObj = getGraphCode(el.graph);
+
+	var query = "?dashboard=" + encodeURIComponent(JSON.stringify(graphCodeObj));
   	var win=window.open(window.location.origin + "/designer.html" + query, '_blank');
+
   	win.focus();
 }
 var refreshGraph = function(gDiv) {
@@ -255,7 +288,7 @@ var loadDashboard = function() {
 
 		// Graph Options Bar
 		graphHtmlToAdd += '<div class="graphOptionsBar" >';
-		graphHtmlToAdd += '<span style="margin-left:10px">' + title + '</span>';
+		graphHtmlToAdd += '<span class="graphTitleSpan" onclick="graphClicked('+graph.graphDivString+')">' + title + '</span>';
 		//graphHtmlToAdd += '<span class="crayonButton" onclick="hideGraph('+graph.graphAndLegendDivString+')" style="float:right;margin-right:10px">Hide</span>';
 		//graphHtmlToAdd += '<span class="crayonButton" onclick="codeGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Code</span>';
 		//graphHtmlToAdd += '<span class="crayonButton" onclick="refreshGraph('+graph.graphDivString+')" style="float:right;margin-right:5px">Refresh</span>';
@@ -463,6 +496,10 @@ function applyVariablesParse(str) {
 	// reparse
 	try {
 		obj = JSON.parse(str);
+		for (graphIndex in obj.graphs) {
+			obj.graphs[graphIndex].index = Number(graphIndex);
+		}
+
 	} catch (ex) {
 		console.error("Failed applying variables, they cause invalid JSON: " + ex);
 		return;
@@ -509,6 +546,12 @@ if (queryArgs.url) {
 	} catch (ex) {
 		console.error("Dasbhoard json is invalid: " + ex.stack);
 	}
+
+	var pageTable = $("#pageTable");
+	pageTable.append(
+	'<div class="codemirrorTopBar" style=""> \
+			<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
+	</div> ');
 
 	try {
 		loadDashboard();
