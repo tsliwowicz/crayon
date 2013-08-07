@@ -246,6 +246,7 @@ Change Log
 2013-08-07 -  
 * Added feature click on header opens a large graph
 * Added export to CSV menu option on all graphs
+* Added support for variables with url provider for content
 
 2013-08-06 -  
 * Fixed support for firefox & changed layouts to be non tabular  

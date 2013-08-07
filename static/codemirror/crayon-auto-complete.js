@@ -1747,7 +1747,7 @@ staticAutoComplete["dataSources"] = ' \
 staticAutoComplete["variables"] = ' \
 <div class="option"><a name="variables"></a><b>variables</b><br> \
   <a parentName="dataSource"></a>\
-  <p>A key value object with variables that should be used when running the dashboard (Variable value can be a JSON object as well). Variables are referenced with "$" before their name in the body of the document.</p> \
+  <p>A key value object with variables that should be used when running the dashboard (Variable value can be a JSON object as well). Variables are referenced with "$" before their name in the body of the document.<br>Variable value could also be a url in the format "url:/my_url/file_with_newline_seperated_regexes"</p> \
   <i><span class="dyDescType">Type:</span> object of the format { varName: varValue }</i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \

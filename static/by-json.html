@@ -85,7 +85,14 @@ var plotGraph = function(allGraphData, graph) {
 						if (k == "server") minifiedK = "s";
 						if (k == "component") minifiedK = "c";
 
-						isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(cds.match[k])
+						if (typeof cds.match[k] == "string") {
+							isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(cds.match[k])
+						} else if (typeof cds.match[k] == "object") {
+							for (matchIndex in cds.match[k]) {
+								isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(cds.match[k][matchIndex]);
+								if (isMatch) break;
+							}
+						}
 						if (isMatch) break;
 					}
 
@@ -220,7 +227,7 @@ var exportCSV = function(el) {
 		sb += "," + divCache.seriesArr[seriesIndex].fullCounterName;
 	}
 	sb +="<br>"
-	
+
 	for (timeIndex in divCache.timeSlotArr) {
 		var timeSlot = divCache.timeSlotArr[timeIndex];
 		var row = [];
@@ -490,9 +497,60 @@ function codeDashboard() {
 }
 
 var originalDashboardStr = null;
-function applyVariablesParse(str) {
+function applyVariablesParse(str, callback) {
 	originalDashboardStr = str;
 	var obj = JSON.parse(str);
+
+	// Apply variables
+	var remaining = 0;
+	var urlDownloadTasks = [];
+	for (variable in obj.variables) {
+		if (obj.variables[variable].indexOf("url:") == 0) {
+			remaining++;
+			urlDownloadTasks.push({
+				name: variable,
+				url: obj.variables[variable].substring(4)
+			});
+		}
+	}
+
+	for (var i=0;i<urlDownloadTasks.length;++i) {
+		function applyUrlVariableTask(task) {
+			$.ajax({
+				url: task.url,
+				cache: false,
+				success: function(result) {
+					try {
+						var arr = result.split('\n');
+						for (var a=arr.length-1; a>=0; --a) {
+							if (arr[a].trim() == "") {
+								arr.splice(a,1);
+							}
+						}
+
+						obj.variables[task.name] = arr;
+					} catch (ex) {
+						console.error("Dasbhoard json is invalid: " + ex.stack);
+					}
+
+					if (--remaining <= 0) {
+						applyVariablesParseAfterDownload(str, obj, callback)
+					}
+				}
+			});
+		}
+		applyUrlVariableTask(urlDownloadTasks[i]);
+	}
+
+
+
+	if (urlDownloadTasks.length == 0) {
+		applyVariablesParseAfterDownload(str, obj, callback)
+	}
+}
+
+
+function applyVariablesParseAfterDownload(str, obj, callback) {
 
 	// Apply variables
 	if (obj.variables) {
@@ -522,7 +580,7 @@ function applyVariablesParse(str) {
 		return;
 	}
 
-	return obj;
+	callback(obj);
 }
 
 if (queryArgs.url) {
@@ -531,49 +589,53 @@ if (queryArgs.url) {
 		cache: false,
 		success: function(result) {
 			try {
-				dashboard = applyVariablesParse(result);
+				applyVariablesParse(result, function(dashboardObj) {
+					var pageTable = $("#pageTable");
+					pageTable.append(
+						'<div class="codemirrorTopBar" style=""> \
+								<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
+								<span class="crayonButton" onclick="deleteDashboard()"  style="margin-left:10px">Delete Dashboard</span> \
+						</div> ');
+
+					try {
+						dashboard = dashboardObj;
+						loadDashboard();
+					} catch (ex) {
+						console.error("Failed loading dashboard:" + ex.stack);
+					}				
+				});
 			} catch (ex) {
 				console.error("Dasbhoard json is invalid: " + ex.stack);
 			}
-
-			var pageTable = $("#pageTable");
-			pageTable.append(
-				'<div class="codemirrorTopBar" style=""> \
-						<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
-						<span class="crayonButton" onclick="deleteDashboard()"  style="margin-left:10px">Delete Dashboard</span> \
-				</div> ');
-
-			try {
-				loadDashboard();
-			} catch (ex) {
-				console.error("Failed loading dashboard:" + ex.stack);
-			}				
 		}
 	});
 } else if (queryArgs.dashboard) {
 
 	try {
-		dashboard = applyVariablesParse(queryArgs.dashboard);
-		if (!dashboard.graphs) {
-			var newDashboard = {
-				graphs: [dashboard]
-			};
-		}
-		dashboard = newDashboard || dashboard;
+		applyVariablesParse(queryArgs.dashboard, function(dashboardObj) {
+			var newDashboard = null;
+			if (!dashboardObj.graphs) {
+				newDashboard = {
+					graphs: [dashboardObj]
+				};
+			}
+			dashboard = newDashboard || dashboardObj;
+
+			var pageTable = $("#pageTable");
+			pageTable.append(
+			'<div class="codemirrorTopBar" style=""> \
+					<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
+			</div> ');
+
+			try {
+				loadDashboard();
+			} catch (ex) {
+				console.error("Failed loading dashboard:" + ex.stack);
+			}
+		});
+
 	} catch (ex) {
 		console.error("Dasbhoard json is invalid: " + ex.stack);
-	}
-
-	var pageTable = $("#pageTable");
-	pageTable.append(
-	'<div class="codemirrorTopBar" style=""> \
-			<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
-	</div> ');
-
-	try {
-		loadDashboard();
-	} catch (ex) {
-		console.error("Failed loading dashboard:" + ex.stack);
 	}
 }
 
