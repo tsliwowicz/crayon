@@ -159,13 +159,12 @@ Right now there are no RPMs for Crayon.
 Since it's only javascript, there's also no need for compilation.  
 
 1. Get the prerequisits:  
-   a. `yum install nodejs npm` - NodeJS and its download manager  (mongo is not in use anymore)  
+   a. `yum install nodejs npm make mawk` - NodeJS and its download manager
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install glob` - Helper file system library for munin plugin  
    e. `npm install emailjs` - Allows sending mail notifications on alerts  
    f. `npm install amqp` - Allows getting metrics from rabbitmq  
-   g. `npm install mawk` - Used for file system aggregation (faster than gawk)  
   
 2. (deprecated: you can skip this step, used to be mongo installation but we're not using mongo anymore)  
 3. Clone the git to your machine (either download or use the `git` command line).  
