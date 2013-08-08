@@ -246,7 +246,7 @@ Change Log
 * Got rid of mawk (suspected memory issues) back to awk + asorti to sort files
 * Metric querying is now using binary search for aggregation instead of file scan
 * Allowing the use of multiple cores to scan SSD/RAM for query data
-* Updated system dashboard
+* Updated system dashboard, $crayon-server builtin variable added to represent server
 
 2013-08-07 -  
 * Added feature click on header opens a large graph

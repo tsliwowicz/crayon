@@ -57,13 +57,14 @@ body.append('<div id="ddblueblockmenu">' +
 				'<div class="menutitle">General</div>' + 
 				'<ul>' + 
 					'<li><a href="/designer.html">Dashboard Designer</a></li>' + 
-					'<li><a href="/config.html">Configuration</a></li>' + 
 					'<li><a href="/reference.html">Language Reference</a></li>' + 
 				'</ul>' + 
 				'<div class="menutitle">Dasboards</div>' + 
 				'<ul id="dashboardsUL">' + 
 				'</ul>' +
 			'</div>');
+
+//					'<li><a href="/config.html">Configuration</a></li>' + 
 
 var dashboardIDs = {};
 

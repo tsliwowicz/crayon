@@ -17,7 +17,7 @@
         "unit": "r",
         "from": "last 5 minutes",
         "component": "crayon*",
-        "server": "-"
+        "server": "$crayon-server"
     },
     "dataSources": [{
         "name": "AddRaw_message_bytes",

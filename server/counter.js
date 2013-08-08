@@ -3,6 +3,8 @@ var measurements = require("./measurements.js");
 var dates = require("./dates.js");
 var counterByKey = {};
 var crayonId = "";
+var hostname = null;
+var shortHostname = null;
 
 module.exports.systemCounterDefaultInterval = 1;
 
@@ -24,6 +26,11 @@ setInterval(function() {
 	}
 }, 1000)
 
+module.exports.setHostname = function(h) {
+	hostname = h;
+	shortHostname = h.split('.')[0];
+}
+
 module.exports.setCrayonId = function(c) { 
 	crayonId = c; 
 }
@@ -32,6 +39,13 @@ module.exports.getCrayonId = function(c) {
 	return crayonId; 
 }
 
+module.exports.getHostname = function(c) { 
+	return hostname; 
+}
+
+module.exports.getShortHostname = function(c) { 
+	return shortHostname; 
+}
 
 module.exports.stopAll = function() {
 	for (counter in counterByKey) {
@@ -46,6 +60,7 @@ module.exports.flushAll = function() {
 }
 
 module.exports.getOrCreateCounter = function(secondsInterval, name, component, server) {
+	if (!server) server = shortHostname;
 	var key = name + "_" + component + "_" + server;
 	var counter = counterByKey[key];
 	if (counter) return counter;

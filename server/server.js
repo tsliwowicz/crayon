@@ -2,6 +2,7 @@
 var serverPort = 54321;
 var isJobManager = false;
 var uiOnly = false;
+var hostname = require("os").hostname();
 
 for (argIndex in process.argv) {
 	var arg = process.argv[argIndex];
@@ -10,9 +11,11 @@ for (argIndex in process.argv) {
 	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
 }
 console.log(process.argv);
+console.log("Hostname: " + hostname);
 
 // Priority imports
 var countersLib = require("./counter.js");
+countersLib.setHostname(hostname)
 countersLib.setCrayonId(serverPort);
 
 // Imports

@@ -69,6 +69,9 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 		var inputFilesArr = [];
 		var mainFolder = "";
 
+		// Replacements
+		if (serverWildcard == "$crayon-server") serverWildcard = countersLib.getShortHostname();
+
 		var plan = "";
 		var planSuffix = "";
 		var timeField = "";
