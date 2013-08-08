@@ -69,21 +69,6 @@
             "title": "Average message size (live)"
         }
     }, {
-        "dataSources": ["messageSizes"],
-        "calculatedDataSources": [{
-            "match": {
-                "name": ".*"
-            },
-            "name": "messageSizesSum",
-            "function": "sum",
-            "insteadOfMatches": true
-        }],
-        "graphOpts": {
-            "aggregative": "count",
-            "stackedGraph": false,
-            "title": "Incoming Messages (live)"
-        }
-    }, {
         "dataSources": [{
             "component": "*",
             "server": "metric1",
@@ -130,10 +115,10 @@
         }
     }, {
         "dataSources": [{
-            "name": "Raw_Aggregation_ms"
+            "name": ".*_Aggregation_ms"
         }],
         "graphOpts": {
-            "title": "Raw Aggregation ms"
+            "title": "Aggregation ms"
         }
     }]
 }

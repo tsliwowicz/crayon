@@ -37,9 +37,18 @@ END {
 	for (key in S) {
 		split(key,keyParts," ");
 
-		#     time       name            server          component       
-		print t[key] " " keyParts[2] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key] > "minutes/" keyParts[1] "/"  keyParts[3] "/" keyParts[4] ".@" suffix
+		outFile = "minutes/" keyParts[1] "/"  keyParts[3] "/" keyParts[4] ".@" suffix;
+		outFiles[outFile] = 1;
+
+		#     name            time   	 server          component       
+		print keyParts[2] " " t[key] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key] > outFile
 
 		if (++linesFlushed % 100000 == 0) print "[progress] " (linesFlushed/1000) "K lines flushed"
+	}
+
+	for (key in outFiles) {
+		print "[progress] Sorting " key;
+		cmd = "sort " key " -o " key;
+		cmd | getline;
 	}
 }

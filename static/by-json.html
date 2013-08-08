@@ -220,6 +220,19 @@ var codeGraph = function(el) {
 }
 
 
+function codeDashboard() {
+	var win=window.open(window.location.origin + "/designer.html?url=" + queryArgs.url, '_blank');
+  	win.focus();
+}
+
+function codeDashboardInline() {
+	var dashboardCopy = JSON.parse(originalDashboardStr);
+	var query = "?dashboard=" + encodeURIComponent(JSON.stringify(dashboardCopy));
+  	var win=window.open(window.location.origin + "/designer.html" + query, '_blank');
+  	win.focus();
+}
+
+
 var exportCSV = function(el) {
 	var divCache = cacheByDiv[el.id];
 	var sb = "time";
@@ -491,11 +504,6 @@ function deleteDashboard() {
 		}});
 }
 
-function codeDashboard() {
-	var win=window.open(window.location.origin + "/designer.html?url=" + queryArgs.url, '_blank');
-  	win.focus();
-}
-
 var originalDashboardStr = null;
 function applyVariablesParse(str, callback) {
 	originalDashboardStr = str;
@@ -624,7 +632,7 @@ if (queryArgs.url) {
 			var pageTable = $("#pageTable");
 			pageTable.append(
 			'<div class="codemirrorTopBar" style=""> \
-					<span class="crayonButton" onclick="codeDashboard()"  style="margin-left:30px">Code</span> \
+					<span class="crayonButton" onclick="codeDashboardInline()"  style="margin-left:30px">Code</span> \
 			</div> ');
 
 			try {

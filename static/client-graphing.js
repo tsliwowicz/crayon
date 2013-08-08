@@ -334,6 +334,7 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 	if (divCache.graphOptions.gapInMinutes)
 		divCache.graphOptions.gapInSeconds = divCache.graphOptions.gapInMinutes * 60;
 
+	divCache.skipped = 0;
 	/*
 	var isSorted = false;
 	if (divCache.graphOptions.sort == "desc") {
@@ -448,6 +449,9 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 	} catch (ex) {
 		debugger;
 	}
+	if (divCache.skipped > 0) {
+		console.warn(divCache.skipped + " invalid data points were ignored");
+	}
 	divCache.dygraph = lastGraph;
 }
 
@@ -455,6 +459,7 @@ var updateDrawnGraph = function(graphDiv, graphData, enlargeWindow) {
 	var divCache = cacheByDiv[graphDiv.id];
 	if (!divCache) return;
 	graphData.sort(function (g1,g2) { return (g1.t < g2.t ? -1 : 1) });
+	divCache.skipped = 0;
 
 	var lenBefore = divCache.timeSlotArr.length;
 	divCache.appendOnly = true;
@@ -477,11 +482,15 @@ var updateDrawnGraph = function(graphDiv, graphData, enlargeWindow) {
 		debugger;
 	}
 
-try {
-	divCache.dygraph.updateOptions( { 'file': divCache.timeSlotArr } );
-} catch (ex) {
-	debugger;
-}
+	try {
+		divCache.dygraph.updateOptions( { 'file': divCache.timeSlotArr } );
+	} catch (ex) {
+		debugger;
+	}
+	
+	if (divCache.skipped > 0) {
+		console.warn(divCache.skipped + " invalid data points were ignored");
+	}
 }
 
 var populateTimeSlotArr = function(divCache, graphData) {
@@ -524,7 +533,13 @@ var populateTimeSlotArr = function(divCache, graphData) {
         //	[ new Date("2009/07/19"), 150, 220 ]
       	//]
       	var timeSlotTime = counter.t.toMongoDate();
-      	if (timeSlotTime == null) continue;
+
+      	if (timeSlotTime == null ||
+      		isNaN(timeSlotTime.getTime())) {
+      		if (!divCache.skipped) divCache.skipped = 1
+      		else divCache.skipped++;
+      		continue;
+      	}
 
 		var timeSlot = divCache.byTimeSeriesValues[timeSlotTime];
 		if (!timeSlot) {

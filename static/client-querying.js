@@ -133,21 +133,25 @@ Query.prototype.queryData = function() {
 					}
 					if (parts.length < 2) continue;
 
-					var doc = {};
-					doc.n = parts[1];
-					if (currentDS.replaceName && currentDS.replaceName.join && currentDS.replaceName.length == 2) {
-						doc.n = doc.n.replace(new RegExp(currentDS.replaceName[0]), currentDS.replaceName[1]);
-					}
-
 					if (parts.length == 8) {
+						var doc = {};
+						doc.n = parts[0];
+						if (currentDS.replaceName && currentDS.replaceName.join && currentDS.replaceName.length == 2) {
+							doc.n = doc.n.replace(new RegExp(currentDS.replaceName[0]), currentDS.replaceName[1]);
+						}
 						
 
 						if (currentDS.unit == "h") {
-							var oneOrZero = Math.round(new Date(parts[0]).getUTCMinutes() / 60);
-							doc.t = new Date(parts[0].substring(0,13) + ":00:00Z").addHours(oneOrZero);
+							var oneOrZero = Math.round(new Date(parts[1]).getUTCMinutes() / 60);
+							doc.t = new Date(parts[1].substring(0,13) + ":00:00Z").addHours(oneOrZero);
 						} else {
 							//var oneOrZero = Math.round((new Date(parts[0]).getUTCMinutes() % 10) / 10);
-							doc.t = new Date(parts[0].substring(0,15) + "0:00Z").addMinutes(0 * 10);
+							doc.t = new Date(parts[1].substring(0,15) + "0:00Z").addMinutes(0 * 10);
+						}
+
+						
+						if (isNaN(doc.t.getTime())) {
+							debugger;
 						}
 
 						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
@@ -182,6 +186,12 @@ Query.prototype.queryData = function() {
 						}
 					} else {
 					
+						var doc = {};
+						doc.n = parts[1];
+						if (currentDS.replaceName && currentDS.replaceName.join && currentDS.replaceName.length == 2) {
+							doc.n = doc.n.replace(new RegExp(currentDS.replaceName[0]), currentDS.replaceName[1]);
+						}
+
 						doc.t = new Date(parts[0] + "Z");
 
 						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {

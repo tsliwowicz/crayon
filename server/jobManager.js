@@ -120,7 +120,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 		}
 	}
 
-	if (now.getUTCMinutes() == 5) {
+	if (now.getUTCMinutes() == 15) {
 		try {
 			var msBefore = new Date().getTime();
 			me.logger.info("Started aggregating hours");
@@ -129,7 +129,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 			
 			var inputForAggregation = "";
 			for (i = -6; i < 0; ++i) {
-				var timeAgo = now.addMinutes(-5).addMinutes(i*10);
+				var timeAgo = now.addMinutes(-15).addMinutes(i*10);
 				inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
 			}
 

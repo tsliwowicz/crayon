@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-07).
+(readme.md update in progress, last update on 2013-08-08).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -240,6 +240,11 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-08 -  
+* MAJOR CHANGE: Replaced format of saved files (for aggregations only), conversion script is one liner
+* Metric querying is now using binary search for aggregation instead of file scan
+* Updated system dashboard
 
 2013-08-07 -  
 * Added feature click on header opens a large graph

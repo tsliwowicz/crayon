@@ -66,7 +66,9 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 
 		var plan = "";
 		var planSuffix = "";
+		var timeField = "";
 		if (ds.unit == 'r') {
+			timeField = "$1";
 			plan += "cd minutes_ram;echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				inputFilesString += " " + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard;
@@ -76,25 +78,47 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 				 planSuffix += " | mawk -f ../aggregateMinutesInline.sh"
 			}
 		} else if (ds.unit == 'm') {
+			timeField = "$2";
 			plan += "cd minutes;echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				inputFilesString += " " + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
 				dateCursor = dateCursor.addMinutes(10);
 			}
 		} else if (ds.unit == 'h') {
+			timeField = "$2";
 			plan += "cd hours;echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
 				inputFilesString += " " + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
 				dateCursor = dateCursor.addHours(1);
 			}
+		} else if (ds.unit == 'd') {
+			timeField = "$2";
+			plan += "cd days;echo '" + ds.originalIndex + "';";
+			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
+			while (dateCursor <= dateTo) {
+				inputFilesString += " " + dateCursor.toISOString().substring(0,10) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
+				dateCursor = dateCursor.addDays(1);
+			}			
 		} else {
 			callContext.respondJson(200, {error: "Invalid unit: " + ds.unit });
 			logger.error("Query plan failed: " + error.stack, "utf-8");
 			return;
 		}
 
-		plan += "egrep -s -h '[^ ]* " + ds.name + "' " + inputFilesString + " | mawk '{if ($1 > \"" + dateFromStr + "\" && $1 < \"" + dateToStr + "\") print;}'" + planSuffix
+		plan += "for f in $(echo " + inputFilesString + "); do ";
+		if (ds.unit == 'r') {
+			plan += "egrep -s -h '[^ ]* " + ds.name + "' $f"
+		} else {
+			var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
+			if (lookupPrefixEndIndex > 0) {
+				plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' $f 2>/dev/null | egrep -s -h '" + ds.name + "'"
+			} else {
+				plan += "egrep -s -h '" + ds.name + "' $f"
+			}
+		}
+		plan += "; done | mawk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
+
 		logger.info("Executing raw query plan: " + plan.colorBlue());
 		//var d = new Date().getTime(); exec("egrep '[^ ]* Inserts ' 4 5 6 | awk '{if ($1 > \"2013-07-31_10:04:50\") print;}'", function(error, out, err) {  console.log(new Date().getTime()-d); });
 

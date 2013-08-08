@@ -4,12 +4,9 @@ BEGIN  {
 
 {
 	# Calculate time key
-	if (fullTime != $1) {
-		#hour=substr($1,12,2);
-		#hour=hour - (hour%3);
-		#if (hour < 10) hour="0"hour;
-		timeKey=substr($1,0,13); #hour;
-		fullTime=$1
+	if (fullTime != $2) {
+		timeKey=substr($2,0,13); #hour;
+		fullTime=$2
 	}
 
 	# Create folder
@@ -21,7 +18,7 @@ BEGIN  {
 	}
 
 	# Aggregate
-	key=timeKey " " $2 " " $3 " " $4;
+	key=timeKey " " $1 " " $3 " " $4;
 	t[key] = fullTime;
 	S[key] += $5;
 	N[key] += $6;
@@ -40,9 +37,18 @@ END {
 	for (key in S) {
 		split(key,keyParts," ");
 
-		#     time       name            server          component       
-		print t[key] " " keyParts[2] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key] > "hours/" keyParts[1] "/"  keyParts[3] "/" keyParts[4] ".@" suffix
+		outFile = "hours/" keyParts[1] "/"  keyParts[3] "/" keyParts[4] ".@" suffix;
+		outFiles[outFile] = 1;
+
+		#     name       	  time       server          component       
+		print keyParts[2] " " t[key] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key] > outFile;
 
 		if (++linesFlushed % 100000 == 0) print "[progress] " (linesFlushed/1000) "K lines flushed"
+	}
+
+	for (key in outFiles) {
+		print "[progress] Sorting " key;
+		cmd = "sort " key " -o " key;
+		cmd | getline;
 	}
 }
