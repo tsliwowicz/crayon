@@ -101,7 +101,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 				inputForAggregation += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
 			}
 
-			exec("mawk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + inputForAggregation, function(error, out, err) {  
+			exec("awk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + inputForAggregation, function(error, out, err) {  
 				if (error) {
 					me.logger.error("Failed aggregating minutes " + inputForAggregation + ": " + error);
 				} else if (err) {
@@ -133,7 +133,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 				inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
 			}
 
-			exec("mawk -v suffix="+ now.getUTCHours() +" -f aggregateHours.sh " + inputForAggregation, function(error, out, err) {  
+			exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateHours.sh " + inputForAggregation, function(error, out, err) {  
 				if (error) {
 					me.logger.error("Failed aggregating hours " + inputForAggregation + ": " + error);
 				} else if (err) {
@@ -165,7 +165,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 				inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,13) + "/*/*";
 			}
 
-			exec("mawk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
+			exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
 				if (error) {
 					me.logger.error("Failed aggregating days " + inputForAggregation + ": " + error);
 				} else if (err) {

@@ -487,7 +487,7 @@ var updateDrawnGraph = function(graphDiv, graphData, enlargeWindow) {
 	} catch (ex) {
 		debugger;
 	}
-	
+
 	if (divCache.skipped > 0) {
 		console.warn(divCache.skipped + " invalid data points were ignored");
 	}
@@ -536,6 +536,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 
       	if (timeSlotTime == null ||
       		isNaN(timeSlotTime.getTime())) {
+      		//console.log(counter);
       		if (!divCache.skipped) divCache.skipped = 1
       		else divCache.skipped++;
       		continue;

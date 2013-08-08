@@ -34,21 +34,25 @@ BEGIN  {
 END { 
     linesFlushed = 0;
 
-	for (key in S) {
+	print "[progress] Sorting keys"
+    n = asorti(S, dest);
+    for (i = 1; i <= n; i++) {
+        key = dest[i];
 		split(key,keyParts," ");
 
 		outFile = "days/" keyParts[1] "/"  keyParts[3] "/" keyParts[4] ".@" suffix;
 		outFiles[outFile] = 1;
 
 		#     name            time       server          component       
-		print keyParts[2] " " t[key] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key] > outFile;
+		line=keyParts[2] " " t[key] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key];
+		print line > outFile;
 
 		if (++linesFlushed % 100000 == 0) print "[progress] " (linesFlushed/1000) "K lines flushed"
 	}
 
-	for (key in outFiles) {
-		print "[progress] Sorting " key;
-		cmd = "sort " key " -o " key;
-		cmd | getline;
-	}
+#	for (key in outFiles) {
+#		print "[progress] Sorting " key;
+#		cmd = "sort " key " -o " key;
+#		cmd | getline;
+#	}
 }

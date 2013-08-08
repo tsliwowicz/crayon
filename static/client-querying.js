@@ -119,7 +119,7 @@ Query.prototype.queryData = function() {
 
 			var docs = [];
 			var docsByKey = {};
-
+			var badDataPoints = 0;
 			var currentDS = null;
 			for (rowNum in rows) {
 				try {
@@ -151,7 +151,8 @@ Query.prototype.queryData = function() {
 
 						
 						if (isNaN(doc.t.getTime())) {
-							debugger;
+							badDataPoints++;
+							continue;
 						}
 
 						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
@@ -217,6 +218,9 @@ Query.prototype.queryData = function() {
 				}
 			}
 
+			if (badDataPoints > 0) {
+				console.warn("Ignored " + badDataPoints + " bad data points");
+			}
 /*
 			if (currentDS.sort == "descending" || currentDS.sort == "desc") { 
 				docs.sort(function (d1,d2) { return d1.S - d2.S });

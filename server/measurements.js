@@ -4,6 +4,7 @@ var countersLib = require("./counter.js");
 var fs = require('fs');
 var exec = require('child_process').exec;
 var cityhash = require("cityhash");
+var configLib = require("./configuration.js");
 
 // Set the global services for this module
 var logger;
@@ -50,6 +51,9 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 	try {
 		var now = new Date();
 
+		var config = configLib.getConfig();
+		var coresToUsePerQuery = config.coresToUsePerQuery || 1;
+
 		var dateFrom = now;
 		if (ds.from) dateFrom = ds.from.understandTime();
 		var dateTo = now;
@@ -62,42 +66,52 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 
 		var dateCursor = dateFrom;
 		var inputFilesString = "";
+		var inputFilesArr = [];
 		var mainFolder = "";
 
 		var plan = "";
 		var planSuffix = "";
 		var timeField = "";
+		var planSeed = Math.round(Math.random()*99999999);
 		if (ds.unit == 'r') {
 			timeField = "$1";
-			plan += "cd minutes_ram;echo '" + ds.originalIndex + "';";
+			plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
-				inputFilesString += " " + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard;
+				var inputFile = "minutes_ram/" + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard
+				inputFilesString += " " + inputFile;
+				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addMinutes(1);
 			}
 			if (ds.aggregateOnServer) {
-				 planSuffix += " | mawk -f ../aggregateMinutesInline.sh"
+				 planSuffix += " | awk -f ../aggregateMinutesInline.sh"
 			}
 		} else if (ds.unit == 'm') {
 			timeField = "$2";
-			plan += "cd minutes;echo '" + ds.originalIndex + "';";
+			plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
-				inputFilesString += " " + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
+				var inputFile = "minutes/" + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
+				inputFilesString += " " + inputFile;
+				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addMinutes(10);
 			}
 		} else if (ds.unit == 'h') {
 			timeField = "$2";
-			plan += "cd hours;echo '" + ds.originalIndex + "';";
+			plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
-				inputFilesString += " " + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
+				var inputFile = "hours/" + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
+				inputFilesString += " " + inputFile;
+				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addHours(1);
 			}
 		} else if (ds.unit == 'd') {
 			timeField = "$2";
-			plan += "cd days;echo '" + ds.originalIndex + "';";
+			plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
-				inputFilesString += " " + dateCursor.toISOString().substring(0,10) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
+				var inputFile = "days/" + dateCursor.toISOString().substring(0,10) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
+				inputFilesString += " " + inputFile;
+				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addDays(1);
 			}			
 		} else {
@@ -106,45 +120,71 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			return;
 		}
 
-		plan += "for f in $(echo " + inputFilesString + "); do ";
-		if (ds.unit == 'r') {
-			plan += "egrep -s -h '[^ ]* " + ds.name + "' $f"
-		} else {
-			var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
-			if (lookupPrefixEndIndex > 0) {
-				plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' $f 2>/dev/null | egrep -s -h '" + ds.name + "'"
-			} else {
-				plan += "egrep -s -h '" + ds.name + "' $f"
-			}
-		}
-		plan += "; done | mawk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
-
-		logger.info("Executing raw query plan: " + plan.colorBlue());
-		//var d = new Date().getTime(); exec("egrep '[^ ]* Inserts ' 4 5 6 | awk '{if ($1 > \"2013-07-31_10:04:50\") print;}'", function(error, out, err) {  console.log(new Date().getTime()-d); });
-
 		var execConfig = {
 		    maxBuffer: maxBufferMB * 1024 * 1024,
 		    env: {
 		    }
 		};
 
-		exec(plan, execConfig, function(error, out, err) {  
+		function executePlan(plan, config, callback) {
+			logger.info("Executing query plan: " + plan.colorBlue());
+			exec(plan, config, function(error, out, err) {  
 
-			// If we failed querying
-			if (error) {
-				callContext.respondJson(200, {error: "Failed querying: " + error.stack});
-				logger.error("Query plan failed: " + error.stack, "utf-8");
-				return;
+				// If we failed querying
+				if (error) {
+					//callContext.respondJson(200, {error: "Failed querying: " + error.stack});
+					logger.error("Query plan failed: " + error.stack, "utf-8");
+					return;
+				}
+
+				if (err) {
+					logger.error("Query plan error: " + err, "utf-8");
+				}
+
+				callback(ds, out);
+			});
+		}
+
+		var useMultipleCores = (coresToUsePerQuery > 1);
+		if (useMultipleCores) {
+			plan += "ls " + inputFilesString + " 2>/dev/null | xargs -n 1 -P " + coresToUsePerQuery + " -I {} ";
+			fileName = "{}"
+
+			if (ds.unit == 'r') {
+				plan += "egrep -s -h '[^ ]* " + ds.name + "' " + fileName + " "
+			} else {
+				var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
+				if (lookupPrefixEndIndex > 0) {
+					plan += "./synced_egrep.sh " + planSeed + " '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " '" + ds.name + "'"
+					//plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '" + ds.name + "'"
+				} else {
+					plan += "./synced_egrep.sh " + planSeed + " '-' " + fileName + " '" + ds.name + "'"
+					//plan += "egrep -s -h '" + ds.name + "' " + fileName + " "
+				}
 			}
 
-			if (err) {
-				//callContext.respondJson(200, {error: "Failed querying: " + err});
-				logger.error("Query plan error: " + err, "utf-8");
-				//return;
+			plan += " | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
+			plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck"
+		} else { 
+			plan += "for f in $(ls " + inputFilesString + " 2>/dev/null); do ";
+			fileName = "$f"
+
+			if (ds.unit == 'r') {
+				plan += "egrep -s -h '[^ ]* " + ds.name + "' " + fileName + " "
+			} else {
+				var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
+				if (lookupPrefixEndIndex > 0) {
+					plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '" + ds.name + "'"
+				} else {
+					plan += "egrep -s -h '" + ds.name + "' " + fileName + " "
+				}
 			}
 
-			onDatasourceQueryDone(ds, out);
-		});
+			plan += "; done | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
+		}
+
+		executePlan(plan, execConfig, onDatasourceQueryDone);
+
 	} catch (ex) {
 		callContext.respondJson(500, {error: "Failed querying raw data: " + ex.stack});
 		//logger.error("Failed querying raw data: " + ex);

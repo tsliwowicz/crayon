@@ -243,7 +243,9 @@ Change Log
 
 2013-08-08 -  
 * MAJOR CHANGE: Replaced format of saved files (for aggregations only), conversion script is one liner
+* Got rid of mawk (suspected memory issues) back to awk + asorti to sort files
 * Metric querying is now using binary search for aggregation instead of file scan
+* Allowing the use of multiple cores to scan SSD/RAM for query data
 * Updated system dashboard
 
 2013-08-07 -  
