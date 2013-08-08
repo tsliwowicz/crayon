@@ -35,9 +35,11 @@ What does it do ?
 * Crayon aggregates analytics in multiple ways (e.g. Max, Min, Sum, Average, Count of samples, etc.)
 * Crayon graphs are fully interactive with zooming and auto updating without any extra configuration (with image export supported)
 * Crayon can be fed with multiple metrics at once to improve performance or even already aggregated metrics if aggregate them yourself
-* Crayon performs programmable realtime monitoring with json alert definitions and mail notification using [emailjs][]
+* [disabled for now] Crayon performs programmable realtime monitoring with json alert definitions and mail notification using [emailjs][]
 * Crayon integrated with third parties for getting metrics (besides the HTTP interface), for example the queuing system [RabbitMQ][]
 * Crayon provides multiple themes for your convinience
+* Crayon queries are both multithreaded (use multiple cores) and indexed (binary search)
+* Crayon provides easy sharding with simply adding the shards to a list in the config file
 
 [emailjs]: https://github.com/eleith/emailjs
 [RabbitMQ]: https://github.com/postwait/node-amqp
@@ -63,7 +65,8 @@ How much is large scale ?
 -------------------------
 
 Of course large scale definition differs from one to the next.  
-In crayon, your scale depends on your distribution of data, but it may reach millions of metrics per minute.
+In crayon, your scale depends on your distribution of data, but it may reach many millions of metrics per minute.
+You can always add more shards of crayon and update crayon.conf with the new shards.
 
 Our setup includes:  
 * `NGINX` - An open source balancer layer before NodeJS running on port 60000
@@ -165,6 +168,7 @@ Since it's only javascript, there's also no need for compilation.
    d. `npm install glob` - Helper file system library for munin plugin  
    e. `npm install emailjs` - Allows sending mail notifications on alerts  
    f. `npm install amqp` - Allows getting metrics from rabbitmq  
+   g. `npm install request` - Allows getting metrics from shards  
   
 2. `cd /var/lib` and then `git clone git://github.com/shai-d/crayon.git`  
 3. Go to the crayon server directory `cd crayon/server`  
@@ -229,6 +233,8 @@ Stack and Licenses
 *Used for sending mail for alerts*
 * [npm] amqp (BSD)
 *Used for getting metrics from RabbitMQ*
+* [npm] request (Apache)
+*Used for getting metrics from Shards*
 * Nostradamus (MIT)
 *Used for predicting metric future values*
 * mawk (MIT)
@@ -247,6 +253,7 @@ Change Log
 * Metric querying is now using binary search for aggregation instead of file scan
 * Allowing the use of multiple cores to scan SSD/RAM for query data
 * Updated system dashboard, $crayon-server builtin variable added to represent server
+* Added simple sharding support (currently only in broadcast mode)
 
 2013-08-07 -  
 * Added feature click on header opens a large graph

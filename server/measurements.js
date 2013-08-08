@@ -5,6 +5,8 @@ var fs = require('fs');
 var exec = require('child_process').exec;
 var cityhash = require("cityhash");
 var configLib = require("./configuration.js");
+var request = require('request');
+var zlib = require('zlib');
 
 // Set the global services for this module
 var logger;
@@ -273,18 +275,40 @@ module.exports.find = function(callContext) {
 	var onDatasourceQueryDone = function(ds, out) {
 		combinedOutput += out;
 
+		remainingDatasources--;
 		var endQueryMs = new Date().getTime();
-		logger.info("Datasource (" + ds.index + ") query plan ended within " + ((endQueryMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + out.length);
+		if (typeof ds == "string") {
+			logger.info("Shard (" + ds + ") query ended within " + ((endQueryMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + out.length + ". " + remainingDatasources + " remaining.");
+		} else {
+			logger.info("Datasource (" + ds.index + ") query ended within " + ((endQueryMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + out.length + ". " + remainingDatasources + " remaining.");
+		}
 
-		if (--remainingDatasources > 0) return;
+		if (remainingDatasources > 0) return;
 
 		// Stop measuring the query time
 		var endTotalMs = new Date().getTime();
 
-		logger.info("Combined query plan ended within " + ((endTotalMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + combinedOutput.length);
+		logger.info("Query plan ended within " + ((endTotalMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + combinedOutput.length);
 		countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Query Plan Execution ms", "crayon").addSample(endTotalMs-startQueryMs);
 		callContext.respondText(200, combinedOutput);
 	}
+
+	
+	var config = configLib.getConfig();
+	var myHostname = countersLib.getHostname().toLowerCase().split(":")[0];
+
+	if (args.noShards != "1") {
+		for (shardId in config.shards) {
+			var remoteShard = config.shards[shardId];
+			var remoteShardShortName = remoteShard.toLowerCase().split(":")[0];
+			if (remoteShardShortName == myHostname) continue;
+
+			remainingDatasources++;
+			queryShard(args, remoteShard, onDatasourceQueryDone);
+			
+		}
+	}
+	
 
 	// Iterate over the datasources and 
 	for (dsIndex in dataSources) {
@@ -292,6 +316,47 @@ module.exports.find = function(callContext) {
 		dataSource.index = dsIndex;
 		queryDataSource(dataSource, callContext, onDatasourceQueryDone);
 	}
+}
+
+function queryShard(args, remoteShard, onDatasourceQueryDone) {
+	var dsString = encodeURIComponent(JSON.stringify(args.ds));
+	logger.debug("Querying shard: " + remoteShard.colorBlue());
+	
+	var reqObj = { 
+		url: 'http://' + remoteShard + '/find?noShards=1&ds=' + dsString, 
+		headers: {'accept-encoding': 'gzip'},
+		encoding: null
+	};
+
+	request.get(reqObj, function (err, resp, body) { 
+		if (err) {
+			logger.error("Error communicating with shard: " + err);
+			return;
+		}
+
+		if (resp.statusCode != 200) {
+			logger.error("Error communicating with shard: " + body);
+			return;
+		}
+
+		if (body[0] == 0x1f && body[1] == 0x8b) {
+			try {
+				zlib.gunzip(body, function(err, uncompressedMsgBuff) {
+			 		if (err) {
+			 			logger.error("Error gunzipping a shard's response: " + err);
+			 			return;
+			 		}
+			 		
+			 		onDatasourceQueryDone(remoteShard, uncompressedMsgBuff.toString('utf8'));
+			 	});
+			} catch (ex) {
+				logger.error("Exception gunzipping a shard's response: " + ex.stack);
+				return;
+			}
+		} else {
+			onDatasourceQueryDone(remoteShard, body.toString("utf8"));
+		}	
+	});
 }
 
 // Adding a raw sample is adding a sample which is not aggregated (basically only time & name & value)
