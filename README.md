@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-08).
+(readme.md update in progress, last update on 2013-08-09).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -162,7 +162,7 @@ Right now there are no RPMs for Crayon.
 Since it's only javascript, there's also no need for compilation.  
 
 1. Get the prerequisits:  
-   a. `yum install nodejs npm make mawk` - NodeJS and its download manager  
+   a. `yum install nodejs npm make` - NodeJS and its download manager  
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install glob` - Helper file system library for munin plugin  
@@ -237,8 +237,6 @@ Stack and Licenses
 *Used for getting metrics from Shards*
 * Nostradamus (MIT)
 *Used for predicting metric future values*
-* mawk (MIT)
-*Used for faster aggregation on the filesystem*
 * jQuery (MIT) - 
 *Used throughout the client side javascripts*
 
