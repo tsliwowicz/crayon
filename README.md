@@ -63,7 +63,7 @@ The 2 most important API's are:
 * `/find` - For querying metrics using `GET` arguments (e.g. the method is fed with a datasource json object)
   
 You can test the API from the comand line by doing:  
-```Shell
+```shell
 echo '[{"server":"'$(hostname -s)'","name":"my_metric","val": 123,"time":'$(date +%s)'}]' |   
   curl -X POST -d @- http://localhost:<crayon's port>/addRaw
 ```  
@@ -76,7 +76,7 @@ All you have to do is to start crayon with `--graphite-api-port=<port-number>` a
 You can also test it from the command line
 
 You can test the API from the comand line by doing:  
-```Shell
+```shell
 echo "$(hostname -s).myService.myMetric 123 $(date +%s) | nc localhost <crayon's port>"
 ```  
 
