@@ -3,10 +3,12 @@ var serverPort = 54321;
 var isJobManager = false;
 var uiOnly = false;
 var hostname = require("os").hostname();
+var portForGraphiteFormat = null;
 
 for (argIndex in process.argv) {
 	var arg = process.argv[argIndex];
 	if (arg.indexOf("--port=") == 0) serverPort=Number(arg.substring("--port=".length));
+	if (arg.indexOf("--graphite-api-port=") == 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
 	if (arg.indexOf("--jobmanager") == 0) isJobManager = true;
 	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
 }
@@ -28,6 +30,7 @@ var contextLib = require("./callContext.js");
 var measurements = require("./measurements.js");
 var dashboards = require("./dashboards.js");
 var thresholds = require("./thresholds.js");
+var graphiteUtil = require("./graphite-util.js");
 var configLib = require("./configuration.js");
 var pluginManager = new (require("./pluginManager.js").PluginManager)(logger,contextLib);
 var JobManager = require("./jobManager.js").JobManager;
@@ -111,4 +114,7 @@ mail.connect(function(err) {
 		}
 	}
 
+	if (portForGraphiteFormat) {
+		graphiteUtil.init(portForGraphiteFormat);
+	}
 });

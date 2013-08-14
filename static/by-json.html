@@ -40,9 +40,14 @@ var plotGraph = function(allGraphData, graph) {
 		
 		var graphDataChanged = false;
 
-		var totalMatches = 0;
-		var totalMismatches = 0;
 		if (graph.calculatedDataSources && graph.calculatedDataSources.length > 0) {
+			var minMs = 0;
+			if (allGraphData.length > 0) minMs = allGraphData[0].t.getTime();
+			for (var dataPointIndex in allGraphData) {
+				var ms = allGraphData[dataPointIndex].t.getTime();
+				if (ms < minMs) minMs = ms;
+			}
+
 			for (cdsIndex in graph.calculatedDataSources) {
 				var cds = graph.calculatedDataSources[cdsIndex];
 				
@@ -58,47 +63,106 @@ var plotGraph = function(allGraphData, graph) {
 					}
 				}
 
-				if (!cds.function) {
-					console.error("Missing function attribute on calculatedDataSource: " + JSON.stringify(cds));
+				var byTime = {};
+				var byTime2 = {};
+
+				if (!cds.match && cds.projection) {
+					var byTime = {};
+					graphDataChanged = true;
+					eval("function project(s,m,h,d,w,M) { return (" + cds.projection + "); }");
+
+					function addCalculatedPoint(ms, t) {
+						if (byTime[ms]) return;
+						byTime[ms] = true;
+						var s = (ms / 1000);
+						var m = (s / 60);
+						var h = (m / 60);
+						var d = (h / 24);
+						var w = (d / 7);
+						var M = (d / 31);
+
+						try {
+							var Y = project(s,m,h,d,w,M);
+							calculatedPoint = {};
+							calculatedPoint.t = t;
+							calculatedPoint.N = 1;
+							calculatedPoint.n = cds.name||cds.projection;
+							calculatedPoint.c = null;
+							calculatedPoint.s = null;
+							calculatedPoint.isCalculated = true;
+							calculatedPoint.S = Y;
+							calculatedPoint.M = Y;
+							calculatedPoint.A = Y;
+							calculatedPoint.m = Y;
+
+							allGraphData.push(calculatedPoint);
+						} catch (ex) {
+							console.error("Failed evaluating expression " + cds.projection + ": " + ex);
+							return false;
+						}
+
+						return true;
+					}
+
+					if (cds.from) {
+						var timeStart = cds.from.understandTime().getTime();
+						var timeEnd = new Date().getTime();
+						if (cds.to) timeEnd = cds.to.understandTime().getTime();
+
+						var step = (timeEnd - timeStart) / (cds.dataPointCount||100);
+
+						for (var ms = timeStart; ms <= timeEnd ; ms += step) {
+							if (!addCalculatedPoint(ms-timeStart, new Date(ms))) break
+						}
+					} else {
+						for (var dataPointIndex = allGraphData.length - 1; dataPointIndex >=0 ; --dataPointIndex) {
+							var t = allGraphData[dataPointIndex].t;
+							var ms = t.getTime() - minMs;
+							if (!addCalculatedPoint(ms,t)) break
+						}
+					}
 					continue;
 				}
+
+				cds.aggregationFunction = cds.aggregationFunction || "sum";
 
 				if (!cds.match) {
 					console.error("Missing match attribute on calculatedDataSource: " + JSON.stringify(cds));
 					continue;
 				}
 
-				var func = aggregativeFunctions[cds.function];
+				var func = aggregativeFunctions[cds.aggregationFunction];
 				if (func == null) {
-					console.error("Unknown function attribute on calculatedDataSource: " + JSON.stringify(cds));
+					console.error("Unknown aggregationFunction attribute on calculatedDataSource: " + JSON.stringify(cds));
 					continue;
 				}
 
-				var byTime = {};
-				for (var dataPointIndex in allGraphData) {
+				for (var dataPointIndex = allGraphData.length - 1; dataPointIndex >=0 ; --dataPointIndex) {
 					var dataPoint = allGraphData[dataPointIndex];
-					var matchObj = cds.match;
-					var isMatch = false;
-					for (k in cds.match) {
-						var minifiedK = k;
-						if (k == "name") minifiedK = "n";
-						if (k == "server") minifiedK = "s";
-						if (k == "component") minifiedK = "c";
 
-						if (typeof cds.match[k] == "string") {
-							isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(cds.match[k])
-						} else if (typeof cds.match[k] == "object") {
-							for (matchIndex in cds.match[k]) {
-								isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(cds.match[k][matchIndex]);
-								if (isMatch) break;
+					function getIsMatch(matchObj) {
+						for (k in matchObj) {
+							var minifiedK = k;
+							if (k == "name") minifiedK = "n";
+							if (k == "server") minifiedK = "s";
+							if (k == "component") minifiedK = "c";
+
+							if (typeof matchObj[k] == "string") {
+								isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(matchObj[k])
+							} else if (typeof matchObj[k] == "object") {
+								for (matchIndex in matchObj[k]) {
+									isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(matchObj[k][matchIndex]);
+									if (isMatch) return true;
+								}
 							}
+							if (isMatch) return true;
 						}
-						if (isMatch) break;
+
+						return false;
 					}
 
-					if (isMatch) {
-						totalMatches++;
-						var aggregatedPoint = byTime[dataPoint.t]
+					function aggregatePoint(timeHash, addToGraphData) {
+						var aggregatedPoint = timeHash[dataPoint.t]
 						if (!aggregatedPoint) {
 							aggregatedPoint = {};
 							for (k in dataPoint) aggregatedPoint[k] = dataPoint[k];
@@ -107,9 +171,11 @@ var plotGraph = function(allGraphData, graph) {
 							aggregatedPoint.c = null;
 							aggregatedPoint.s = null;
 							aggregatedPoint.isAggregated = true;
-							allGraphData.push(aggregatedPoint);
+							if (addToGraphData) {
+								allGraphData.push(aggregatedPoint);
+							}
 							graphDataChanged = true;
-							byTime[dataPoint.t] = aggregatedPoint;
+							timeHash[dataPoint.t] = aggregatedPoint;
 						} else {
 							aggregatedPoint.A = func(aggregatedPoint.A, dataPoint.A, aggregatedPoint.N);
 							aggregatedPoint.S = func(aggregatedPoint.S, dataPoint.S, aggregatedPoint.N);
@@ -119,10 +185,40 @@ var plotGraph = function(allGraphData, graph) {
 						}
 
 						if (cds.insteadOfMatches) dataPoint.remove = true;
-					} else {
-						totalMismatches++;
+					}
+
+					if (getIsMatch(cds.match)) {
+						aggregatePoint(byTime, true);
+					} else if (getIsMatch(cds.match2)) {
+						aggregatePoint(byTime2, false);
 					}
 				}
+
+				if (cds.projection) {
+					try {
+						eval("function project(y,y2) { return (" + cds.projection + "); }");
+						for (time in byTime) {
+							var dataPoint = byTime[time];
+							var dataPoint2 = byTime2[time];
+
+							var ms = dataPoint.t.getTime() - minMs;
+							var s = (ms / 1000);
+							var m = (s / 60);
+							var h = (m / 60);
+							var d = (h / 24);
+							var w = (d / 7);
+							var M = (d / 31);
+
+							dataPoint.A = project(dataPoint.A,dataPoint2.A);
+							dataPoint.S = project(dataPoint.S,dataPoint2.S);
+							dataPoint.M = project(dataPoint.M,dataPoint2.M);
+							dataPoint.m = project(dataPoint.m,dataPoint2.m);
+						}
+					} catch (ex) {
+						console.error("Failed parsing projection '" + cds.projection + "': " + ex);
+					}
+				}
+
 			}
 		}
 
@@ -286,11 +382,10 @@ var loadDashboard = function() {
 			if (graph.graphOpts[key] == null) graph.graphOpts[key] = dashboard.defaultGraphOpts[key];
 		}
 
-		// We're not going to query the entire database
-		if (!graph.dataSources || graph.dataSources.length == 0) {
-			console.error("Skipping graph because it contains no dataSources attribute with things to query");
-			return;	
-		}
+		//if (!graph.dataSources || graph.dataSources.length == 0) {
+			//console.error("Skipping graph because it contains no dataSources attribute with things to query");
+			//return;	
+		//}
 
 		for (opt in dashboard.defaultDataSourceOpts) {
 			for (dsIdx in dashboard.dataSources) {
@@ -300,6 +395,14 @@ var loadDashboard = function() {
 			for (dsIdx in graph.dataSources) {
 				if (graph.dataSources[dsIdx][opt] == null)
 					graph.dataSources[dsIdx][opt] = dashboard.defaultDataSourceOpts[opt];
+			}
+			for (dsIdx in dashboard.calculatedDataSources) {
+				if (dashboard.calculatedDataSources[dsIdx][opt] == null)
+					dashboard.calculatedDataSources[dsIdx][opt] = dashboard.defaultDataSourceOpts[opt];
+			}
+			for (dsIdx in graph.calculatedDataSources) {
+				if (graph.calculatedDataSources[dsIdx][opt] == null)
+					graph.calculatedDataSources[dsIdx][opt] = dashboard.defaultDataSourceOpts[opt];
 			}
 		}
 
@@ -381,7 +484,10 @@ var loadDashboard = function() {
 				}
 			}
 
-			if (shouldTail) {
+			if (graph.dataSources == null || !graph.dataSources.length) {
+				plotGraph([],graphToQuery); 
+			}
+			else if (shouldTail) {
 				for (dsIndex in graphToQuery.dataSources) {
 					var dsToQuery = graphToQuery.dataSources[dsIndex];
 					function queryDataSource(ds) {

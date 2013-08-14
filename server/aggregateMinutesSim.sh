@@ -3,6 +3,7 @@ BEGIN  {
 } 
 
 {
+	if ($1 == "never") {
 	# Calculate time key
 	if (fullTime != $1) {
 		timeKey=substr($1,0,15);
@@ -14,7 +15,7 @@ BEGIN  {
 		createdServerDirs[timeKey $4] = 1;
 		cmd = "mkdir -p minutes/" timeKey "/" $4;
 		print "Executing " cmd;
-		cmd | getline;
+		#cmd | getline;
 	}
 
 	# Aggregate
@@ -24,12 +25,13 @@ BEGIN  {
 		val[key] =fullTime " " $3 " " 1 " " $3 " " $3
 	} else {
 		split(prevVal,prevValParts," ");
-        max=$3;
-        min=$3;
-        if (prevValParts[4] > max) max=prevValParts[4];
-        if (prevValParts[5] < min) min=prevValParts[5];
+	        max=$3;
+	        min=$3;
+	        if (prevValParts[4] > max) max=prevValParts[4];
+	        if (prevValParts[5] < min) min=prevValParts[5];
 
-        val[key] = fullTime" "(prevValParts[2]+$3)" "(prevValParts[3]+1)" "max" "min;
+        	val[key] = fullTime" "(prevValParts[2]+$3)" "(prevValParts[3]+1)" "max" "min;
+	}
 	}
 
 	if (++linesRead % 100000 == 0) print "[progress] " (linesRead/1000) "K lines processed"
@@ -51,7 +53,7 @@ END {
 
 		#     name            time   	 server          component       
 		line=keyParts[2] " " prevValParts[1] " " keyParts[3] " " keyParts[4] " " prevValParts[2] " " prevValParts[3] " " prevValParts[4] " " prevValParts[5];
-		print line > outFile
+#		print line  > outFile
 
 		if (++linesFlushed % 100000 == 0) print "[progress] " (linesFlushed/1000) "K lines flushed"
     }

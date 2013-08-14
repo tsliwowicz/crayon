@@ -40,7 +40,7 @@
                 "name": ".*"
             },
             "name": "Total Inserts",
-            "function": "sum",
+            "aggregationFunction": "sum",
             "insteadOfMatches": true
         }],
         "graphOpts": {
@@ -54,7 +54,7 @@
                 "name": ".*"
             },
             "name": "Incoming Bytes",
-            "function": "sum",
+            "aggregationFunction": "sum",
             "insteadOfMatches": true
         }],
         "graphOpts": {
@@ -91,6 +91,14 @@
         "graphOpts": {
             "stackedGraph": true,
             "title": "Rabbit MQ messages /s"
+        }
+    }, {
+        "dataSources": [{
+            "name": "graphite_API_messages"
+        }],
+        "graphOpts": {
+            "stackedGraph": true,
+            "title": "Graphite API messages /s"
         }
     }, {
         "dataSources": [{

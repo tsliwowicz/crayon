@@ -61,7 +61,7 @@ function handleMessage(buff) {
 
 	// rabbitMQ messages
 	try {
-		var callContext = mockCallContext(
+		var callContext = contextLib.mockCallContext(
 			"http://localhost/addRaw", 
 			function() {
 				// completed request
@@ -133,29 +133,6 @@ function connect() {
 
 module.exports.disconnect = function() {
 	connection.end();
-}
-
-function mockCallContext(requestUrl, onEnd, args) {
-	var me=this;
-	var mockRequest = {url: requestUrl};
-	var mockResponse = { 
-		writeHeader: function(code, headers) {
-			me.headers=headers;
-			me.code = code;
-		},
-		write: function(body,encoding) {
-			me.body = body;
-			me.encoding = encoding;
-		},
-		end: function() {
-			onEnd();
-		}
-	};
-	var callContext = new contextLib.CallContext(mockRequest, mockResponse);
-	callContext.parseArgs(function() {});
-	if (args != null) callContext.args = args;
-	callContext.verbose = false;
-	return callContext;
 }
 
 module.exports.connect = connect;

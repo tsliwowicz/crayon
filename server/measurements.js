@@ -168,6 +168,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 				}
 			}
 
+			if (ds.exclude) plan += " | egrep -v '" + ds.exclude + "' ";
 			plan += " | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
 			plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck"
 		} else { 
@@ -185,6 +186,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 				}
 			}
 
+			if (ds.exclude) plan += " | egrep -v '" + ds.exclude + "' ";
 			plan += "; done | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
 		}
 

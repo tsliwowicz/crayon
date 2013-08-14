@@ -319,6 +319,7 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			dateWindowRatio: 0.1,
 			wholeWindow: true,
 			aggregative: "ave",
+			animatedZooms: true,
 			isDelta: false,
 			valueMultiplier: 1,
 			highlightSeriesBackgroundAlpha: 1,
@@ -351,10 +352,7 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 
 	var newHighCapVal = 0;
 	var newLowCapVal = 0;
-	var labelArr = [];
-	var colorsArr = [];
-	var palletteIndex = 0;
-	
+	divCache.palletteIndex = 0;
 	divCache.timeSlotArr = [];
 	divCache.seriesArr = [];
 	divCache.seriesFound = {};
@@ -389,41 +387,68 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			divCache.seriesFound[fullCounterName] = seriesObj = {};
 			seriesObj.label = "<SPAN class='legendItem'>" + fullCounterName +"</SPAN>";
 			seriesObj.fullCounterName = fullCounterName;
-			seriesObj.S = 0;
-			seriesObj.N = 0;
+			seriesObj.S = counter.S || 0;
+			seriesObj.N = counter.N || 1;
+			seriesObj.dataPoints = 1;
+			seriesObj.A = seriesObj.S / seriesObj.N;
+			seriesObj.M = counter.M || 0;
+			seriesObj.m = counter.m || 0;
+			seriesObj.NV = 0;
+			seriesObj.stdev = 0;
 			divCache.seriesArr.push(seriesObj);
-		}
-		seriesObj.S += counter.S;
-		seriesObj.N += 1;
-	}
-
-	// Labels should always be displayed in same order
-	if (divCache.graphOptions.sort == "desc") {
-		divCache.seriesArr.sort(function(s1,s2) { return (s1.S > s2.S ? -1 : 1); });
-	} else if (divCache.graphOptions.sort == "asc") {
-		divCache.seriesArr.sort(function(s1,s2) { return (s1.S < s2.S ? -1 : 1); });
-	} else {
-		divCache.seriesArr.sort(function(s1,s2) { return (s1.label < s2.label ? -1 : 1); });
-		// Default sort is by name
-	}
-
-	for (seriesNum in divCache.seriesArr) {
-		var seriesObj = divCache.seriesArr[seriesNum];
-		labelArr.push(seriesObj.label);
-
-		if (palletteIndex >= defaultPallete.length) {
-			seriesObj.color = seriesObj.fullCounterName.colorHash();
 		} else {
-			seriesObj.color = defaultPallete[palletteIndex++];
+			var prevA = seriesObj.A;
+			seriesObj.S += (counter.S||0);
+			seriesObj.N += (counter.N||1);
+			seriesObj.dataPoints += 1;
+			seriesObj.A = seriesObj.S / seriesObj.N;
+			if (seriesObj.M < counter.M) seriesObj.M = (counter.M||0);
+			if (seriesObj.m > counter.m) seriesObj.m = (counter.m||0);
+			seriesObj.NV += ((counter.S||0) - prevA) * ((counter.S||0) - seriesObj.A);
+			seriesObj.stdev = Math.sqrt(seriesObj.NV / seriesObj.N);
 		}
 
-		colorsArr.push(seriesObj.color);
-		seriesObj.index = labelArr.length;
+		seriesObj.cS = counter.S||0;
+		seriesObj.cN = counter.N||1;
+		seriesObj.cA = (counter.S||0)/(counter.N||1);
+		seriesObj.cM = counter.M||0;
+		seriesObj.cm = counter.m||0;
 	}
 
-	labelArr.splice(0,0,"time");
+		 if (divCache.graphOptions.sortByTotalAverage = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.A - a.A); }); }
+	else if (divCache.graphOptions.sortByTotalMinimum = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.m - a.m); }); }
+	else if (divCache.graphOptions.sortByTotalMaximum = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.M - a.M); }); }
+	else if (divCache.graphOptions.sortByTotalSum = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.S - a.S); }); }
+	else if (divCache.graphOptions.sortByTotalCount = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.N - a.N); }); }
+	else if (divCache.graphOptions.sortByCurrentAverage = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.cA - a.cA); }); }
+	else if (divCache.graphOptions.sortByCurrentMinimum = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.cm - a.cm); }); }
+	else if (divCache.graphOptions.sortByCurrentMaximum = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.cM - a.cM); }); }
+	else if (divCache.graphOptions.sortByCurrentSum = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.cS - a.cS); }); }
+	else if (divCache.graphOptions.sortByCurrentCount = "desc") { divCache.seriesArr.sort(function(a,b) { return (b.cN - a.cN); }); }
+	else if (divCache.graphOptions.sortByDeviant == "desc") { divCache.seriesArr.sort(function(a,b) { return (b.stdev - a.stdev); }); }
+	else if (divCache.graphOptions.sortByTotalAverage = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.A - a.A); }); }
+	else if (divCache.graphOptions.sortByTotalMinimum = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.m - a.m); }); }
+	else if (divCache.graphOptions.sortByTotalMaximum = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.M - a.M); }); }
+	else if (divCache.graphOptions.sortByTotalSum = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.S - a.S); }); }
+	else if (divCache.graphOptions.sortByTotalCount = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.N - a.N); }); }
+	else if (divCache.graphOptions.sortByCurrentAverage = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.cA - a.cA); }); }
+	else if (divCache.graphOptions.sortByCurrentMinimum = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.cm - a.cm); }); }
+	else if (divCache.graphOptions.sortByCurrentMaximum = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.cM - a.cM); }); }
+	else if (divCache.graphOptions.sortByCurrentSum = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.cS - a.cS); }); }
+	else if (divCache.graphOptions.sortByCurrentCount = "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.cN - a.cN); }); }
+	else if (divCache.graphOptions.sortByDeviant == "asc") { divCache.seriesArr.sort(function(a,b) { return -(b.stdev - a.stdev); }); }
+	else { divCache.seriesArr.sort(function(s1,s2) { return (s1.label < s2.label ? -1 : 1); }); }
+
+	if (divCache.graphOptions.limit && divCache.seriesArr.length > divCache.graphOptions.limit) {
+		divCache.seriesArr = divCache.seriesArr.splice(0, divCache.graphOptions.limit);
+	}
+
+	divCache.labelArr = [];
+	divCache.colorsArr = [];
 
 	populateTimeSlotArr(divCache, graphData);
+
+	divCache.labelArr.splice(0,0,"time");
 
 	// Move the zoom to the last 10% of the graph
 	if (divCache.timeSlotArr.length != 0 && !divCache.graphOptions.wholeWindow && divCache.lastDate != null) {
@@ -432,8 +457,8 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 		divCache.graphOptions.dateWindow = [divCache.lastDate.getTime() - zoomedWindowOfTimeMS,divCache.lastDate.getTime()];
 	}
 	
-	divCache.graphOptions.labels = labelArr;
-	divCache.graphOptions.colors = colorsArr;
+	divCache.graphOptions.labels = divCache.labelArr;
+	divCache.graphOptions.colors = divCache.colorsArr;
 	divCache.graphOptions.valueRange = null;
 	//if (divCache.graphOptions.stackedGraph) {
 	//} 	
@@ -504,10 +529,14 @@ var populateTimeSlotArr = function(divCache, graphData) {
 
 		divCache.graphOptions[seriesObj.label] = defaultLineStyle;
 		
-		divCache.graphOptions[fullCounterName] = {};
 		if (divCache.graphOptions.lineStyles) {
 			for (styleNum in divCache.graphOptions.lineStyles) {
 				var style = divCache.graphOptions.lineStyles[styleNum];
+				
+				if (style.color) {
+					seriesObj.color = style.color;
+				}
+
 				if (fullCounterName.match(style.match)) {
 					for (key in style) {
 						defaultLineStyle[key] = style[key];
@@ -517,9 +546,66 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		}
 	}
 
+	for (seriesNum in divCache.seriesArr) {
+		var seriesObj = divCache.seriesArr[seriesNum];
+		var lineStyle = divCache.graphOptions[seriesObj.label];
+
+		var totalAverageAbove = lineStyle.totalAverageAbove || divCache.graphOptions.totalAverageAbove;
+		var totalAverageBelow = lineStyle.totalAverageBelow || divCache.graphOptions.totalAverageBelow;
+		var totalMaximumAbove = lineStyle.totalMaximumAbove || divCache.graphOptions.totalMaximumAbove;
+		var totalMaximumBelow = lineStyle.totalMaximumBelow || divCache.graphOptions.totalMaximumBelow;
+		var totalMinimumAbove = lineStyle.totalMinimumAbove || divCache.graphOptions.totalMinimumAbove;
+		var totalMinimumBelow = lineStyle.totalMinimumBelow || divCache.graphOptions.totalMinimumBelow;
+		var totalSumAbove = lineStyle.totalSumAbove || divCache.graphOptions.totalSumAbove;
+		var totalSumBelow = lineStyle.totalSumBelow || divCache.graphOptions.totalSumBelow;
+		var currentAverageAbove = lineStyle.currentAverageAbove || divCache.graphOptions.currentAverageAbove;
+		var currentAverageBelow = lineStyle.currentAverageBelow || divCache.graphOptions.currentAverageBelow;
+		var currentMaximumAbove = lineStyle.currentMaximumAbove || divCache.graphOptions.currentMaximumAbove;
+		var currentMaximumBelow = lineStyle.currentMaximumBelow || divCache.graphOptions.currentMaximumBelow;
+		var currentMinimumAbove = lineStyle.currentMinimumAbove || divCache.graphOptions.currentMinimumAbove;
+		var currentMinimumBelow = lineStyle.currentMinimumBelow || divCache.graphOptions.currentMinimumBelow;
+		var currentSumAbove = lineStyle.currentSumAbove || divCache.graphOptions.currentSumAbove;
+		var currentSumBelow = lineStyle.currentSumBelow || divCache.graphOptions.currentSumBelow;
+
+		if (totalAverageAbove != null && seriesObj.A < totalAverageAbove) continue;
+		if (totalAverageBelow != null && seriesObj.A > totalAverageBelow) continue;
+		if (totalMaximumAbove != null && seriesObj.M < totalMaximumAbove) continue;
+		if (totalMaximumBelow != null && seriesObj.M > totalMaximumBelow) continue;
+		if (totalMinimumAbove != null && seriesObj.m < totalMinimumAbove) continue;
+		if (totalMinimumBelow != null && seriesObj.m > totalMinimumBelow) continue;
+		if (totalSumAbove != null && seriesObj.S < totalSumAbove) continue;
+		if (totalSumBelow != null && seriesObj.S > totalSumBelow) continue;
+		if (currentAverageAbove != null && seriesObj.cA < currentAverageAbove) continue;
+		if (currentAverageBelow != null && seriesObj.cA > currentAverageBelow) continue;
+		if (currentMaximumAbove != null && seriesObj.cM < currentMaximumAbove) continue;
+		if (currentMaximumBelow != null && seriesObj.cM > currentMaximumBelow) continue;
+		if (currentMinimumAbove != null && seriesObj.cm < currentMinimumAbove) continue;
+		if (currentMinimumBelow != null && seriesObj.cm > currentMinimumBelow) continue;
+		if (currentSumAbove != null && seriesObj.cS < currentSumAbove) continue;
+		if (currentSumBelow != null && seriesObj.cS > currentSumBelow) continue;
+
+
+		if (divCache.labelArr.indexOf(seriesObj.label) == -1) {
+			divCache.labelArr.push(seriesObj.label);
+
+			if (seriesObj.color) {
+			} else if (divCache.palletteIndex >= defaultPallete.length) {
+				seriesObj.color = seriesObj.fullCounterName.colorHash();
+			} else {
+				seriesObj.color = defaultPallete[divCache.palletteIndex++];
+			}
+
+			divCache.colorsArr.push(seriesObj.color);
+			seriesObj.index = divCache.labelArr.length;
+		}
+	}
+
 	var firstNewTimeSlotIndex = null;
 	var previousTimeSlot = null;
 	divCache.deltaHelper = {};
+	divCache.accumulativeHelper = {};
+	var functionByTransform = {};
+
 	for (dataIndex in graphData) {
 		var counter = graphData[dataIndex];
 		if (counter == null) continue;
@@ -558,9 +644,25 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		var lineStyle = divCache.graphOptions[seriesObj.label];
 		var aggregative = lineStyle.aggregative || divCache.graphOptions.aggregative;
 		var isDelta = lineStyle.isDelta || divCache.graphOptions.isDelta;
+		var isCounter = lineStyle.isCounter || divCache.graphOptions.isCounter;
+		var isAccumulative = lineStyle.isAccumulative || divCache.graphOptions.isAccumulative;
 		var valueMultiplier = lineStyle.valueMultiplier || divCache.graphOptions.valueMultiplier;
+		var yTransform = lineStyle.yTransform || divCache.graphOptions.yTransform;
 		var divideBySecondsSinceLastSample = lineStyle.divideBySecondsSinceLastSample || divCache.graphOptions.divideBySecondsSinceLastSample;
 		var decimalRounding = lineStyle.decimalRounding || divCache.graphOptions.decimalRounding;
+
+		var yTransformPostEval = null;
+		if (yTransform) {
+			yTransformPostEval = functionByTransform[yTransform];
+			if (!yTransformPostEval) {
+				eval("function project(y) { return (" + yTransform + "); }");
+				yTransformPostEval = project;
+				functionByTransform[yTransform] = yTransformPostEval;
+			} 
+		}
+		
+		
+
 		if (counter.forcedValue != null) { valObj[0] = counter.forcedValue; }
 		else {
 			if (aggregative == 'ave') { valObj[0] = counter.A; valObj[1] = counter.V; }
@@ -568,9 +670,22 @@ var populateTimeSlotArr = function(divCache, graphData) {
 			else if (aggregative == 'max') valObj[0] = counter.M;
 			else if (aggregative == 'sum') valObj[0] = counter.S;
 			else if (aggregative == 'count') valObj[0] = counter.N;
-			if (isDelta) {
-				if (isNaN(valObj[0])) {
-				} else if (divCache.deltaHelper[seriesObj.index] == null) {
+
+			if (yTransform) {
+				try {
+					valObj[0] = yTransformPostEval(valObj[0]);
+				} catch (ex) {
+					if (!divCache.notifiedYTransformError) {
+						divCache.notifiedYTransformError = true;
+						console.error("Failed evaluating yTransform value '" + yTransform + "': " + ex);
+					}
+				}
+			}
+
+			if (isNaN(valObj[0])) { }
+			else if (isCounter) {
+				
+				if (divCache.deltaHelper[seriesObj.index] == null) {
 					divCache.deltaHelper[seriesObj.index] = valObj[0];
 					valObj[0] = NaN;
 				} else {	
@@ -581,12 +696,25 @@ var populateTimeSlotArr = function(divCache, graphData) {
 						// possible reset of counter
 
 					} else {
-					//if (Math.abs(valObj[0] - divCache.deltaHelper[seriesObj.index]) > 10000) {
-					//	console.log("Big Delta");
-					//}
 						valObj[0] -= divCache.deltaHelper[seriesObj.index];
 						divCache.deltaHelper[seriesObj.index] = temp;
 					}
+				}
+			} else if (isDelta) {
+				if (divCache.deltaHelper[seriesObj.index] == null) {
+					divCache.deltaHelper[seriesObj.index] = valObj[0];
+					valObj[0] = NaN;
+				} else {	
+					var temp = valObj[0];
+					valObj[0] -= divCache.deltaHelper[seriesObj.index];
+					divCache.deltaHelper[seriesObj.index] = temp;
+				}
+			} else if (isAccumulative) {
+				if (divCache.accumulativeHelper[seriesObj.index] == null) {
+					divCache.accumulativeHelper[seriesObj.index] = valObj[0];
+				} else {	
+					divCache.accumulativeHelper[seriesObj.index] += valObj[0];
+					valObj[0] = divCache.accumulativeHelper[seriesObj.index];
 				}
 			}
 
@@ -610,6 +738,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 				valObj[0] = Math.round(valObj[0] * num) / num;
 			}
 
+
 			if (valueMultiplier && !isNaN(valObj[0])) {
 				valObj[0] *= valueMultiplier;
 			}
@@ -621,23 +750,31 @@ var populateTimeSlotArr = function(divCache, graphData) {
 
 	// Fill empty counter values with NaN (Makes dygraph draw gaps instead of 0 values)
 	var lastDate = null;
-	function realizeGap(atTime, where) {
+	var lastSeriesDate = {};
+	function realizeGap(lateTimeSlot, atTime, atIndex, where) {
 		if (lastDate && atTime && dateDiffSeconds(lastDate, atTime) < -divCache.graphOptions.gapInSeconds) {
+			if (lateTimeSlot) {
+				lateTimeSlot
+			}
+
 			var edgeDateEarly = lastDate.addMinutes(1);
 			var edgeDateLate = atTime.addMinutes(-1);
 		
 			var earlySlot = [edgeDateEarly];
 			var lateSlot = [edgeDateLate];
+			var addEarlySlotTerminator = true;
+			var addLateSlotTerminator = true;
 			var num = 0;
+
 			for (series in divCache.seriesFound) {
 				var index = divCache.seriesFound[series].index;
-				earlySlot[num + 1] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
-				lateSlot[num + 1] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
+				if (addEarlySlotTerminator) earlySlot[num + 1] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
+				if (addLateSlotTerminator) lateSlot[num + 1] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
 				num++;
 			}
 			
-			divCache.timeSlotArr.splice(timeSlotIndex,0,lateSlot);
-			divCache.timeSlotArr.splice(timeSlotIndex,0,earlySlot);
+			if (addLateSlotTerminator) divCache.timeSlotArr.splice(atIndex,0,lateSlot);
+			if (addEarlySlotTerminator) divCache.timeSlotArr.splice(atIndex,0,earlySlot);
 			return true;
 		}
 		return false;
@@ -645,10 +782,12 @@ var populateTimeSlotArr = function(divCache, graphData) {
 
 	divCache.DEBUG_firstNewTimeSlotIndex = firstNewTimeSlotIndex;
 	var lastGoodValueOfEachIndex = {};
-
+	var numberOfMissingPoints = {};
+	var firstIndexOfMissingPoints = {};
+	var timeSlotIndex = 0
 	divCache.lastDate = lastDate;
 	//if (firstNewTimeSlotIndex != null) {
-		for (var timeSlotIndex = 0; timeSlotIndex < divCache.timeSlotArr.length; ++timeSlotIndex) {
+		for (; timeSlotIndex < divCache.timeSlotArr.length; ++timeSlotIndex) {
 		//for (timeSlotIndex in divCache.timeSlotArr) {
 
 			//if (timeSlotIndex < firstNewTimeSlotIndex) continue;
@@ -661,15 +800,52 @@ var populateTimeSlotArr = function(divCache, graphData) {
 						timeSlot[index] = (divCache.graphOptions.errorBars?[lastGoodValueOfEachIndex[index],noValue]:lastGoodValueOfEachIndex[index]);
 					} else {
 					 	timeSlot[index] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
+
+					 	if (!numberOfMissingPoints[index]) {
+					 		numberOfMissingPoints[index] = 1;
+					 		firstIndexOfMissingPoints[index] = timeSlotIndex;
+					 	} else {
+					 	 	numberOfMissingPoints[index] += 1;
+					 	}
 					}
 				} else {
+					// connect separated points which are separated just because something got in the middle
+					if (numberOfMissingPoints[index]) {
+						var oldVal = lastGoodValueOfEachIndex[index];
+						var firstMissingIndex = firstIndexOfMissingPoints[index];
+						if (oldVal != null && oldVal != NaN && firstMissingIndex != null) {
+							var dateBeforeMissingPoints = divCache.timeSlotArr[firstMissingIndex][0];
+							if (dateDiffSeconds(lastDate, dateBeforeMissingPoints) < divCache.graphOptions.gapInSeconds) {
+								var newVal = timeSlot[index];
+								var totalMissingPoints = numberOfMissingPoints[index];
+								var step = (newVal - oldVal) / totalMissingPoints;
+								for (var indexCursor = 0; indexCursor < totalMissingPoints; ++indexCursor) {
+									var interpolatedVal = oldVal + (step * (indexCursor+1));
+									divCache.timeSlotArr[firstMissingIndex + indexCursor][index] = interpolatedVal;
+								}
+							}
+						}
+						numberOfMissingPoints[index] = null;
+					}
+
 					lastGoodValueOfEachIndex[index] = timeSlot[index];
 				}
+
+				lastSeriesDate[index]
 			}
 
-			if (realizeGap(timeSlot[0], "middle")) {
-				timeSlotIndex++;
+			if (realizeGap(timeSlot, timeSlot[0], timeSlotIndex + 1, "middle")) {
+				timeSlotIndex+=2;
 			}
+/*
+							if (lastSeriesDate[index] && dateDiffSeconds(lastSeriesDate[index], timeSlot[0]) > divCache.graphOptions.gapInSeconds) {
+					if (divCache.graphOptions.connectSeparatedPoints && lastGoodValueOfEachIndex[index] != null) {
+						timeSlot[index] = (divCache.graphOptions.errorBars?[lastGoodValueOfEachIndex[index],noValue]:lastGoodValueOfEachIndex[index]);
+					} else {
+					 	timeSlot[index] = (divCache.graphOptions.errorBars?[noValue,noValue]:noValue);
+					}
+				}
+*/
 
 			lastDate = timeSlot[0];
 		}
@@ -678,7 +854,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 			//if (divCache.graphOptions.upToDate) {
 			//	realizeGap(lastDate.addMinutes(divCache.graphOptions.gapInMinutes), "end");
 			//} else {
-				realizeGap(lastDate.addSeconds(divCache.graphOptions.gapInSeconds), "end");
+				realizeGap(null, lastDate.addSeconds(divCache.graphOptions.gapInSeconds), timeSlotIndex, "end");
 			//}
 		}
 

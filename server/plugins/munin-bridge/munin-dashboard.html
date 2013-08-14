@@ -83,9 +83,12 @@ var lastBenchmarkTime = null;
 				var server = groups[group][i];
 				
 				var extraArgs  = "";
-				if (queryArgs.mini == 1) extraArgs = "&mini=1";
+				var serverDisplay = server;
+				if (server == "Combined") {
+					serverDisplay = "Combined:" + group;
+				}
 
-				lastUl = groupUl.append("<li><a href='munin-dashboard.html?server=" + server + extraArgs + "' onclick='serverClicked(this)'>" + server + "</a></li>");
+				lastUl = groupUl.append("<li><a href='munin-dashboard.html?server=" + serverDisplay + extraArgs + "' onclick='serverClicked(this)'>" + server + "</a></li>");
 			}
 		}
 	}
@@ -186,7 +189,7 @@ var lastBenchmarkTime = null;
 				} 
 
 				if (seriesConfig.type && seriesConfig.type.toLowerCase().indexOf("derive") != -1) {
-					lineStyle.isDelta = true;
+					lineStyle.isCounter = true;
 					lineStyle.aggregative = "max";
 					lineStyle.divideBySecondsSinceLastSample = true;
 				}
@@ -223,7 +226,7 @@ var lastBenchmarkTime = null;
 			}
 	
 			extraOptions.includeComponentInLabel = false;
-			extraOptions.includeServerInLabel = false;
+			if (server.indexOf("*") == -1) extraOptions.includeServerInLabel = false;
 			extraOptions.gapInSeconds = 1000;
 		}
 
@@ -406,7 +409,7 @@ var lastBenchmarkTime = null;
 						} 
 
 						if (seriesConfig.type && seriesConfig.type.toLowerCase().indexOf("derive") != -1) {
-							lineStyle.isDelta = true;
+							lineStyle.isCounter = true;
 							lineStyle.aggregative = "max";
 							lineStyle.divideBySecondsSinceLastSample = true;
 						}
@@ -623,12 +626,34 @@ setHeader(pageHeader);
 		buildServersList();
 	} else {
 		//showLoadingGraphDataOverlay();
+
+		var serverForConfig = queryArgs.server;
+		var serverForGraphList = queryArgs.server;
+
+		if (queryArgs.server.indexOf("Combined:") == 0) {
+			var group = queryArgs.server.replace("Combined:","");
+			var hosts = groups[group];
+			hosts.shift();
+			serverForConfig = hosts[0];
+			var maxLetter = 0;
+			var isMaxLetterEqual = true;
+			for (var lI = 0; lI < hosts[0].length && isMaxLetterEqual; ++lI) {
+				for (hI in hosts) {
+					if (hosts[hI].length < lI) isMaxLetterEqual = false;
+					else if (hosts[hI][lI] != hosts[0][lI]) isMaxLetterEqual = false;
+				}
+				if (isMaxLetterEqual) maxLetter++;
+			}
+
+			serverForGraphList = hosts[0].substring(0,maxLetter) + "*";
+		}
+
 		$.ajax({
 			url: "getMuninConfig",
-			data: 'server=' + queryArgs.server,
+			data: 'server=' + serverForConfig,
 			dataType: 'json',
 			success: function(resultObject) {
-				buildGraphList(queryArgs.server, resultObject, queryArgs.unit || 'm');
+				buildGraphList(serverForGraphList, resultObject, queryArgs.unit || 'm');
 			}
 		});
 	}

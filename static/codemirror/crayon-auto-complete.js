@@ -1028,7 +1028,7 @@ staticAutoComplete["animatedZooms"] = ' \
 <div class="option"><a name="Interactive Elements"></a><a name="animatedZooms"></a><b>animatedZooms</b><br> \
   <p>Set this option to animate the transition between zoom windows. Applies to programmatic and interactive zooms. Note that if you also set a drawCallback, it will be called several times on each zoom. If you set a zoomCallback, it will only be called after the animation is complete.</p> \
   <i><span class="dyDescType">Type:</span> boolean</i><br> \
-  <i><span class="dyDescType">Default:</span> false</i><p></p> \
+  <i><span class="dyDescType">Default:</span> true</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <a href="gallery/#g/highlighted-region">highlighted-region</a> <a href="gallery/#g/link-interaction">link-interaction</a><br> \
   <span class="dyDescType">Other Examples:</span> <a href="tests/highlighted-region.html">highlighted-region</a> <a href="tests/link-interaction.html">link-interaction</a> <a href="tests/plotters.html">plotters</a><br> \
   <br> </div> \
@@ -1461,6 +1461,27 @@ staticAutoComplete["wholeWindow"] = ' \
   <br> </div> \
 ';
 
+staticAutoComplete["match"] = ' \
+<div class="option"><a name="match"></a><b>match</b><br> \
+  <p>Under lineStyles, match is a regex matching series names. Under calculated data source, used to match series lines for aggregation. <br> match is an object with either "name"/"component"/"server" properties which are regexes matching series properties accordingly</p> \
+  <i><span class="dyDescType">Type:</span> string or an object with a regex string </i><br> \
+  <i><span class="dyDescType">Default:</span> null </i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["match2"] = ' \
+<div class="option"><a name="match"></a><b>match</b><br> \
+  <a parentName="dataSource"></a>\
+  <p> Used to match a second series line group to populate y2 when using the "projection" attribute. It is An object with either "name"/"component"/"server" properties which are regexes matching series properties accordingly.</p> \
+  <i><span class="dyDescType">Type:</span> string or an object with a regex string </i><br> \
+  <i><span class="dyDescType">Default:</span> null </i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
 staticAutoComplete["lineStyles"] = ' \
 <div class="option"><a name="lineStyles"></a><b>lineStyles</b><br> \
   <p>Overrides graph properties per axis by regex matching.</p> \
@@ -1483,9 +1504,29 @@ staticAutoComplete["aggregative"] = ' \
 
 staticAutoComplete["isDelta"] = ' \
 <div class="option"><a name="isDelta"></a><b>isDelta</b><br> \
-  <p>Indicates the graph or metric are gauges and only the delta should be rendered, usually should be paired with the "divideBySecondsSinceLastSample" attribute</p> \
+  <p>Indicates the graph or metric are gauges and only the delta should be rendered, usually should be paired with the "divideBySecondsSinceLastSample" attribute. <br> For incrementing only delta metrics (with resets) use "isCounter" </p> \
   <i><span class="dyDescType">Type:</span> boolean</i><br> \
-  <i><span class="dyDescType">Default:</span> true</i><p></p> \
+  <i><span class="dyDescType">Default:</span> false</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["isCounter"] = ' \
+<div class="option"><a name="isCounter"></a><b>isCounter</b><br> \
+  <p>Indicates the graph or metric are gauges and only the delta should be rendered, usually should be paired with the "divideBySecondsSinceLastSample" attribute<br> For delta metrics which could contain negative values use "isDelta"</p> \
+  <i><span class="dyDescType">Type:</span> boolean</i><br> \
+  <i><span class="dyDescType">Default:</span> false</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["isAccumulative"] = ' \
+<div class="option"><a name="isAccumulative"></a><b>isAccumulative</b><br> \
+  <p>Indicates the graph or metric are delta and only the accumulative value should be rendered, See "isDelta" or "isCounter" for the opposite function </p> \
+  <i><span class="dyDescType">Type:</span> boolean</i><br> \
+  <i><span class="dyDescType">Default:</span> false</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \
@@ -1506,16 +1547,6 @@ staticAutoComplete["valueMultiplier"] = ' \
   <p>Multiplies each data point by the given number</p> \
   <i><span class="dyDescType">Type:</span> integer</i><br> \
   <i><span class="dyDescType">Default:</span> 1</i><p></p> \
-  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
-  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
-  <br> </div> \
-';
-
-staticAutoComplete["sort"] = ' \
-<div class="option"><a name="sort"></a><b>sort</b><br> \
-  <p>Whether the series labels should be sorted by their sum value (relevant for stacked Graphs)</p> \
-  <i><span class="dyDescType">Type:</span> string "desc" or "asc"</i><br> \
-  <i><span class="dyDescType">Default:</span> null (by name)</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \
@@ -1671,7 +1702,7 @@ staticAutoComplete["tailSecondsInterval"] = ' \
 <div class="option"><a name="tailSecondsInterval"></a><b>tailSecondsInterval</b><br> \
   <a parentName="root"></a>\
   <p>The amount of seconds for which the graph will auto-update itself. null means no auto-update.</p> \
-  <i><span class="dyDescType">Type:</span> int</i><br> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
@@ -1746,10 +1777,395 @@ staticAutoComplete["dataSources"] = ' \
 
 staticAutoComplete["variables"] = ' \
 <div class="option"><a name="variables"></a><b>variables</b><br> \
-  <a parentName="dataSource"></a>\
+  <a parentName="dashboard"></a>\
   <p>A key value object with variables that should be used when running the dashboard (Variable value can be a JSON object as well). Variables are referenced with "$" before their name in the body of the document.<br>Variable value could also be a url in the format "url:/my_url/file_with_newline_seperated_regexes"</p> \
   <i><span class="dyDescType">Type:</span> object of the format { varName: varValue }</i><br> \
   <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["exclude"] = ' \
+<div class="option"><a name="exclude"></a><b>exclude</b><br> \
+  <a parentName="dataSource"></a>\
+  <p>A regex of metric names to exclude from a data source</p> \
+  <i><span class="dyDescType">Type:</span> string</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["calculatedDataSource"] = ' \
+<div class="option"><a name="function"></a><b>function</b><br> \
+  <a parentName="dashboard"></a>\
+  <a parentName="graph"></a>\
+  <p>Allows definition of data sources that does not need querying the server for data points</p> \
+  <i><span class="dyDescType">Type:</span> data source object array </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["aggregationFunction"] = ' \
+<div class="option"><a name="aggregationFunction"></a><b>aggregationFunction</b><br> \
+  <a parentName="calculatedDataSource"></a>\
+  <p>The function for aggregation of matches in a calculated data source</p> \
+  <i><span class="dyDescType">Type:</span> string "sum" "min" "max" "ave" </i><br> \
+  <i><span class="dyDescType">Default:</span> "sum"</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["projection"] = ' \
+<div class="option"><a name="projection"></a><b>projection</b><br> \
+  <a parentName="calculatedDataSource"></a>\
+  <p>The transformation post aggregation of matches in a calculated data source, a javascript eval expression used like yTransform with the builtin variable y which stands for the current value<br>If "match2" property is used, then y2 is a builtin variable for the second series value at each time</p> \
+  <i><span class="dyDescType">Type:</span> javascript code string</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["limit"] = ' \
+<div class="option"><a name="limit"></a><b>limit</b><br> \
+  <p>Limits the number of displayed series lines on one graph. Used in combination with sorting keywords such as "sortByTotalSum" to get a top N list</p> \
+  <i><span class="dyDescType">Type:</span> javascript code string</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalAverageAbove"] = ' \
+<div class="option"><a name="totalAverageAbove"></a><b>totalAverageAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalAverageBelow"] = ' \
+<div class="option"><a name="totalAverageBelow"></a><b>totalAverageBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalMaximumAbove"] = ' \
+<div class="option"><a name="totalMaximumAbove"></a><b>totalMaximumAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalMaximumBelow"] = ' \
+<div class="option"><a name="totalMaximumBelow"></a><b>totalMaximumBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalMinimumAbove"] = ' \
+<div class="option"><a name="totalMinimumAbove"></a><b>totalMinimumAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalMinimumBelow"] = ' \
+<div class="option"><a name="totalMinimumBelow"></a><b>totalMinimumBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalSumAbove"] = ' \
+<div class="option"><a name="totalSumAbove"></a><b>totalSumAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["totalSumBelow"] = ' \
+<div class="option"><a name="totalSumBelow"></a><b>totalSumBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentAverageAbove"] = ' \
+<div class="option"><a name="currentAverageAbove"></a><b>currentAverageAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentAverageBelow"] = ' \
+<div class="option"><a name="currentAverageBelow"></a><b>currentAverageBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentMaximumAbove"] = ' \
+<div class="option"><a name="currentMaximumAbove"></a><b>currentMaximumAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentMaximumBelow"] = ' \
+<div class="option"><a name="currentMaximumBelow"></a><b>currentMaximumBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentMinimumAbove"] = ' \
+<div class="option"><a name="currentMinimumAbove"></a><b>currentMinimumAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentMinimumBelow"] = ' \
+<div class="option"><a name="currentMinimumBelow"></a><b>currentMinimumBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentSumAbove"] = ' \
+<div class="option"><a name="currentSumAbove"></a><b>currentSumAbove</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["currentSumBelow"] = ' \
+<div class="option"><a name="currentSumBelow"></a><b>currentSumBelow</b><br> \
+  <p>Compares all metrics displayed to a specific value using a specific aggregative and filters out metrics which fail the comparison</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByTotalAverage"] = ' \
+<div class="option"><a name="sortByTotalAverage"></a><b>sortByTotalAverage</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByTotalMinimum"] = ' \
+<div class="option"><a name="sortByTotalMinimum"></a><b>sortByTotalMinimum</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByTotalMaximum"] = ' \
+<div class="option"><a name="sortByTotalMaximum"></a><b>sortByTotalMaximum</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByTotalSum"] = ' \
+<div class="option"><a name="sortByTotalSum"></a><b>sortByTotalSum</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByTotalCount"] = ' \
+<div class="option"><a name="sortByTotalCount"></a><b>sortByTotalCount</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByCurrentAverage"] = ' \
+<div class="option"><a name="sortByCurrentAverage"></a><b>sortByCurrentAverage</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByCurrentMinimum"] = ' \
+<div class="option"><a name="sortByCurrentMinimum"></a><b>sortByCurrentMinimum</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByCurrentMaximum"] = ' \
+<div class="option"><a name="sortByCurrentMaximum"></a><b>sortByCurrentMaximum</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByCurrentSum"] = ' \
+<div class="option"><a name="sortByCurrentSum"></a><b>sortByCurrentSum</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByCurrentCount"] = ' \
+<div class="option"><a name="sortByCurrentCount"></a><b>sortByCurrentCount</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["sortByDeviant"] = ' \
+<div class="option"><a name="sortByDeviant"></a><b>sortByDeviant</b><br> \
+  <p>Sorts the metrics by the specified in a specified order. Used in combination with "limit" which filters out only top N metrics. </p> \
+  <i><span class="dyDescType">Type:</span> string "desc" or "asc" </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["yTransform"] = ' \
+<div class="option"><a name="yTransform"></a><b>yTransform</b><br> \
+  <p>The Y value transformation before plotting, a javascript eval expression used like yTransform with the builtin variable y which stands for the current value</p> \
+  <i><span class="dyDescType">Type:</span> javascript code string</i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["granularityInDays"] = ' \
+<div class="option"><a name="granularityInDays"></a><b>granularityInDays</b><br> \
+  <p>Quantizes the data points (with aggregation) into buckets with the specified timespan interval</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["granularityInHours"] = ' \
+<div class="option"><a name="granularityInHours"></a><b>granularityInHours</b><br> \
+  <p>Quantizes the data points (with aggregation) into buckets with the specified timespan interval</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["granularityInMinutes"] = ' \
+<div class="option"><a name="granularityInMinutes"></a><b>granularityInMinutes</b><br> \
+  <p>Quantizes the data points (with aggregation) into buckets with the specified timespan interval</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["granularityInSeconds"] = ' \
+<div class="option"><a name="granularityInSeconds"></a><b>granularityInSeconds</b><br> \
+  <p>Quantizes the data points (with aggregation) into buckets with the specified timespan interval</p> \
+  <i><span class="dyDescType">Type:</span> integer </i><br> \
+  <i><span class="dyDescType">Default:</span> null</i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';
+
+staticAutoComplete["color"] = ' \
+<div class="option"><a name="color"></a><b>color</b><br> \
+  <p>Used in context of "lineStyles" property, sets a color for the matched series lines. Named colors are accepted.</p> \
+  <i><span class="dyDescType">Type:</span> string </i><br> \
+  <i><span class="dyDescType">Default:</span> null </i><p></p> \
   <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \

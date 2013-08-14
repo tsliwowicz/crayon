@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-09).
+(readme.md update in progress, last update on 2013-08-14).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -13,7 +13,8 @@ Screenshots:
 * [Dashboard Designer][] - Where we do our magic and build our mighty informative graphs  
 * [Munin Plugin][] - Where we view our good old munin dashboard but in a new and cool way  
 
-Also, be sure to visit the [Mailing List] if you have any question.
+Be sure to visit the [Mailing List] if you have any question.  
+Also, White Paper and comparison to graphite coming up soon.  
 
 [Mailing List]: https://groups.google.com/forum/#!forum/crayon-mailing-list
 [Taboola]: http://www.taboola.com
@@ -60,6 +61,34 @@ A metric has the following fields:
 The 2 most important API's are:
 * `/addRaw` - For Feeding Crayon with metrics using `POST` (e.g. the simple metric above)
 * `/find` - For querying metrics using `GET` arguments (e.g. the method is fed with a datasource json object)
+  
+You can test the API from the comand line by doing:  
+```Shell
+echo '[{"server":"'$(hostname -s)'","name":"my_metric","val": 123,"time":'$(date +%s)'}]' |   
+  curl -X POST -d @- http://localhost:<crayon's port>/addRaw
+```  
+
+For Graphite users (API)
+------------------------
+
+Metrics which are sent to graphite using plaintext API, could be directed also into Crayon in the same format.
+All you have to do is to start crayon with `--graphite-api-port=<port-number>` and it would listen for incoming connections.
+You can also test it from the command line
+
+You can test the API from the comand line by doing:  
+```Shell
+echo "$(hostname -s).myService.myMetric 123 $(date +%s) | nc localhost <crayon's port>"
+```  
+
+If you have your server and/or component names inside the metric name, all the better!  
+* Update the configuration property in `crayon.conf` called `graphiteHostnameIndexInNamespace` to hold the index within the namespace of your hostname.  
+* Update the configuration property in `crayon.conf` called `graphiteComponentIndexInNamespace` to hold the index within the namespace of your component.  
+
+For example for the metric above (the one with myService.myMetric), the proper setting is:  
+```javascript
+    "graphiteHostnameIndexInNamespace": 1,
+    "graphiteComponentIndexInNamespace": 2
+```
 
 How much is large scale ?
 -------------------------
@@ -138,7 +167,6 @@ I'll try to lay out a list of TODO's here (and update it occasionaly)
 * We should add Monitoring on top of the values
 * We really want to add configurable Soft & Adaptive Thresholding algorithms
 * We should set up a site with a lot more documentation
-* We should create a migration plugin from graphite (We already have the one for munin)
 * We should set up a demo site for people to test Crayon online
 
 What are my alternatives ?
@@ -204,7 +232,7 @@ Are there any known issues ?
 Like anything and especially like anything new, the answer is a hardcoded `yes;`.  
 Here is a list of some of the things which are on my mind (I'll try to keep it updated):
 
-* Delta graphs (or 'derivative' graphs) are displayed incorrectly when shown after aggregation within the time they were reset. The delta's get aggregated and if resets occur within the aggregation, the resulting numbers are completely useless. Up to a minute or hour aggregation it looks fine.
+* Counter metrics (or 'derivative' graphs) are displayed incorrectly when shown after aggregation within the time they were reset. The delta's get aggregated and if resets occur within the aggregation, the resulting numbers are completely useless.
 
 Stack and Licenses
 ------------------
@@ -244,6 +272,11 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-14 -  
+* Added Graphite API interface to add metrics. 
+* Added dozens of more keywords (projection, quantizing, inter-series math, sorting, filtering etc.).
+* Improved minute aggregation speed (reducing from multi-map to single-map+split variable in awk).
 
 2013-08-08 -  
 * MAJOR CHANGE: Replaced format of saved files (for aggregations only), conversion script is one liner

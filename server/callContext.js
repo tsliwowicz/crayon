@@ -228,6 +228,26 @@ CallContext.prototype.parseArgs = function(callback) {
 		request.on('end', function () {
 			me.body = body;
 			
+			/*
+			if (message.data[0] == 0x1f && message.data[1] == 0x8b) {
+					try {
+						zlib.gunzip(message.data, function(err, uncompressedMsgBuff) {
+					 		if (err) {
+					 			logger.error("failed gunzipping RabbitMQ message: " + err);
+					 			return;
+					 		}
+					 		
+					 		handleMessage(uncompressedMsgBuff);
+					 		return;
+					 	});
+					} catch (ex) {
+						logger.error("Error decompressing RabbitMQ message: " + ex.stack);
+						return;
+					}
+				} else {
+					handleMessage(message.data);
+				}				*/
+
 			// Try to convert the post body into a json arguments object
 			try {
 				me.args = JSON.parse(body);
@@ -341,5 +361,29 @@ CallContext.prototype.getRequestedFile = function() {
 		});
 	});
 }
+
+module.exports.mockCallContext = function(requestUrl, onEnd, args) {
+	var me=this;
+	var mockRequest = {url: requestUrl};
+	var mockResponse = { 
+		writeHeader: function(code, headers) {
+			me.headers=headers;
+			me.code = code;
+		},
+		write: function(body,encoding) {
+			me.body = body;
+			me.encoding = encoding;
+		},
+		end: function() {
+			onEnd();
+		}
+	};
+	var callContext = new CallContext(mockRequest, mockResponse);
+	callContext.parseArgs(function() {});
+	if (args != null) callContext.args = args;
+	callContext.verbose = false;
+	return callContext;
+}
+
 
 module.exports.CallContext = CallContext;

@@ -149,20 +149,25 @@ Query.prototype.queryData = function() {
 							doc.t = new Date(parts[1].substring(0,15) + "0:00Z").addMinutes(0 * 10);
 						}
 
-						
 						if (isNaN(doc.t.getTime())) {
 							badDataPoints++;
 							continue;
+						}
+
+						var granularityInSeconds = currentDS.granularityInSeconds;
+						if (currentDS.granularityInMinutes) granularityInSeconds = currentDS.granularityInMinutes*60;
+						if (currentDS.granularityInHours) granularityInSeconds = currentDS.granularityInHours*3600;
+						if (currentDS.granularityInDays) granularityInSeconds = currentDS.granularityInDays*3600*24;
+						
+						if (granularityInSeconds) {
+							doc.t = new Date(doc.t.getTime() - (doc.t.getTime() % (granularityInSeconds*1000)));
 						}
 
 						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
 						if (currentDS.shiftHours) doc.t=doc.t.addHours(currentDS.addHours);
 						if (currentDS.shiftMinutes) doc.t=doc.t.addHours(currentDS.addMinutes);
 						if (currentDS.shiftDays) doc.t=doc.t.addHours(currentDS.addDays);
-						
-						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
-							me.lastDateInResponse = doc.t;
-						}
+
 					
 
 						if (parts[2] != "-") doc.s = parts[2];
@@ -194,9 +199,14 @@ Query.prototype.queryData = function() {
 						}
 
 						doc.t = new Date(parts[0] + "Z");
-
-						if (me.lastDateInResponse == null || doc.t > me.lastDateInResponse) {
-							me.lastDateInResponse = doc.t;
+						
+						var granularityInSeconds = currentDS.granularityInSeconds;
+						if (currentDS.granularityInMinutes) granularityInSeconds = currentDS.granularityInMinutes*60;
+						if (currentDS.granularityInHours) granularityInSeconds = currentDS.granularityInHours*3600;
+						if (currentDS.granularityInDays) granularityInSeconds = currentDS.granularityInDays*3600*24;
+						
+						if (granularityInSeconds) {
+							doc.t = new Date(doc.t.getTime() - (doc.t.getTime() % (granularityInSeconds*1000)));
 						}
 
 						if (currentDS.shiftSeconds) doc.t=doc.t.addHours(currentDS.addSeconds);
