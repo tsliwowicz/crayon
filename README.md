@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-14).
+(readme.md update in progress, last update on 2013-08-15).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -276,6 +276,9 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-15 -  
+* Fixed daily aggregation (it never executed due to a bad trigger condition)
 
 2013-08-14 -  
 * Added Graphite API interface to add metrics. 

@@ -152,18 +152,15 @@ JobManager.prototype.minuteElapsed = function(now) {
 		}
 	}
 
-	if (now.getUTCMinutes() == 10 && now.getUTCHours == 0) {
+	if (now.getUTCMinutes() == 10 && now.getUTCHours() == 1) {
 		try {
 			var msBefore = new Date().getTime();
 			me.logger.info("Started aggregating days");
 
 			// Aggregate previous 10 minutes
-			
 			var inputForAggregation = "";
-			for (i = -24; i < 0; ++i) {
-				var timeAgo = now.addMinutes(-10).addMinutes(i*60);
-				inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,13) + "/*/*";
-			}
+			var timeAgo = now.addHours(-24)
+			inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,10) + "T*";
 
 			exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
 				if (error) {
