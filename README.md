@@ -191,6 +191,10 @@ Since it's only javascript, there's also no need for compilation.
 
 1. Get the prerequisits:  
    a. `yum install nodejs npm make` - NodeJS and its download manager  
+```javascript
+	Note: Crayon requires a nodejs version higher than v0.6.12 or you  
+	      may encounter "missing requirement" errors during startup
+```  
    b. `npm install cityhash` - Google hashing library wrapper for NodeJS  
    c. `npm install zlib` - Compression library for browser-node communication  
    d. `npm install glob` - Helper file system library for munin plugin  
