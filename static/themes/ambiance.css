@@ -80,6 +80,14 @@
    background-image: url("/themes/grain.png");
 }
 
+#searchResultsDiv {
+   background-color: #202020;
+   border-bottom-color: #313131;
+   background-image: url("/themes/grain.png");
+   color: rgb(233, 233, 233);
+}
+
+
 html, body {
    background-color: #202020;
    background-image: url("/themes/grain.png");
@@ -222,6 +230,10 @@ ul.slidingVerticalMenu li a {
   background-image:url('/CrayonsScatterSmallGray.png'); 
 }
 
+.loadingGif {
+  background-image:url('/media/loading-ambiance2.gif'); 
+}
+
 .monitorHelperBar {
   color: rgb(233, 233, 233);
 }
@@ -257,4 +269,12 @@ color: rgb(202, 202, 202);
 
 .keywordDiv a {
 color: rgb(7, 189, 102);
+}
+
+.crayonInputDescription {
+  color: rgb(233, 233, 233);
+}
+
+.searchResultItem {
+  color: rgb(233, 233, 233);
 }

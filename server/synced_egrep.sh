@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ $2 == '-' ]; then
+if [ $2 != '-' ]; then
 	matches=$(look "$2" "$3" | egrep -s -h "$4")
 else 
 	matches=$(egrep -s -h "$4" "$3" )

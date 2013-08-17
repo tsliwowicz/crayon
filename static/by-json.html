@@ -354,6 +354,33 @@ var exportCSV = function(el) {
   	win.focus();
 }
 
+var exportJSON = function(el) {
+	var divCache = cacheByDiv[el.id];
+	var rows = [];
+	var sb = ["time"];
+	for (seriesIndex in divCache.seriesArr) {
+		sb.push(divCache.seriesArr[seriesIndex].fullCounterName);
+	}
+	rows.push(sb);
+	sb = [];
+	for (timeIndex in divCache.timeSlotArr) {
+		var timeSlot = divCache.timeSlotArr[timeIndex];
+		var row = [];
+
+		sb.push(timeSlot[0].toLocaleString());
+		for (var i = 1; i < timeSlot.length; ++i) {
+			sb.push(timeSlot[i]);
+		}
+		rows.push(sb);
+		sb = [];
+	}
+
+	//var query = "?dashboard=" + encodeURIComponent(JSON.stringify(graphCodeObj));
+  	var win=window.open();
+  	$(win.document.body).html(JSON.stringify(rows));
+  	win.focus();
+}
+
 var refreshGraph = function(gDiv) {
 	var graph = gDiv.graph;
 	graph.query.queryData();

@@ -130,6 +130,7 @@ body.append('<div class="graphMenuOptions" style="width: 55px">	\
 					<li onclick="doActionOnGraphDiv(this)">Hide</li>	\
 					<li onclick="doActionOnGraphDiv(this)">Get Image</li>	\
 					<li onclick="doActionOnGraphDiv(this)">Export CSV</li>	\
+					<li onclick="doActionOnGraphDiv(this)">Export JSON</li>	\
 					<li onclick="doActionOnGraphDiv(this)">Predict</li>	\
 				</ul>	\
 			</div>');
@@ -161,6 +162,8 @@ function doActionOnGraphDiv(graphMenuOptionItem) {
 		window.addPrediction(graphDivMenuIsShownTo,0.5, 0.4, 0.6, 4, 4)
 	} else if (action == "Export CSV") {
 		window.exportCSV(graphDivMenuIsShownTo)
+	} else if (action == "Export JSON") {
+		window.exportJSON(graphDivMenuIsShownTo)
 	} else if (action == "Get Image") {
 		html2canvas(graphDivMenuIsShownTo.parentNode, {
 		  onrendered: function(canvas) {

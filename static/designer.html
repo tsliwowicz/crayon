@@ -23,8 +23,15 @@
 	<div id="pageTable" style="width:100%;">
 		<div class="codemirrorTopBar" style="">
 			<span class="crayonButton" onclick="updateUrl()"  style="margin-left:30px">Query</span>
-			<span class="crayonButton" onclick="addSeries()"  style="margin-left:10px">Add/Remove Series</span>
 			<span class="crayonButton" onclick="saveDashboard()"  style="margin-left:10px">Save</span>
+			<span class="crayonInputDescription" style="margin-left:20px">Search metric by name:</span>
+			<input class="crayonInput" id="txtMetricName" type="Text" placeholder="regex expression" style="width:400px"></input>
+			<span class="crayonButton" onclick="searchMetricByName()"  style="margin-left:10px">Search</span>
+		</div>
+		<div id="searchResultsDiv" style="">
+			<span id="searchResultsStatus">
+			</span>
+			<span class="crayonButton" onclick="closeSearchResultsDiv()"  style="float:right;margin-right:10px">Hide</span>
 		</div>
 	</div>
 	<textarea id="txtQuery"></textarea>
@@ -39,167 +46,67 @@
 	</table>
 </div>
 
-<!-- add series dialog -->
-<div class="slidingOverlay" id="addSeriesDialog" style="left: -750px; top: 40px; width:750px; height: 500px;">
-  <h2>Add series</h2>
-
-  <p>
-    Search series by name using regex:<br>
-    <input id="matchRegex" style="width:240px"/><span class="crayonButton" onclick="searchSeries()" style="margin-left:10px">go</span>
-  </p>
-
-  <div id="matchBox" class="listBox" style="width:100%; height:350px;">
-  	<table id='matchTable' class="listTable" style='border-collapse: separate;text-align: left;width:100%;'>
-
-  	</table>
-  </div>
-
-  <!-- Buttons -->
-  <p>
-	<span class="crayonButton" onclick="addSeries_ok()" style="float:right;">OK</span>
-	<span class="crayonButton" onclick="addSeries_cancel()" style="float:right;margin-right:10px">Cancel</span>
-	<span class="crayonButton" onclick="addSeries_toggleAll()" style="float:left;">Toggle All</span>
-  </p>
-</div>
-
   <div id="autoCompleteDesc" style="display:none"></div>
 </div>
 <script type="text/javascript">
-//<a href="http://dygraphs.com/options.html">Dygraph Reference</a></td>
-// ===================================================================
-// =================================================================== ADD SERIES DIALOG
-// ===================================================================
 
-$("#matchRegex").keyup(function(event){
-    if(event.keyCode == 13){
-        searchSeries();
-    }
-});
-
-function searchSeries() {
-	matchTable.innerHTML = "";
-	var table = $("#matchTable");
-	getMatchingSeriesNames(matchRegex.value, updateMatchingSeriesList);
-}
-function updateMatchingSeriesList(nameDocs) {
-	var sb = "";
-	var namesInList = {};
-	for (nameIndex in graphToAddSeriesTo.names) {
-		var name = graphToAddSeriesTo.names[nameIndex];
-		namesInList[name] = 1;
-		sb += "<tr class='listItemRow'><td class='listItemCellSelected' onclick='toggleSeriesInList(this)'>" + name + "</td></tr>";
-	}
-
-	if (typeof nameDocs == "string") {
-		var nameLines = nameDocs.split('\n');
-		for (nameDocIndex in nameLines) {
-			var nameDoc = nameLines[nameDocIndex];
-			if (namesInList[nameDoc]) continue;
-			sb += "<tr class='listItemRow'><td class='listItemCell' onclick='toggleSeriesInList(this)'>" + nameDoc + "</td></tr>";
-		}
-	} else {
-		for (nameDocIndex in nameDocs) {
-			var nameDoc = nameDocs[nameDocIndex];
-			if (namesInList[nameDoc.n]) continue;
-			sb += "<tr class='listItemRow'><td class='listItemCell' onclick='toggleSeriesInList(this)'>" + nameDoc.n + "</td></tr>";
-		}
-	}
-
-	matchTable.innerHTML = sb;
-}
-function getMatchingSeriesNames(regex, callback) {
-	if (regex == null || regex.trim() == "") {
+function searchMetricByName() {
+	console.log("Searching for a match to: '" + txtMetricName.value + "'");
+	if ( txtMetricName.value == null ||  txtMetricName.value.trim() == "") {
 		console.warn("Regex length must be at least one character long");
 		return;
 	}
 
-	$.ajax({
-		url: "/matchSeriesName",
-		data: "limit=9999&regex=" + encodeURIComponent(regex),
-		headers: { "Accept-Encoding" : "gzip" },
-		success: function(resultObject) {
-			callback(resultObject);
+	showSearchResultsDiv();
+	searchResultsStatus.innerHTML = "<div class='loadingGif' style='vertical-align: middle;'></div><span style='margin-left:10px;vertical-align: middle;'>Scanning...</span>"
+	getMatchingSeriesNames(txtMetricName.value, function(result) {
+		searchResultsStatus.innerHTML = ""	
+		for (itemId in result) {
+			var extraStyle = "";
+			if (itemId == 0) extraStyle = ""
+			var resultItem = $(searchResultsStatus).append("<div class='searchResultItem' style='" + extraStyle + "'>" + result[itemId]+ "</div>");
 		}
 	});
 }
 
-function toggleSeriesInList(listItem) {
-	if (listItem.className == "listItemCellSelected") {
-		listItem.className = "listItemCell";
-	} else {
-		listItem.className = "listItemCellSelected";
-	}
-}
+$("#txtMetricName").keyup(function(event){
+    if(event.keyCode == 13){
+        searchMetricByName();
+    }
+});
 
-var graphToAddSeriesTo;
-var dashboardToAddSeriesTo;
-function updateJsonSeriesNames(tds) {
-	var usedNames = {};
-
-	for (i in tds) {
-		var seriesName = tds[i].innerHTML;
-		usedNames[seriesName] = 0;
-	}
-
-	var newNamesArr = [];
-	for (name in usedNames) {
-		if (!name) continue;
-		newNamesArr.push(name);
-	}
-	graphToAddSeriesTo.names = newNamesArr;
-	editor.setValue(js_beautify(JSON.stringify(dashboardToAddSeriesTo || graphToAddSeriesTo)));
-}
-function addSeries_toggleAll() {
-	var tds = matchTable.getElementsByTagName("td");
-	if (tds.length == 0) return;
-	var newClass = (tds[0].className == "listItemCell" ? "listItemCellSelected" : "listItemCell")
-
-	for (i in tds) {
-		tds[i].className = newClass;
-	}
-}
-function addSeries_ok() {
-	var tds = $(".listItemCellSelected").get()
-	updateJsonSeriesNames(tds);
-	addSeries_close();
-}
-function addSeries_cancel() {
-	addSeries_close();
-}
-function addSeries_close() {
-	matchTable.innerHTML = "";
-	$("#addSeriesDialog").css("left", "-750");
+function showSearchResultsDiv() {
+	//closeSearchDiv.innerHTML = "";
+	$("#searchResultsDiv").css("display", "block");
 	setTimeout(function() {
-		$("#addSeriesDialog").css("display", "none");
-	}, 500);
-}
-function addSeries() {
-	var args = editor.getValue();
-	try {
-		args = JSON.parse(args);
-	} catch (ex) {
-		alert('JSON must be valid before adding a series to it.\n' + ex);
-		return;
-	}
-
-	if (args.graphs && args.graphs.length > 0) { 
-		graphToAddSeriesTo = args.graphs[0];
-		dashboardToAddSeriesTo = args;
-	} else {
-		graphToAddSeriesTo = args;
-		dashboardToAddSeriesTo = null;
-	}
-
-	updateMatchingSeriesList([]);
-	$("#addSeriesDialog").css("display", "block");
-	setTimeout(function() {
-		$("#addSeriesDialog").css("left", "180");
+		$("#searchResultsDiv").css("height", "auto");
 	}, 200);
+}
+
+function closeSearchResultsDiv() {
+	//closeSearchDiv.innerHTML = "";
+	$("#searchResultsDiv").css("height", "0px");
+	setTimeout(function() {
+		$("#searchResultsDiv").css("display", "none");
+	}, 200);
+}
+
+function getMatchingSeriesNames(regex, callback) {
+	$.ajax({
+		url: "/matchSeriesName",
+		data: "limit=5&regex=" + encodeURIComponent(regex),
+		headers: { "Accept-Encoding" : "gzip" },
+		success: function(resultObject) {
+			var matches = resultObject.trim().split('\n');
+			callback(matches);
+		}
+	});
 }
 
 // ===================================================================
 // =================================================================== Page itself
 // ===================================================================
+
 
 CodeMirror.hintSelected = function(data, action, completion, el) {
 	var innerHTML = staticAutoComplete[completion];

@@ -624,7 +624,15 @@ module.exports.matchSeriesName = function(callContext) {
 		return;
 	}
 
-	var plan = "egrep -s -h '" + callContext.args.regex + "' minutes_ram/metrics | sort"
+	var limit = callContext.args.limit || 5;
+	var regex = "^[^ ]+ [^ ]*" + callContext.args.regex
+	var planSeed = Math.round(Math.random()*99999999);
+	var plan =  "ls minutes_ram/*/*/* | xargs -n 1 -P 10 -I {} " +
+		"./synced_egrep.sh " + planSeed + " '-' {} '" + regex + "'" + 
+		"| awk '{if (a[$2] == null && NF > 2) {a[$2]=1; print $2; g += 1; b = 0} else { b += 1 } if (g >= " + limit + " || (g >= 1 && b > 50)) { print \"awkterminating\" }}' " + 
+		"| head -" + limit + " | grep -v awkterminating";
+
+	plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck"
 	logger.info("Executing match series name: " + plan.colorBlue());
 	var maxBufferMB = 10;
 	var execConfig = {
@@ -637,8 +645,7 @@ module.exports.matchSeriesName = function(callContext) {
 
 		// If we failed querying
 		if (error) {
-			callContext.respondJson(200, {error: "Failed querying: " + error.stack});
-			logger.error("Match series failed: " + error.stack, "utf-8");
+			callContext.respondText(200, "No metric found");
 			return;
 		}
 
