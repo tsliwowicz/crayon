@@ -79,7 +79,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 		var timeField = "";
 		var planSeed = Math.round(Math.random()*99999999);
 		if (ds.unit == 'r') {
-			timeField = "$1";
+			timeField = "$4";
 			plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				var inputFile = "minutes_ram/" + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard
@@ -91,7 +91,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 				 planSuffix += " | awk -f ../aggregateMinutesInline.sh"
 			}
 		} else if (ds.unit == 'm') {
-			timeField = "$2";
+			timeField = "$4";
 			plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				var inputFile = "minutes/" + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
@@ -100,7 +100,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 				dateCursor = dateCursor.addMinutes(10);
 			}
 		} else if (ds.unit == 'h') {
-			timeField = "$2";
+			timeField = "$4";
 			plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
@@ -110,7 +110,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 				dateCursor = dateCursor.addHours(1);
 			}
 		} else if (ds.unit == 'd') {
-			timeField = "$2";
+			timeField = "$4";
 			plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
@@ -156,7 +156,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			fileName = "{}"
 
 			if (ds.unit == 'r') {
-				plan += "egrep -s -h '[^ ]* " + ds.name + "' " + fileName + " "
+				plan += "egrep -s -h '^" + ds.name + "' " + fileName + " "
 			} else {
 				var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
 				if (lookupPrefixEndIndex > 0) {
@@ -176,13 +176,13 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			fileName = "$f"
 
 			if (ds.unit == 'r') {
-				plan += "egrep -s -h '[^ ]* " + ds.name + "' " + fileName + " "
+				plan += "egrep -s -h '^" + ds.name + "' " + fileName + " "
 			} else {
 				var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
 				if (lookupPrefixEndIndex > 0) {
-					plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '" + ds.name + "'"
+					plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '^" + ds.name + "'"
 				} else {
-					plan += "egrep -s -h '" + ds.name + "' " + fileName + " "
+					plan += "egrep -s -h '^" + ds.name + "' " + fileName + " "
 				}
 			}
 
@@ -493,15 +493,15 @@ function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callb
 			}
 			lastBufObj = bufObj;
 
-			bufObj.pos += bufObj.buf.write(timeString,bufObj.pos);
-			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
 			bufObj.pos += bufObj.buf.write(args.n.replace(/ /g,"_"),bufObj.pos);
-			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
-			bufObj.pos += bufObj.buf.write(valString,bufObj.pos);
 			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
 			bufObj.pos += bufObj.buf.write(serverString,bufObj.pos);
 			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
 			bufObj.pos += bufObj.buf.write(compString,bufObj.pos);
+			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
+			bufObj.pos += bufObj.buf.write(timeString,bufObj.pos);
+			bufObj.pos += bufObj.buf.write(" ",bufObj.pos);
+			bufObj.pos += bufObj.buf.write(valString,bufObj.pos);
 			bufObj.pos += bufObj.buf.write("\n",bufObj.pos);
 			//allTextToWrite += JSON.stringify(args) + "\n";
 		}

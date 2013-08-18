@@ -142,11 +142,11 @@ Query.prototype.queryData = function() {
 						
 
 						if (currentDS.unit == "h") {
-							var oneOrZero = Math.round(new Date(parts[1]).getUTCMinutes() / 60);
-							doc.t = new Date(parts[1].substring(0,13) + ":00:00Z").addHours(oneOrZero);
+							var oneOrZero = Math.round(new Date(parts[3]).getUTCMinutes() / 60);
+							doc.t = new Date(parts[3].substring(0,13) + ":00:00Z").addHours(oneOrZero);
 						} else {
 							//var oneOrZero = Math.round((new Date(parts[0]).getUTCMinutes() % 10) / 10);
-							doc.t = new Date(parts[1].substring(0,15) + "0:00Z").addMinutes(0 * 10);
+							doc.t = new Date(parts[3].substring(0,15) + "0:00Z").addMinutes(0 * 10);
 						}
 
 						if (isNaN(doc.t.getTime())) {
@@ -170,8 +170,8 @@ Query.prototype.queryData = function() {
 
 					
 
-						if (parts[2] != "-") doc.s = parts[2];
-						if (parts[3] != "-") doc.c = parts[3];
+						if (parts[1] != "-") doc.s = parts[1];
+						if (parts[2] != "-") doc.c = parts[2];
 						doc.S = Number(parts[4]);
 						doc.N = Number(parts[5]);
 						doc.M = Number(parts[6]);
@@ -193,12 +193,12 @@ Query.prototype.queryData = function() {
 					} else {
 					
 						var doc = {};
-						doc.n = parts[1];
+						doc.n = parts[0];
 						if (currentDS.replaceName && currentDS.replaceName.join && currentDS.replaceName.length == 2) {
 							doc.n = doc.n.replace(new RegExp(currentDS.replaceName[0]), currentDS.replaceName[1]);
 						}
 
-						doc.t = new Date(parts[0] + "Z");
+						doc.t = new Date(parts[3] + "Z");
 						
 						var granularityInSeconds = currentDS.granularityInSeconds;
 						if (currentDS.granularityInMinutes) granularityInSeconds = currentDS.granularityInMinutes*60;
@@ -216,9 +216,9 @@ Query.prototype.queryData = function() {
 
 						
 
-						doc.A = doc.M = doc.m = doc.S = Number(parts[2]);
-						if (parts[3] != "-") doc.s = parts[3];
-						if (parts[4] != "-") doc.c = parts[4];
+						doc.A = doc.M = doc.m = doc.S = Number(parts[4]);
+						if (parts[1] != "-") doc.s = parts[1];
+						if (parts[2] != "-") doc.c = parts[2];
 						docs.push(doc);
 					}
 				} catch (ex) {

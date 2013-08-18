@@ -4,29 +4,33 @@ BEGIN  {
 
 {
 	# Calculate time key
-	if (fullTime != $2) {
-		timeKey=substr($2,0,10); #day;
-		fullTime=$2
+	if (fullTime != $4) {
+		timeKey=substr($4,0,10); #day;
+		fullTime=$4
 	}
 
 	# Create folder
-	if (createdServerDirs[timeKey $3] == null) {
-		createdServerDirs[timeKey $3] = 1;
-		cmd = "mkdir -p days/" timeKey "/" $3;
+	if (createdServerDirs[timeKey $2] == null) {
+		createdServerDirs[timeKey $2] = 1;
+		cmd = "mkdir -p days/" timeKey "/" $2;
 		print "Executing " cmd;
 		cmd | getline;
 	}
 
 	# Aggregate
-	key=timeKey " " $1 " " $3 " " $4;
-	t[key] = fullTime;
-	S[key] += $5;
-	N[key] += $6;
-	prevM = M[key];
-	if (prevM == null || prevM < $7) M[key] = $7;
+	key=timeKey " " $1 " " $2 " " $3;
+	prevVal = val[key];
+	if (prevVal == null) {
+		val[key] = fullTime " " $5 " " $6 " " $7 " " $8
+	} else {
+		split(prevVal,prevValParts," ");
+        max=$7;
+        min=$8;
+        if (prevValParts[4] > max) max=prevValParts[4];
+        if (prevValParts[5] < min) min=prevValParts[5];
 
-	prevm = m[key];
-	if (prevm == null || prevm > $8) m[key] = $8;
+        val[key] = fullTime" "(prevValParts[2]+$5)" "(prevValParts[3]+$6)" "max" "min;
+	}
 
 	if (++linesRead % 100000 == 0) print "[progress] " (linesRead/1000) "K lines processed"
 } 
@@ -35,24 +39,18 @@ END {
     linesFlushed = 0;
 
 	print "[progress] Sorting keys"
-    n = asorti(S, dest);
+    n = asorti(val, dest);
     for (i = 1; i <= n; i++) {
         key = dest[i];
 		split(key,keyParts," ");
+		split(val[key],prevValParts," "); 
 
 		outFile = "days/" keyParts[1] "/"  keyParts[3] "/" keyParts[4] ".@" suffix;
-		outFiles[outFile] = 1;
 
-		#     name            time       server          component       
-		line=keyParts[2] " " t[key] " " keyParts[3] " " keyParts[4] " " S[key] " " N[key] " " M[key] " " m[key];
+        #     name           server          component       time 				 sum				 count				 max				 min
+		line=keyParts[2] " " keyParts[3] " " keyParts[4] " " prevValParts[1] " " prevValParts[2] " " prevValParts[3] " " prevValParts[4] " " prevValParts[5];
 		print line > outFile;
 
 		if (++linesFlushed % 100000 == 0) print "[progress] " (linesFlushed/1000) "K lines flushed"
 	}
-
-#	for (key in outFiles) {
-#		print "[progress] Sorting " key;
-#		cmd = "sort " key " -o " key;
-#		cmd | getline;
-#	}
 }
