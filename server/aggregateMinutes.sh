@@ -53,3 +53,4 @@ END {
 
 		if (++linesFlushed % 100000 == 0) print "[progress] " (linesFlushed/1000) "K lines flushed"
     }
+}
