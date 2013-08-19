@@ -7,6 +7,7 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var staticDir = __dirname + '/../static'
 var minutesDelayLagAssuranceForAggregation = 1;
+var cpuCounter = null;
 
 function JobManager(logger) {
 	var me=this;
@@ -15,6 +16,8 @@ function JobManager(logger) {
 	me.hourTimer = setInterval(function() { me.hourElapsed(new Date()); }, 1000*60*60);
 	me.minuteTimer = setInterval(function() { me.minuteElapsed(new Date()); }, 1000*60);
 	me.halfMinuteTimer = setInterval(function() { me.halfMinuteElapsed(new Date()); }, 1000*30);
+	me.secondTimer = setInterval(function() { me.secondPassed(new Date()); }, 1000);
+	me.secondPassed(new Date());
 	me.halfMinuteElapsed(new Date());
 	me.minuteElapsed(new Date());
 	me.hourElapsed(new Date());
@@ -22,6 +25,26 @@ function JobManager(logger) {
 	//me.minuteTimer = setInterval(function() { me.checkThresholds(); }, 1000*5);
 	//me.checkThresholds();
 	if (!me.logger) throw new Error("Logger is undefined");
+}
+
+JobManager.prototype.secondPassed = function(now) {
+	var me=this;
+
+	// Update cpu every 10 seconds
+	if (now.getUTCSeconds() % 10 == 0) {
+		cpuCounter = cpuCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Crayon Host CPU", "crayon", null, true);
+
+		try {
+			exec("sar -u 1 1 | tail -1 | awk '{print $3}'", function(error, out, err) {  
+				if (out) {
+					var cpu = Number(out);
+					if (!isNaN(cpu)) {
+						cpuCounter.addSample(cpu);
+					}
+				}
+			})
+		} catch (ex) {}
+	}
 }
 
 JobManager.prototype.halfMinuteElapsed = function(now) {
@@ -88,33 +111,53 @@ JobManager.prototype.archive = function(msBefore, time, folder, counter) {
 JobManager.prototype.minuteElapsed = function(now) {
 	var me=this;
 
-	if (now.getUTCMinutes() % 10 == 0) {
+	var config = configLib.getConfig();
+	var coresToUseForAggregation = config.coresToUseForAggregation || 1;
+
+	if (now.getUTCMinutes() % 10 == 1) {
 		try {
 			var msBefore = new Date().getTime();
 			me.logger.info("Started aggregating minutes");
 
 			// Aggregate previous 10 minutes
-			
-			var inputForAggregation = "";
-			for (i = -10; i < 0; ++i) {
-				var timeAgo = now.addMinutes(i);
-				inputForAggregation += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
-			}
+ 
+			var aggregationInput = "minutes_ram/" + now.addMinutes(-10).toISOString().substring(0,"2013-08-18T19:5".length) + "*/*/*"
+			var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+				"ls " + aggregationInput + " | " +
+			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
+					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=minutes -f merge-aggregate.sh'"
 
-			exec("awk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + inputForAggregation, function(error, out, err) {  
+			exec(plan, function(error, out, err) {  
 				if (error) {
-					me.logger.error("Failed aggregating minutes " + inputForAggregation + ": " + error);
+					me.logger.error("Failed aggregating minutes " + aggregationInput + ": " + error);
 				} else if (err) {
-					me.logger.error("Error aggregating minutes " + inputForAggregation + ": " + error);
+					me.logger.error("Error aggregating minutes " + aggregationInput + ": " + error);
 				} else {
 					me.logger.debug(out);
 				}
-
-				var msAfter = new Date().getTime();
-				var duration = msAfter-msBefore;
-				me.logger.info("Finished aggregating minutes within " + (duration + "ms").colorMagenta());
-				countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Aggregation ms", "crayon").addSample(duration);
 			});
+
+			//var inputForAggregation = "";
+			//for (i = -10; i < 0; ++i) {
+			//	var timeAgo = now.addMinutes(i);
+			//	inputForAggregation += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
+			//}
+//
+			//exec("awk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + inputForAggregation, function(error, out, err) {  
+			//	if (error) {
+			//		me.logger.error("Failed aggregating minutes " + inputForAggregation + ": " + error);
+			//	} else if (err) {
+			//		me.logger.error("Error aggregating minutes " + inputForAggregation + ": " + error);
+			//	} else {
+			//		me.logger.debug(out);
+			//	}
+//
+			//	var msAfter = new Date().getTime();
+			//	var duration = msAfter-msBefore;
+			//	me.logger.info("Finished aggregating minutes within " + (duration + "ms").colorMagenta());
+			//	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Aggregation ms", "crayon").addSample(duration);
+			//});
+			
 		} catch (ex) {
 			me.logger.error("Exception aggregating minutes: " + ex.stack);
 		}
@@ -125,28 +168,44 @@ JobManager.prototype.minuteElapsed = function(now) {
 			var msBefore = new Date().getTime();
 			me.logger.info("Started aggregating hours");
 
-			// Aggregate previous 10 minutes
-			
-			var inputForAggregation = "";
-			for (i = -6; i < 0; ++i) {
-				var timeAgo = now.addMinutes(-15).addMinutes(i*10);
-				inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
-			}
+			var aggregationInput = "minutes/" + now.addMinutes(-30).toISOString().substring(0,"2013-08-18T19".length) + "*/*/*"
+			var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+				"ls " + aggregationInput + " | " +
+			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
+					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=hours -f merge-aggregate.sh'"
 
-			exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateHours.sh " + inputForAggregation, function(error, out, err) {  
+			exec(plan, function(error, out, err) {  
 				if (error) {
-					me.logger.error("Failed aggregating hours " + inputForAggregation + ": " + error);
+					me.logger.error("Failed aggregating hours " + aggregationInput + ": " + error);
 				} else if (err) {
-					me.logger.error("Error aggregating hours " + inputForAggregation + ": " + error);
+					me.logger.error("Error aggregating hours " + aggregationInput + ": " + error);
 				} else {
 					me.logger.debug(out);
 				}
-
-				var msAfter = new Date().getTime();
-				var duration = msAfter-msBefore;
-				me.logger.info("Finished aggregating hours within " + (duration + "ms").colorMagenta());
-				countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Aggregation ms", "crayon").addSample(duration);
 			});
+
+			// Aggregate previous 10 minutes
+			
+			//var inputForAggregation = "";
+			//for (i = -6; i < 0; ++i) {
+			//	var timeAgo = now.addMinutes(-15).addMinutes(i*10);
+			//	inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
+			//}
+//
+			//exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateHours.sh " + inputForAggregation, function(error, out, err) {  
+			//	if (error) {
+			//		me.logger.error("Failed aggregating hours " + inputForAggregation + ": " + error);
+			//	} else if (err) {
+			//		me.logger.error("Error aggregating hours " + inputForAggregation + ": " + error);
+			//	} else {
+			//		me.logger.debug(out);
+			//	}
+//
+			//	var msAfter = new Date().getTime();
+			//	var duration = msAfter-msBefore;
+			//	me.logger.info("Finished aggregating hours within " + (duration + "ms").colorMagenta());
+			//	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Aggregation ms", "crayon").addSample(duration);
+			//});
 		} catch (ex) {
 			me.logger.error("Exception aggregating hours: " + ex.stack);
 		}
@@ -157,25 +216,41 @@ JobManager.prototype.minuteElapsed = function(now) {
 			var msBefore = new Date().getTime();
 			me.logger.info("Started aggregating days");
 
-			// Aggregate previous 10 minutes
-			var inputForAggregation = "";
-			var timeAgo = now.addHours(-24)
-			inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,10) + "T*";
+			var aggregationInput = "hours/" + now.addHours(-24).toISOString().substring(0,"2013-08-18".length) + "*/*/*"
+			var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+				"ls " + aggregationInput + " | " +
+			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
+					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=days -f merge-aggregate.sh'"
 
-			exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
+			exec(plan, function(error, out, err) {  
 				if (error) {
-					me.logger.error("Failed aggregating days " + inputForAggregation + ": " + error);
+					me.logger.error("Failed aggregating days " + aggregationInput + ": " + error);
 				} else if (err) {
-					me.logger.error("Error aggregating days " + inputForAggregation + ": " + error);
+					me.logger.error("Error aggregating days " + aggregationInput + ": " + error);
 				} else {
 					me.logger.debug(out);
 				}
-
-				var msAfter = new Date().getTime();
-				var duration = msAfter-msBefore;
-				me.logger.info("Finished aggregating days within " + (duration + "ms").colorMagenta());
-				countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Aggregation ms", "crayon").addSample(duration);
 			});
+
+			// Aggregate previous 10 minutes
+			//var inputForAggregation = "";
+			//var timeAgo = now.addHours(-24)
+			//inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,10) + "T*";
+//
+			//exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
+			//	if (error) {
+			//		me.logger.error("Failed aggregating days " + inputForAggregation + ": " + error);
+			//	} else if (err) {
+			//		me.logger.error("Error aggregating days " + inputForAggregation + ": " + error);
+			//	} else {
+			//		me.logger.debug(out);
+			//	}
+//
+			//	var msAfter = new Date().getTime();
+			//	var duration = msAfter-msBefore;
+			//	me.logger.info("Finished aggregating days within " + (duration + "ms").colorMagenta());
+			//	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Aggregation ms", "crayon").addSample(duration);
+			//});
 		} catch (ex) {
 			me.logger.error("Exception aggregating days: " + ex.stack);
 		}

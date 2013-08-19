@@ -214,12 +214,30 @@ Query.prototype.queryData = function() {
 						if (currentDS.shiftMinutes) doc.t=doc.t.addHours(currentDS.addMinutes);
 						if (currentDS.shiftDays) doc.t=doc.t.addHours(currentDS.addDays);
 
-						
-
 						doc.A = doc.M = doc.m = doc.S = Number(parts[4]);
+						doc.N = 1;
 						if (parts[1] != "-") doc.s = parts[1];
 						if (parts[2] != "-") doc.c = parts[2];
-						docs.push(doc);
+
+						var docKey = null;
+						try {
+							 docKey = doc.s + doc.c + doc.n + doc.t.toISOString();
+						} catch (ex) {
+							console.error("Failed parsing doc: " + JSON.stringify(doc));
+							continue;
+						}
+						var prevDoc = docsByKey[docKey];
+						if (prevDoc) {
+							prevDoc.S += doc.S;
+							prevDoc.N += doc.N;
+							prevDoc.A = prevDoc.S / prevDoc.N;
+							if (doc.M > prevDoc.M) prevDoc.M = doc.M;
+							if (doc.m < prevDoc.m) prevDoc.m = doc.m;
+						} else {
+							docsByKey[docKey] = doc;
+							docs.push(doc);
+						}
+						
 					}
 				} catch (ex) {
 					debugger;
@@ -227,6 +245,10 @@ Query.prototype.queryData = function() {
 					break;
 				}
 			}
+
+			//if (currentDS.from && !currentDS.to && docs.length > 0) {
+			//	docs.push({n:"current time marker", t: new Date(), s: "-", c: "-", A: NaN, M: NaN, m: NaN, N: NaN, S: NaN});
+			//}
 
 			if (badDataPoints > 0) {
 				console.warn("Ignored " + badDataPoints + " bad data points");

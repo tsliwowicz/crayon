@@ -2170,3 +2170,13 @@ staticAutoComplete["color"] = ' \
   <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
   <br> </div> \
 ';
+
+staticAutoComplete["untilNow"] = ' \
+<div class="option"><a name="untilNow"></a><b>untilNow</b><br> \
+  <p>Used for graphs showing up to date data points to indicate the graph should always end at the current time, even if data is missing</p> \
+  <i><span class="dyDescType">Type:</span> boolean </i><br> \
+  <i><span class="dyDescType">Default:</span> null </i><p></p> \
+  <span class="dyDescType">Gallery Samples:</span> <font color="red">NONE</font><br> \
+  <span class="dyDescType">Other Examples:</span> <font color="red">NONE</font><br> \
+  <br> </div> \
+';

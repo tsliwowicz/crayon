@@ -1075,7 +1075,7 @@ font-size: 10px;
 	position:absolute; 
 	left:30px; 
 	top:-30px; 
-	z-index:30;
+	z-index:80;
 	width:200px;
 	margin:0; padding:0px; list-style:none;
 	background:#FFF; color:#000;
@@ -1091,6 +1091,7 @@ font-size: 10px;
 	font: normal 90% 'Trebuchet MS', 'Lucida Grande', Arial, sans-serif;
 	height: 22px;
 	padding-top: 3px;
+	z-index:80;
 }
 .graphMenuOptions>ul.list li:hover {
 	background:#EC6603; 

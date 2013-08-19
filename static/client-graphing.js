@@ -324,7 +324,8 @@ var drawGraph = function(graphDiv, labelsDiv, graphData, userOptions) {
 			valueMultiplier: 1,
 			highlightSeriesBackgroundAlpha: 1,
 			highlightCallback: highlightCallback_ShowSeriesName,
-			unhighlightCallback: unhighlightCallback_ShowSeriesName
+			unhighlightCallback: unhighlightCallback_ShowSeriesName,
+			xAxisLabelWidth: 60
 		};
 
 	// Override default options
@@ -611,6 +612,10 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		if (counter == null) continue;
 		var fullCounterName = getCounterName(counter, divCache.graphOptions);
 		var seriesObj = divCache.seriesFound[fullCounterName];
+		if (seriesObj == null) {
+			console.error("Series not found: " + fullCounterName);
+			break;
+		}
 
 		// Rotate the data to match dygraph's list format
 		// Example (from dygraph's site):
@@ -749,6 +754,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 	}
 
 	// Fill empty counter values with NaN (Makes dygraph draw gaps instead of 0 values)
+	var spliced = false;
 	var lastDate = null;
 	var lastSeriesDate = {};
 	function realizeGap(lateTimeSlot, atTime, atIndex, where) {
@@ -757,9 +763,12 @@ var populateTimeSlotArr = function(divCache, graphData) {
 				lateTimeSlot
 			}
 
-			var edgeDateEarly = lastDate.addMinutes(1);
-			var edgeDateLate = atTime.addMinutes(-1);
+			//var edgeDateEarly = lastDate.addMinutes(1);
+			//var edgeDateLate = atTime.addMinutes(-1);
 		
+			var edgeDateEarly = new Date(lastDate.getTime() + 1);
+			var edgeDateLate = new Date(atTime.getTime() - 1);
+
 			var earlySlot = [edgeDateEarly];
 			var lateSlot = [edgeDateLate];
 			var addEarlySlotTerminator = true;
@@ -773,8 +782,15 @@ var populateTimeSlotArr = function(divCache, graphData) {
 				num++;
 			}
 			
-			if (addLateSlotTerminator) divCache.timeSlotArr.splice(atIndex,0,lateSlot);
-			if (addEarlySlotTerminator) divCache.timeSlotArr.splice(atIndex,0,earlySlot);
+			if (addLateSlotTerminator) {
+				divCache.timeSlotArr.splice(atIndex,0,lateSlot);
+				spliced = true;
+			}
+
+			if (addEarlySlotTerminator) {
+				divCache.timeSlotArr.splice(atIndex,0,earlySlot);
+				spliced = true;
+			}
 			return true;
 		}
 		return false;
@@ -786,6 +802,12 @@ var populateTimeSlotArr = function(divCache, graphData) {
 	var firstIndexOfMissingPoints = {};
 	var timeSlotIndex = 0
 	divCache.lastDate = lastDate;
+
+	if (divCache.graphOptions.untilNow && divCache.timeSlotArr.length > 0) {
+		//var lastSlot = divCache.timeSlotArr[divCache.timeSlotArr.length - 1];
+		divCache.timeSlotArr.push([new Date()]);
+	}
+
 	//if (firstNewTimeSlotIndex != null) {
 		for (; timeSlotIndex < divCache.timeSlotArr.length; ++timeSlotIndex) {
 		//for (timeSlotIndex in divCache.timeSlotArr) {
@@ -857,6 +879,10 @@ var populateTimeSlotArr = function(divCache, graphData) {
 				realizeGap(null, lastDate.addSeconds(divCache.graphOptions.gapInSeconds), timeSlotIndex, "end");
 			//}
 		}
+
+	if (spliced) {
+		divCache.timeSlotArr.sort(function (g1,g2) { var t1=g1[0].getTime(); var t2=g2[0].getTime(); return (t1 < t2 ? -1 : 1) });
+	}
 
 	if (divCache.timeSlotArr.length > 1 && 
 		divCache.timeSlotArr[divCache.timeSlotArr.length - 1].length <

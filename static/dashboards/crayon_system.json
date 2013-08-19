@@ -10,7 +10,8 @@
         "connectSeparatedPoints": false,
         "fillGraph": true,
         "aggregative": "max",
-        "stackedGraph": true
+        "stackedGraph": true,
+        "untilNow": true
     },
     "defaultDataSourceOpts": {
         "tailSecondsInterval": 60,
@@ -29,7 +30,7 @@
         }],
         "graphOpts": {
             "stackedGraph": false,
-            "title": "Max Insert Time (live)"
+            "title": "Max Insert Time"
         }
     }, {
         "dataSources": [{
@@ -45,7 +46,11 @@
         }],
         "graphOpts": {
             "aggregative": "sum",
-            "title": "Inserts Per Second (live)"
+            "title": "Data Points /s",
+            "lineStyles": [{
+                "match": ".*",
+                "color": "green"
+            }]
         }
     }, {
         "dataSources": ["messageSizes"],
@@ -59,23 +64,27 @@
         }],
         "graphOpts": {
             "aggregative": "sum",
-            "title": "Bytes Per Second (live)"
+            "title": "Incoming Bytes /s"
         }
     }, {
         "dataSources": ["messageSizes"],
         "graphOpts": {
             "aggregative": "ave",
             "stackedGraph": false,
-            "title": "Average message size (live)"
+            "title": "Average message size"
         }
     }, {
         "dataSources": [{
-            "component": "*",
-            "server": "metric1",
-            "name": "crayon_cpu"
+            "name": "Crayon_Host_CPU"
         }],
         "graphOpts": {
-            "title": "Max CPU Per Second (Live)"
+            "connectSeparatedPoints": true,
+            "gapInSeconds": 20,
+            "title": "Crayon Host CPU /s",
+            "lineStyles": [{
+                "match": ".*",
+                "color": "red"
+            }]
         }
     }, {
         "dataSources": [{
@@ -94,11 +103,27 @@
         }
     }, {
         "dataSources": [{
-            "name": "graphite_API_messages"
+            "name": "(Total_Rows_Scanned|Committed_Aggregated_Rows)",
+            "component": "crayonAggregation*"
+        }],
+        "calculatedDataSources": [{
+            "match": {
+                "name": "Total_Rows_Scanned"
+            },
+            "insteadOfMatches": true,
+            "name": "Scanned Rows"
+        }, {
+            "match": {
+                "name": "Committed_Aggregated_Rows"
+            },
+            "insteadOfMatches": true,
+            "name": "Aggregated Rows"
         }],
         "graphOpts": {
-            "stackedGraph": true,
-            "title": "Graphite API messages /s"
+            "aggregative": "sum",
+            "gapInSeconds": 10,
+            "stackedGraph": false,
+            "title": "Aggregation"
         }
     }, {
         "dataSources": [{
@@ -123,10 +148,11 @@
         }
     }, {
         "dataSources": [{
-            "name": ".*_Aggregation_ms"
+            "name": "graphite_API_messages"
         }],
         "graphOpts": {
-            "title": "Aggregation ms"
+            "stackedGraph": true,
+            "title": "Graphite API messages /s"
         }
     }]
 }

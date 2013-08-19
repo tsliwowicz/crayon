@@ -39,7 +39,6 @@ var plotGraph = function(allGraphData, graph) {
 		var pageTable = $("#pageTable");
 		
 		var graphDataChanged = false;
-
 		if (graph.calculatedDataSources && graph.calculatedDataSources.length > 0) {
 			var minMs = 0;
 			if (allGraphData.length > 0) minMs = allGraphData[0].t.getTime();
@@ -148,14 +147,18 @@ var plotGraph = function(allGraphData, graph) {
 							if (k == "component") minifiedK = "c";
 
 							if (typeof matchObj[k] == "string") {
-								isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(matchObj[k])
+								if (dataPoint[minifiedK] != null) {
+									var matchResult = dataPoint[minifiedK].toString().match(matchObj[k]);
+									if (matchResult != null && (matchResult == true || matchResult.length)) return true;
+								}
 							} else if (typeof matchObj[k] == "object") {
 								for (matchIndex in matchObj[k]) {
-									isMatch = dataPoint[minifiedK] && dataPoint[minifiedK].toString().match(matchObj[k][matchIndex]);
-									if (isMatch) return true;
+									if (dataPoint[minifiedK] != null) {
+										var matchResult = dataPoint[minifiedK].toString().match(matchObj[k][matchIndex]);
+										if (matchResult != null && (matchResult == true || matchResult.length)) return true;
+									}
 								}
 							}
-							if (isMatch) return true;
 						}
 
 						return false;
@@ -171,6 +174,7 @@ var plotGraph = function(allGraphData, graph) {
 							aggregatedPoint.c = null;
 							aggregatedPoint.s = null;
 							aggregatedPoint.isAggregated = true;
+
 							if (addToGraphData) {
 								allGraphData.push(aggregatedPoint);
 							}

@@ -277,6 +277,12 @@ Stack and Licenses
 Change Log
 ----------
 
+2013-08-19 -  
+* Replaced entire aggregation pipeline to a faster multicore one (x3-x5)
+* Added more visibility to the aggregation process
+* Fixed bad positioning on raw data graphs graph with gaps of data
+* Added keywords
+
 2013-08-18 -  
 * MAJOR CHANGE: Replaced format of saved files, conversion script is one liner (preparing for multicore aggregations)  
 

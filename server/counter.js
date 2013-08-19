@@ -14,6 +14,8 @@ setInterval(function() {
 	var allMetrics = [];
 	for (key in counterByKey) {
 		var counter = counterByKey[key];
+		if (counter.keepState && counter.args.N == 0) continue;
+
 		var metric = counter.getMetric();
 		metric.t = now;
 		allMetrics.push(metric);
@@ -59,17 +61,19 @@ module.exports.flushAll = function() {
 	}
 }
 
-module.exports.getOrCreateCounter = function(secondsInterval, name, component, server) {
+module.exports.getOrCreateCounter = function(secondsInterval, name, component, server, keepState) {
 	if (!server) server = shortHostname;
+	if (!keepState) keepState = false;
+
 	var key = name + "_" + component + "_" + server;
 	var counter = counterByKey[key];
 	if (counter) return counter;
 
-	counter = new Counter(secondsInterval, name, component, server);
+	counter = new Counter(secondsInterval, name, component, server, keepState);
 	return counterByKey[key];
 };
 
-function Counter(secondsInterval, name, component, server) {
+function Counter(secondsInterval, name, component, server, keepState) {
 	var me=this;
 	me.key = name + "_" + component + "_" + server;
 	counterByKey[me.key] = me;
@@ -77,6 +81,7 @@ function Counter(secondsInterval, name, component, server) {
 	if (server != null) me.args.s = server;
 	if (component != null) me.args.c = component + crayonId;
 	me.args.n = name;
+	me.keepState = keepState;
 	me.resetCounter();
 	//logger.info("New Counter Created: " + JSON.stringify(me.args));
 	//me.timer = setInterval(function() { me.flushCounter() }, secondsInterval*1000);
@@ -114,8 +119,11 @@ Counter.prototype.flushCounter = function() {
 				argsCopy[key] = me.args[key]
 			}
 
-			measurements.addBulkTimeslotsByDate(1024,[argsCopy],"counter", function() {});
+			//if (me.keepState && me.args.N == 0) {
+			//	return;
+			//}
 
+			measurements.addBulkTimeslotsByDate(1024,[argsCopy],"counter", function() {});
 			me.resetCounter();
 		} catch (ex) {
 			console.log("Cannot flush counter: " + ex.stack);
