@@ -281,6 +281,7 @@ Change Log
 2013-08-20 -  
 * Some fixes of the job manager regarding the new pipeline
 * Updating installation procedure in readme
+* Did some IDE changes to the designer, making it friendlier and more forgiving
 
 2013-08-19 -  
 * Replaced entire aggregation pipeline to a faster multicore one (x3-x5)

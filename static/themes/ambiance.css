@@ -278,3 +278,7 @@ color: rgb(7, 189, 102);
 .searchResultItem {
   color: rgb(233, 233, 233);
 }
+
+.lint-error {
+  background: #202020;
+}
