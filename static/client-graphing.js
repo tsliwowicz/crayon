@@ -522,6 +522,21 @@ var updateDrawnGraph = function(graphDiv, graphData, enlargeWindow) {
 var populateTimeSlotArr = function(divCache, graphData) {
 	var noValue = divCache.graphOptions["stackedGraph"] ? 0 : NaN;
 
+
+	if (divCache.timeSlotArr && divCache.timeSlotArr.length > 0) {
+		var last = divCache.timeSlotArr[divCache.timeSlotArr.length - 1];
+		var isAllNaN = true;
+		for (index in last) {
+			if (index == "0") continue;
+			if (isNaN(last[index])) continue;
+			isAllNaN = false;
+		}
+
+		if (isAllNaN) {
+			divCache.timeSlotArr.splice(divCache.timeSlotArr.length - 1,1);
+		}
+	}
+
 	for (fullCounterName in  divCache.seriesFound) {
 		var seriesObj = divCache.seriesFound[fullCounterName];
 		
