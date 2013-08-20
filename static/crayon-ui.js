@@ -146,7 +146,7 @@ function showOptionsForGraph(graphDiv) {
 		var pos = divJQ.position();
 		graphMenuOptionsJQ.css('left', pos.left + divJQ.width()).css('top', pos.top);
 		graphMenuOptionsJQ.css("display", "block");
-		setTimeout(function() { graphMenuOptionsJQ.css("opacity", 0.98); }, 200);
+		setTimeout(function() { graphMenuOptionsJQ.css("opacity", 1); }, 200);
 		graphDivMenuIsShownTo = graphDiv;
 	}
 }
