@@ -6,7 +6,7 @@ Crayon
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
 * Crayon's stack consists of [NodeJS][] as server, file system as storage and [dyGraphs][] as charting control. 
-* Crayon aims to be at least as scalable and flexible as graphite.
+* Crayon aims to be the fastest most flexible general purpose graphing system out there.
 
 Screenshots: 
 * [Crayon System Dashboard][] - Where we get insight on what's going inside crayon  
