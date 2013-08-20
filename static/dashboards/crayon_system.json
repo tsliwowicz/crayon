@@ -6,7 +6,7 @@
         "noLegend": true,
         "width": 500,
         "height": 100,
-        "gapInSeconds": 10,
+        "gapInSeconds": 20,
         "connectSeparatedPoints": false,
         "fillGraph": true,
         "aggregative": "max",
@@ -131,6 +131,14 @@
         }],
         "graphOpts": {
             "title": "Max Query Plan Execution ms"
+        }
+    }, {
+        "dataSources": [{
+            "name": "Remaining_Raw_RAM"
+        }],
+        "graphOpts": {
+            "yTransform": "y*1024",
+            "title": "Remaining RAM for Raw Data  /s"
         }
     }, {
         "dataSources": [{

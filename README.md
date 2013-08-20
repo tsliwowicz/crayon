@@ -282,6 +282,7 @@ Change Log
 * Some fixes of the job manager regarding the new pipeline
 * Updating installation procedure in readme
 * Did some IDE changes to the designer, making it friendlier and more forgiving
+* Added remaining ram for raw data graph (search with for a mount with df | grep minutes_ram)
 
 2013-08-19 -  
 * Replaced entire aggregation pipeline to a faster multicore one (x3-x5)

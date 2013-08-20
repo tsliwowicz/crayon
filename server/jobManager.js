@@ -8,6 +8,7 @@ var fs = require('fs');
 var staticDir = __dirname + '/../static'
 var minutesDelayLagAssuranceForAggregation = 1;
 var cpuCounter = null;
+var rawRemainingRamCounter = null;
 
 function JobManager(logger) {
 	var me=this;
@@ -33,6 +34,7 @@ JobManager.prototype.secondPassed = function(now) {
 	// Update cpu every 10 seconds
 	if (now.getUTCSeconds() % 10 == 0) {
 		cpuCounter = cpuCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Crayon Host CPU", "crayon", null, true);
+		rawRemainingRamCounter = rawRemainingRamCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Remaining Raw RAM", "crayon", null, true);
 
 		try {
 			exec("sar -u 1 1 | tail -1 | awk '{print $3}'", function(error, out, err) {  
@@ -40,6 +42,17 @@ JobManager.prototype.secondPassed = function(now) {
 					var cpu = Number(out);
 					if (!isNaN(cpu)) {
 						cpuCounter.addSample(cpu);
+					}
+				}
+			})
+		} catch (ex) {}
+
+		try {
+			exec("df | grep minutes_ram | awk '{print $(NF-2)}'", function(error, out, err) {  
+				if (out) {
+					var bytes = Number(out);
+					if (!isNaN(bytes)) {
+						rawRemainingRamCounter.addSample(bytes);
 					}
 				}
 			})
