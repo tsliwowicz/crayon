@@ -139,7 +139,7 @@ var graphDivMenuIsShownTo = null;
 function showOptionsForGraph(graphDiv) {
 	if (graphDivMenuIsShownTo == graphDiv) {
 		graphMenuOptionsJQ.css("opacity", 0);
-		setTimeout(function() { graphMenuOptionsJQ.css("display", "block"); }, 200);
+		setTimeout(function() { graphMenuOptionsJQ.css("display", "none"); }, 200);
 		graphDivMenuIsShownTo = null;
 	} else {
 		var divJQ = $(graphDiv.parentNode);
