@@ -100,8 +100,8 @@ You can always add more shards of crayon and update crayon.conf with the new sha
 Our setup includes:  
 * `NGINX` - An open source balancer layer before NodeJS running on port 60000
 * `Crayon Job Manager NodeJS` - Crayon service running on port 54320 and does aggregations (started with `--jobmanager`)
-* `Crayon NodeJS` - 5 Crayon services running on ports 54321-54325 receive metrics from NGINX
-* `Crayon NodeJS` - 1 Crayon service running on port 54333 for UI responsiveness (started with `--uiOnly`)
+* `Crayon NodeJS` - 12 Crayon services running on ports 54321-54332 receive metrics from NGINX
+* `Crayon NodeJS` - 1 Crayon service running on port 54335 for UI responsiveness (started with `--uiOnly`)
 
 (Refresh if the image doesn't load, it's a GitHub thing)  
 ![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/crayon_benchmark_12_cores.png)
