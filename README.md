@@ -204,10 +204,11 @@ Since it's only javascript, there's also no need for compilation.
   
 2. `cd /var/lib` and then `git clone git://github.com/shai-d/crayon.git`  
 3. Go to the crayon server directory `cd crayon/server`  
-4. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`  
-5. Before running node, run `export NODE_PATH=/path/to/where/npm/put/the/node_modules/`  
-6. Run a crayon general purpose service `node server.js --port=54321`  
-7. Web interface should be available now on  `http://<serverName>:54321/`  
+4. Give execution permission to shell files `chmod +x ./*.sh`  
+5. Mount the minutes_ram folder to your RAM with: `mount -t tmpfs -o size=16g tmpfs minutes_ram`  
+6. Before running node, run `export NODE_PATH=/path/to/where/npm/put/the/node_modules/`  
+7. Run a crayon general purpose service `node server.js --port=54321`  
+8. Web interface should be available now on  `http://<serverName>:54321/`  
  
 ```javascript
    Note: You can run as many instances as youd like (on different ports of course)

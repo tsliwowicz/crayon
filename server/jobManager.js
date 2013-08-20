@@ -114,6 +114,12 @@ JobManager.prototype.minuteElapsed = function(now) {
 	var config = configLib.getConfig();
 	var coresToUseForAggregation = config.coresToUseForAggregation || 1;
 
+	var execConfig = {
+	    maxBuffer: 50 * 1024 * 1024,
+	    env: {
+	    }
+	};
+
 	if (now.getUTCMinutes() % 10 == 1) {
 		try {
 			var msBefore = new Date().getTime();
@@ -122,12 +128,12 @@ JobManager.prototype.minuteElapsed = function(now) {
 			// Aggregate previous 10 minutes
  
 			var aggregationInput = "minutes_ram/" + now.addMinutes(-10).toISOString().substring(0,"2013-08-18T19:5".length) + "*/*/*"
-			var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+			var plan = "ls " + aggregationInput + " | xargs -n 1 -P " + coresToUseForAggregation + " -I {} ./sort-file-faster.sh {};" +
 				"ls " + aggregationInput + " | " +
 			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
 					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=minutes -f merge-aggregate.sh'"
 
-			exec(plan, function(error, out, err) {  
+			exec(plan, execConfig, function(error, out, err) {  
 				if (error) {
 					me.logger.error("Failed aggregating minutes " + aggregationInput + ": " + error);
 				} else if (err) {
@@ -137,27 +143,6 @@ JobManager.prototype.minuteElapsed = function(now) {
 				}
 			});
 
-			//var inputForAggregation = "";
-			//for (i = -10; i < 0; ++i) {
-			//	var timeAgo = now.addMinutes(i);
-			//	inputForAggregation += " minutes_ram/" + timeAgo.toISOString().substring(0,16) + "/*/*";
-			//}
-//
-			//exec("awk -v suffix="+ now.getUTCMinutes() +" -f aggregateMinutes.sh " + inputForAggregation, function(error, out, err) {  
-			//	if (error) {
-			//		me.logger.error("Failed aggregating minutes " + inputForAggregation + ": " + error);
-			//	} else if (err) {
-			//		me.logger.error("Error aggregating minutes " + inputForAggregation + ": " + error);
-			//	} else {
-			//		me.logger.debug(out);
-			//	}
-//
-			//	var msAfter = new Date().getTime();
-			//	var duration = msAfter-msBefore;
-			//	me.logger.info("Finished aggregating minutes within " + (duration + "ms").colorMagenta());
-			//	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Aggregation ms", "crayon").addSample(duration);
-			//});
-			
 		} catch (ex) {
 			me.logger.error("Exception aggregating minutes: " + ex.stack);
 		}
@@ -174,7 +159,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
 					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=hours -f merge-aggregate.sh'"
 
-			exec(plan, function(error, out, err) {  
+			exec(plan, execConfig, function(error, out, err) {  
 				if (error) {
 					me.logger.error("Failed aggregating hours " + aggregationInput + ": " + error);
 				} else if (err) {
@@ -184,28 +169,6 @@ JobManager.prototype.minuteElapsed = function(now) {
 				}
 			});
 
-			// Aggregate previous 10 minutes
-			
-			//var inputForAggregation = "";
-			//for (i = -6; i < 0; ++i) {
-			//	var timeAgo = now.addMinutes(-15).addMinutes(i*10);
-			//	inputForAggregation += " minutes/" + timeAgo.toISOString().substring(0,15) + "/*/*";
-			//}
-//
-			//exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateHours.sh " + inputForAggregation, function(error, out, err) {  
-			//	if (error) {
-			//		me.logger.error("Failed aggregating hours " + inputForAggregation + ": " + error);
-			//	} else if (err) {
-			//		me.logger.error("Error aggregating hours " + inputForAggregation + ": " + error);
-			//	} else {
-			//		me.logger.debug(out);
-			//	}
-//
-			//	var msAfter = new Date().getTime();
-			//	var duration = msAfter-msBefore;
-			//	me.logger.info("Finished aggregating hours within " + (duration + "ms").colorMagenta());
-			//	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Aggregation ms", "crayon").addSample(duration);
-			//});
 		} catch (ex) {
 			me.logger.error("Exception aggregating hours: " + ex.stack);
 		}
@@ -222,7 +185,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
 					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=days -f merge-aggregate.sh'"
 
-			exec(plan, function(error, out, err) {  
+			exec(plan, execConfig, function(error, out, err) {  
 				if (error) {
 					me.logger.error("Failed aggregating days " + aggregationInput + ": " + error);
 				} else if (err) {
@@ -232,25 +195,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 				}
 			});
 
-			// Aggregate previous 10 minutes
-			//var inputForAggregation = "";
-			//var timeAgo = now.addHours(-24)
-			//inputForAggregation += " hours/" + timeAgo.toISOString().substring(0,10) + "T*";
-//
-			//exec("awk -v suffix="+ now.getUTCHours() +" -f aggregateDays.sh " + inputForAggregation, function(error, out, err) {  
-			//	if (error) {
-			//		me.logger.error("Failed aggregating days " + inputForAggregation + ": " + error);
-			//	} else if (err) {
-			//		me.logger.error("Error aggregating days " + inputForAggregation + ": " + error);
-			//	} else {
-			//		me.logger.debug(out);
-			//	}
-//
-			//	var msAfter = new Date().getTime();
-			//	var duration = msAfter-msBefore;
-			//	me.logger.info("Finished aggregating days within " + (duration + "ms").colorMagenta());
-			//	countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Aggregation ms", "crayon").addSample(duration);
-			//});
+
 		} catch (ex) {
 			me.logger.error("Exception aggregating days: " + ex.stack);
 		}
@@ -262,172 +207,5 @@ JobManager.prototype.hourElapsed = function(now) {
 
 	
 }
-
-
-/*
-var previousAlerts = {};
-
-JobManager.prototype.checkThresholds = function() {
-	var me=this;
-
-	try {
-
-		var confText = fs.readFileSync(staticDir + "/thresholds.conf");
-		var thresholds = JSON.parse(confText);
-		for (var i = 0; i<thresholds.length; ++i) {
-
-			// Skip disabled thresholds
-			if (thresholds[i].enabled != null && thresholds[i].enabled == false) continue;
-
-			// Check the threshold
-			me.mongo.checkThreshold(thresholds[i], 's', function(threshold, matches) {
-				var alertedThresholds = [];
-				var alertedThresholdsNoVariables = [];
-				for (i in matches) {
-					var match = matches[i];
-					var server = match._id 
-					var val = match.v;
-
-					var excludeMatch = false;
-					for (excludeIndex in threshold.excludeServers) {
-						var serverRegexToExclude = threshold.excludeServers[excludeIndex];
-						if (server.match(serverRegexToExclude)) {
-							excludeMatch = true;
-							break;
-						}
-					}
-
-					if (excludeMatch) continue;
-					alertedThresholdsNoVariables.push({server: server, threshold: threshold.condition});
-					alertedThresholds.push({server: server, value: val, threshold: threshold.condition});
-				}
-
-				if (alertedThresholds.length > 0) {
-
-					var alertData = JSON.stringify(alertedThresholds);
-					var alertDataNoVariables = JSON.stringify(alertedThresholdsNoVariables);
-
-					// Skip thresholds in silense period if it's the same alert
-					var previousAlert = previousAlerts[JSON.stringify(threshold)];
-
-					if (previousAlert && 
-						previousAlert.alertTime.addMinutes(threshold.minutesBetweenAlerts||10) > new Date() &&
-						previousAlert.alertDataNoVariables == alertDataNoVariables) {
-						me.logger.info("Skipping Threshold Alert due to silence period: " + (threshold.description||"missing threshold 'description' attribute") + "\n" + alertData);
-						return;
-					} else {
-						previousAlerts[JSON.stringify(threshold)] = { alertTime: new Date(), alertData: alertData, alertDataNoVariables: alertDataNoVariables};
-					}
-
-					var desc = (threshold.description||"[no description] missing threshold 'description' attribute");
-					me.logger.info("Threshold Alert: ".colorRed() + desc + "\n" + alertData);
-
-					if (!threshold.noMail) {
-						mail.send({
-							text:    "Threshold definition:\n" +  JSON.stringify(threshold) + "\n\nAlert Data:\n" + alertData, 
-							subject: "[Crayon] Threshold Passed: " + desc,
-							mailTo: threshold.mailTo
-						});
-					}
-				}
-			});
-		}
-	} catch (ex) {
-		me.logger.error("Failed checking thresholds: " + ex.stack);
-	}
-}
-
-JobManager.prototype.minuteElapsed = function() {
-	var me=this;
-
-	var config = configLib.getConfig();
-	if (config.hoursToRetainSamples) me.archive(config.hoursToRetainSamples);
-
-	// Aggregation
-	// Note: this could be spread accross multiple timers, but because this seems to operate very fast, I'll keep it here
-	// Also note that we add a lag of minutes because we're using write concern 0 and we want to be sure everything flushed
-	me.aggregateSecondsToMinutes(function() { 
-		
-	});
-
-	me.checkThresholds();
-}
-
-JobManager.prototype.hourElapsed = function() {
-	var me=this;
-
-	me.logger.info("[JobManager] Hour elapsed");
-
-	try {
-		var config = configLib.getConfig();
-
-		// Archive
-		if (config.hoursToRetainSamples) me.archive(config.hoursToRetainSamples);
-
-		// Aggregate
-		setTimeout(function() {
-			me.aggregateMinutesToHours(function() {
-				setTimeout(function() { me.aggregateHoursToDays(function() {}); }, 10000 );
-			});
-		}, 10000)
-
-	} catch (ex) {
-		me.logger.error("Failed performing hour elapsed tasks\n" + ex.stack);
-	}
-}	
-
-JobManager.prototype.archive = function(retention) {
-	var me=this;
-	try {
-		me.logger.info("[JobManager] JOB: Archiving");
-		setTimeout(function() {if (retention.days) me.mongo.archive('d', new Date().addHours(-retention.days)); }, 100);
-		setTimeout(function() {if (retention.hours) me.mongo.archive('h', new Date().addHours(-retention.hours)); }, 10000);
-		setTimeout(function() {if (retention.minutes) me.mongo.archive('m', new Date().addHours(-retention.minutes)); }, 20000);
-		setTimeout(function() {if (retention.seconds) me.mongo.archive('s', new Date().addHours(-retention.seconds)); }, 30000);
-	} catch (ex) {
-		me.logger.error("Archiving job failed with exception: " + ex.stack);
-	}
-}
-
-JobManager.prototype.aggregateSecondsToMinutes = function(callback) {
-	var me=this;
-	try {
-		me.logger.info("[JobManager] JOB: Aggregating seconds to minutes");
-		var now = new Date().addMinutes(-minutesDelayLagAssuranceForAggregation);
-		var fromStr = now.addMinutes(-1).toISOString().replace("T", " ").substring(0,16);
-		var toStr = now.toISOString().replace("T", " ").substring(0,16);
-		me.mongo.aggregate(fromStr, toStr, "s", "m",callback);
-	} catch (ex) {
-		me.logger.error("Aggregation job failed with exception: " + ex.stack);
-	}
-}
-
-JobManager.prototype.aggregateMinutesToHours = function(callback) {
-	var me=this;
-	try {
-		me.logger.info("[JobManager] JOB: Aggregating minutes to hours");
-		var now = new Date().addMinutes(-minutesDelayLagAssuranceForAggregation);
-		var fromStr = now.addHours(-1).toISOString().replace("T", " ").substring(0,13);
-		var toStr = now.toISOString().replace("T", " ").substring(0,13);
-		me.mongo.aggregate(fromStr, toStr, "m", "h",callback);
-	} catch (ex) {
-		me.logger.error("Aggregation job failed with exception: " + ex.stack);
-	}
-}
-
-JobManager.prototype.aggregateHoursToDays = function(callback) {
-	var me=this;
-	try {
-		me.logger.info("[JobManager] JOB: Aggregating hours to days");
-		var now = new Date().addMinutes(-minutesDelayLagAssuranceForAggregation);
-		var fromStr = now.addDays(-1).toISOString().replace("T", " ").substring(0,10);
-		var toStr = now.toISOString().replace("T", " ").substring(0,10);
-		me.mongo.aggregate(fromStr, toStr, "h", "d",callback);
-	} catch (ex) {
-		me.logger.error("Aggregation job failed with exception: " + ex.stack);
-	}
-}
-
-*/
 
 module.exports.JobManager = JobManager;
