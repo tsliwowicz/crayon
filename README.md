@@ -104,7 +104,7 @@ Our setup includes:
 * `Crayon NodeJS` - 1 Crayon service running on port 54333 for UI responsiveness (started with `--uiOnly`)
 
 (Refresh if the image doesn't load, it's a GitHub thing)  
-![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/Bemchmark.png)
+![alt tag](https://raw.github.com/shai-d/crayon/master/docs/images/crayon_benchmark_12_cores.png)
 
 What's the graph definition language ?
 --------------------------------------
