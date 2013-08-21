@@ -281,6 +281,17 @@ var hideOverlay = function() {
 }
 /* CRAYON PROGRESS END  */
 
+// Simulate on resize to make code mirror work on all browsers
+try {
+if (document.createEvent) {
+    var e = document.createEvent('HTMLEvents');
+    e.initEvent('resize', true, false);
+    document.body.dispatchEvent(e);
+
+} else if (document.createEventObject) {
+    document.body.fireEvent('onresize');
+}
+} catch (ex) {}
 
 /*
 var all = document.getElementsByTagName("*");
