@@ -49,7 +49,7 @@ var validateTimeField = function(args, callContext) {
 	}
 }
 
-function queryDataSource(ds, callContext, onDatasourceQueryDone) {
+function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 	try {
 		var now = new Date();
 
@@ -80,7 +80,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 		var planSeed = Math.round(Math.random()*99999999);
 		if (ds.unit == 'r') {
 			timeField = "$4";
-			plan += "echo '" + ds.originalIndex + "';";
+			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				var inputFile = "minutes_ram/" + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard
 				inputFilesString += " " + inputFile;
@@ -92,7 +92,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			}
 		} else if (ds.unit == 'm') {
 			timeField = "$4";
-			plan += "echo '" + ds.originalIndex + "';";
+			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
 				var inputFile = "minutes/" + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
 				inputFilesString += " " + inputFile;
@@ -101,7 +101,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			}
 		} else if (ds.unit == 'h') {
 			timeField = "$4";
-			plan += "echo '" + ds.originalIndex + "';";
+			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
 				var inputFile = "hours/" + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
@@ -111,7 +111,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone) {
 			}
 		} else if (ds.unit == 'd') {
 			timeField = "$4";
-			plan += "echo '" + ds.originalIndex + "';";
+			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
 				var inputFile = "days/" + dateCursor.toISOString().substring(0,10) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
@@ -209,9 +209,10 @@ module.exports.find = function(callContext) {
 	}
 
 	try {
+		args.dsString = args.ds;
 		args.ds = JSON.parse(args.ds);
 	} catch (ex) {
-		callContext.respondText(400, "Error: Invalid dataSources supplied");
+		callContext.respondText(400, "Error: Invalid dataSources supplied (" + args.ds + ")");
 		return;
 	}
 
@@ -272,6 +273,8 @@ module.exports.find = function(callContext) {
 		}
 	}
 
+	//logger.debug("Received new query: " + (args.dsString).colorBlue() + " dataSources: " + JSON.stringify(dataSources));
+
 	var remainingDatasources = dataSources.length;
 	var combinedOutput = "";
 	var onDatasourceQueryDone = function(ds, out) {
@@ -316,7 +319,7 @@ module.exports.find = function(callContext) {
 	for (dsIndex in dataSources) {
 		var dataSource = dataSources[dsIndex];
 		dataSource.index = dsIndex;
-		queryDataSource(dataSource, callContext, onDatasourceQueryDone);
+		queryDataSource(dataSource, callContext, onDatasourceQueryDone, args);
 	}
 }
 
@@ -324,8 +327,13 @@ function queryShard(args, remoteShard, onDatasourceQueryDone) {
 	var dsString = encodeURIComponent(JSON.stringify(args.ds));
 	logger.debug("Querying shard: " + remoteShard.colorBlue());
 	
+	var extraShardArgs = "";
+	if (args.noDsIndex) {
+		extraShardArgs = "noDsIndex=true&";
+	}
+
 	var reqObj = { 
-		url: 'http://' + remoteShard + '/find?noShards=1&ds=' + dsString, 
+		url: 'http://' + remoteShard + '/find?' + extraShardArgs + 'noShards=1&ds=' + dsString, 
 		headers: {'accept-encoding': 'gzip'},
 		encoding: null
 	};
@@ -625,11 +633,11 @@ module.exports.matchSeriesName = function(callContext) {
 	}
 
 	var limit = callContext.args.limit || 5;
-	var regex = "^[^ ]+ [^ ]*" + callContext.args.regex
+	var regex = callContext.args.regex;
 	var planSeed = Math.round(Math.random()*99999999);
 	var plan =  "ls minutes_ram/*/*/* | xargs -n 1 -P 10 -I {} " +
 		"./synced_egrep.sh " + planSeed + " '-' {} '" + regex + "'" + 
-		"| awk '{if (a[$2] == null && NF > 2) {a[$2]=1; print $2; g += 1; b = 0} else { b += 1 } if (g >= " + limit + " || (g >= 1 && b > 50)) { print \"awkterminating\" }}' " + 
+		"| awk '{if (a[$1] == null && NF > 2) {a[$1]=1; print $1; g += 1; b = 0} else { b += 1 } if (g >= " + limit + " || (g >= 1 && b > 50)) { print \"awkterminating\" }}' " + 
 		"| head -" + limit + " | grep -v awkterminating";
 
 	plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck"

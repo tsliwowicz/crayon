@@ -4,12 +4,14 @@ var isJobManager = false;
 var uiOnly = false;
 var hostname = require("os").hostname();
 var portForGraphiteFormat = null;
+var noAggregations = false;
 
 for (argIndex in process.argv) {
 	var arg = process.argv[argIndex];
 	if (arg.indexOf("--port=") == 0) serverPort=Number(arg.substring("--port=".length));
 	if (arg.indexOf("--graphite-api-port=") == 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
 	if (arg.indexOf("--jobmanager") == 0) isJobManager = true;
+	if (arg.indexOf("--noAggregations") == 0) noAggregations = true;
 	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
 }
 console.log(process.argv);
@@ -108,7 +110,7 @@ mail.connect(function(err) {
 
 	if (!uiOnly) {
 		if (isJobManager) {
-			var jobManager = new JobManager(logger);
+			var jobManager = new JobManager(logger, noAggregations);
 		} else {
 			rabbitmq.connect();
 		}

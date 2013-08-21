@@ -23,7 +23,7 @@ function writeMetrics(isEnd) {
 
 	#if (!counterTimeKeyFolderCreated[counterTimeKey]) {
 	#	counterTimeKeyFolderCreated[counterTimeKey] = 1;
-		"mkdir -p minutes_ram/" counterTimeKey "/" selfHost | getline;
+		# "mkdir -p minutes_ram/" counterTimeKey "/" selfHost | getline;
 	#}
 	
 	counterComponent="crayonAggregation"
@@ -31,15 +31,15 @@ function writeMetrics(isEnd) {
 
 	#print "[output] Writing metrics to : " aggregationCounterFile " (time is "counterFullTime")"
 
-	print "Total_Rows_Scanned "selfHost" "counterComponent" "counterFullTime" "totalRowsCounter >> aggregationCounterFile;
-	print "Committed_Aggregated_Rows "selfHost" "counterComponent" "counterFullTime" "committedRowsCounter >> aggregationCounterFile;
-	print "Aggregated_Bad_Rows "selfHost" "counterComponent" "counterFullTime" "ignoreingBadRow >> aggregationCounterFile;
+	#print "Total_Rows_Scanned "selfHost" "counterComponent" "counterFullTime" "totalRowsCounter >> aggregationCounterFile;
+	#print "Committed_Aggregated_Rows "selfHost" "counterComponent" "counterFullTime" "committedRowsCounter >> aggregationCounterFile;
+	#print "Aggregated_Bad_Rows "selfHost" "counterComponent" "counterFullTime" "ignoreingBadRow >> aggregationCounterFile;
 	committedRowsCounter = 0;
 	totalRowsCounter = 0;
 	ignoreingBadRow = 0;
 
 	if (isEnd == 1) {
-		print "Sample line (at end): Total_Rows_Scanned_"s"_"c" "selfHost" "counterComponent" "counterFullTime" "totalRowsCounter
+		#print "Sample line (at end): Total_Rows_Scanned_"s"_"c" "selfHost" "counterComponent" "counterFullTime" "totalRowsCounter
 	}
 }
 
@@ -51,7 +51,8 @@ function commitPendingRow() {
 		ignoreingBadRow++;
 	} else {
 		outFile = level "/" timeKey "/"  s "/" c ".@" suffix;
-		print n" "s" "c" "fullTime" "S" "C" "M" "m >> outFile;
+
+		print n" "s" "c" "fullTime" "S" "C" "M" "m " >> "outFile;
 	}
 }
 
@@ -72,7 +73,7 @@ function aggregateRow(row)
 		createdServerDirs[timeKey rowParts[2]] = 1;
 		cmd = "mkdir -p " level "/" timeKey "/" rowParts[2];
 		print "Executing " cmd;
-		cmd | getline;
+		#cmd | getline;
 	}
 		
 	# Compare aggregation key (name server component time)

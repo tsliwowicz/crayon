@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-20).
+(readme.md update in progress, last update on 2013-08-21).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -277,6 +277,11 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-21 -  
+* Added a new crayon-client.sh shell file to wrap everything easy from the command line
+* Fixed regex matching (which got broken after the major data format change
+* Fixed aggregation self documenting counters bug
 
 2013-08-20 -  
 * Some fixes of the job manager regarding the new pipeline

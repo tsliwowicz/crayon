@@ -10,7 +10,7 @@ var minutesDelayLagAssuranceForAggregation = 1;
 var cpuCounter = null;
 var rawRemainingRamCounter = null;
 
-function JobManager(logger) {
+function JobManager(logger, noAggregations) {
 	var me=this;
 	
 	me.logger = logger;
@@ -22,6 +22,7 @@ function JobManager(logger) {
 	me.halfMinuteElapsed(new Date());
 	me.minuteElapsed(new Date());
 	me.hourElapsed(new Date());
+	me.noAggregations = noAggregations;
 
 	//me.minuteTimer = setInterval(function() { me.checkThresholds(); }, 1000*5);
 	//me.checkThresholds();
@@ -133,84 +134,86 @@ JobManager.prototype.minuteElapsed = function(now) {
 	    }
 	};
 
-	if (now.getUTCMinutes() % 10 == 1) {
-		try {
-			var msBefore = new Date().getTime();
-			me.logger.info("Started aggregating minutes");
+	if (!noAggregations) {
+		if (now.getUTCMinutes() % 10 == 1) {
+			try {
+				var msBefore = new Date().getTime();
+				me.logger.info("Started aggregating minutes");
 
-			// Aggregate previous 10 minutes
- 
-			var aggregationInput = "minutes_ram/" + now.addMinutes(-10).toISOString().substring(0,"2013-08-18T19:5".length) + "*/*/*"
-			var plan = "ls " + aggregationInput + " | xargs -n 1 -P " + coresToUseForAggregation + " -I {} ./sort-file-faster.sh {};" +
-				"ls " + aggregationInput + " | " +
-			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
-					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=minutes -f merge-aggregate.sh'"
+				// Aggregate previous 10 minutes
+	 
+				var aggregationInput = "minutes_ram/" + now.addMinutes(-10).toISOString().substring(0,"2013-08-18T19:5".length) + "*/*/*"
+				var plan = "ls " + aggregationInput + " | xargs -n 1 -P " + coresToUseForAggregation + " -I {} ./sort-file-faster.sh {};" +
+					"ls " + aggregationInput + " | " +
+				    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
+						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=minutes -f merge-aggregate.sh'"
 
-			exec(plan, execConfig, function(error, out, err) {  
-				if (error) {
-					me.logger.error("Failed aggregating minutes " + aggregationInput + ": " + error);
-				} else if (err) {
-					me.logger.error("Error aggregating minutes " + aggregationInput + ": " + error);
-				} else {
-					me.logger.debug(out);
-				}
-			});
+				exec(plan, execConfig, function(error, out, err) {  
+					if (error) {
+						me.logger.error("Failed aggregating minutes " + aggregationInput + ": " + error);
+					} else if (err) {
+						me.logger.error("Error aggregating minutes " + aggregationInput + ": " + error);
+					} else {
+						me.logger.debug(out);
+					}
+				});
 
-		} catch (ex) {
-			me.logger.error("Exception aggregating minutes: " + ex.stack);
+			} catch (ex) {
+				me.logger.error("Exception aggregating minutes: " + ex.stack);
+			}
 		}
-	}
 
-	if (now.getUTCMinutes() == 15) {
-		try {
-			var msBefore = new Date().getTime();
-			me.logger.info("Started aggregating hours");
+		if (now.getUTCMinutes() == 15) {
+			try {
+				var msBefore = new Date().getTime();
+				me.logger.info("Started aggregating hours");
 
-			var aggregationInput = "minutes/" + now.addMinutes(-30).toISOString().substring(0,"2013-08-18T19".length) + "*/*/*"
-			var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
-				"ls " + aggregationInput + " | " +
-			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
-					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=hours -f merge-aggregate.sh'"
+				var aggregationInput = "minutes/" + now.addMinutes(-30).toISOString().substring(0,"2013-08-18T19".length) + "*/*/*"
+				var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+					"ls " + aggregationInput + " | " +
+				    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
+						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=hours -f merge-aggregate.sh'"
 
-			exec(plan, execConfig, function(error, out, err) {  
-				if (error) {
-					me.logger.error("Failed aggregating hours " + aggregationInput + ": " + error);
-				} else if (err) {
-					me.logger.error("Error aggregating hours " + aggregationInput + ": " + error);
-				} else {
-					me.logger.debug(out);
-				}
-			});
+				exec(plan, execConfig, function(error, out, err) {  
+					if (error) {
+						me.logger.error("Failed aggregating hours " + aggregationInput + ": " + error);
+					} else if (err) {
+						me.logger.error("Error aggregating hours " + aggregationInput + ": " + error);
+					} else {
+						me.logger.debug(out);
+					}
+				});
 
-		} catch (ex) {
-			me.logger.error("Exception aggregating hours: " + ex.stack);
+			} catch (ex) {
+				me.logger.error("Exception aggregating hours: " + ex.stack);
+			}
 		}
-	}
 
-	if (now.getUTCMinutes() == 10 && now.getUTCHours() == 1) {
-		try {
-			var msBefore = new Date().getTime();
-			me.logger.info("Started aggregating days");
+		if (now.getUTCMinutes() == 10 && now.getUTCHours() == 1) {
+			try {
+				var msBefore = new Date().getTime();
+				me.logger.info("Started aggregating days");
 
-			var aggregationInput = "hours/" + now.addHours(-24).toISOString().substring(0,"2013-08-18".length) + "*/*/*"
-			var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
-				"ls " + aggregationInput + " | " +
-			    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
-					"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=days -f merge-aggregate.sh'"
+				var aggregationInput = "hours/" + now.addHours(-24).toISOString().substring(0,"2013-08-18".length) + "*/*/*"
+				var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+					"ls " + aggregationInput + " | " +
+				    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
+						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=days -f merge-aggregate.sh'"
 
-			exec(plan, execConfig, function(error, out, err) {  
-				if (error) {
-					me.logger.error("Failed aggregating days " + aggregationInput + ": " + error);
-				} else if (err) {
-					me.logger.error("Error aggregating days " + aggregationInput + ": " + error);
-				} else {
-					me.logger.debug(out);
-				}
-			});
+				exec(plan, execConfig, function(error, out, err) {  
+					if (error) {
+						me.logger.error("Failed aggregating days " + aggregationInput + ": " + error);
+					} else if (err) {
+						me.logger.error("Error aggregating days " + aggregationInput + ": " + error);
+					} else {
+						me.logger.debug(out);
+					}
+				});
 
 
-		} catch (ex) {
-			me.logger.error("Exception aggregating days: " + ex.stack);
+			} catch (ex) {
+				me.logger.error("Exception aggregating days: " + ex.stack);
+			}
 		}
 	}
 }
