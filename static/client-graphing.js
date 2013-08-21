@@ -528,7 +528,7 @@ var populateTimeSlotArr = function(divCache, graphData) {
 		var isAllNaN = true;
 		for (index in last) {
 			if (index == "0") continue;
-			if (isNaN(last[index])) continue;
+			if (isNaN(last[index]) || last[index] == 0) continue;
 			isAllNaN = false;
 		}
 
