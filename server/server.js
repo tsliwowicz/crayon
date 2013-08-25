@@ -9,12 +9,12 @@ var demoMode = false;
 
 for (var argIndex in process.argv) {
 	var arg = process.argv[argIndex];
-	if (arg.indexOf("--port=") == 0) serverPort=Number(arg.substring("--port=".length));
-	if (arg.indexOf("--graphite-api-port=") == 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
-	if (arg.indexOf("--jobmanager") == 0) isJobManager = true;
-	if (arg.indexOf("--noAggregations") == 0) noAggregations = true;
-	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
-	if (arg.indexOf("--demoMode") == 0) { demoMode = true; noAggregations = true; }
+	if (arg.indexOf("--port=") === 0) serverPort=Number(arg.substring("--port=".length));
+	if (arg.indexOf("--graphite-api-port=") === 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
+	if (arg.indexOf("--jobmanager") === 0) isJobManager = true;
+	if (arg.indexOf("--noAggregations") === 0) noAggregations = true;
+	if (arg.indexOf("--uiOnly") === 0) uiOnly = true;
+	if (arg.indexOf("--demoMode") === 0) { demoMode = true; noAggregations = true; }
 }
 
 console.log(process.argv);

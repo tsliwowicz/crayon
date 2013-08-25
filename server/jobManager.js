@@ -35,7 +35,7 @@ JobManager.prototype.secondPassed = function(now) {
 	var me=this;
 
 	// Update cpu every 10 seconds
-	if (now.getUTCSeconds() % 10 == 0) {
+	if (now.getUTCSeconds() % 10 === 0) {
 		cpuCounter = cpuCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Crayon Host CPU", "crayon", null, true);
 		rawRemainingRamCounter = rawRemainingRamCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Remaining Raw RAM", "crayon", null, true);
 
