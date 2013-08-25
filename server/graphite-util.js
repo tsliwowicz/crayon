@@ -17,7 +17,7 @@ module.exports.init = function(portForGraphiteFormat) {
 	net.createServer(function(socket) {
 	  	try {
 			socket.buffer = [];
-			socket.name = socket.remoteAddress + ":" + socket.remotePort 
+			socket.name = socket.remoteAddress + ":" + socket.remotePort;
 			logger.info("got new socket connection: " + (socket.name).colorBlue());
 			socket.on('data', function (data) {
 				try {
@@ -69,7 +69,7 @@ module.exports.init = function(portForGraphiteFormat) {
 
 						if (indicesToRemove.length > 0) {
 							indicesToRemove.sort().reverse();
-							for (i in indicesToRemove) {
+							for (var i in indicesToRemove) {
 								var indexToRemove = indicesToRemove[i];
 								metricParts.splice(indexToRemove, 1);
 							}
@@ -95,7 +95,7 @@ module.exports.init = function(portForGraphiteFormat) {
 					);
 
 					callContext.body = JSON.stringify(docs);
-					callContext.provider = "graphiteAPI"
+					callContext.provider = "graphiteAPI";
 					measurements.addRaw(callContext);
 				} catch (ex) {
 					logger.error("Failed handling graphite message: " + ex.stack);
@@ -106,4 +106,4 @@ module.exports.init = function(portForGraphiteFormat) {
 		}
 
 	}).listen(portForGraphiteFormat);		
-}
+};

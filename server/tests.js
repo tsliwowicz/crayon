@@ -29,16 +29,16 @@ TestContext.prototype.Fail = function(message) {
 	if (this.afterTest) this.afterTest();
 	failures++;
 	me.completed();
-}
+};
 TestContext.prototype.Pass = function() {
 	var me=this;
 	console.log(("Test " + me.name + " passed.").colorGreen());
 	if (this.afterTest) this.afterTest();
 	me.completed();
-}
+};
 	
 function runAllTests() {	
-	for (testName in tests) {
+	for (var testName in tests) {
 		testsToRun.push(testName);
 	}
 	
@@ -50,7 +50,7 @@ function allTestsCompleted() {
 }
 
 function runNextTest() {
-	if (testsToRun.length == 0 || failures > 0) {
+	if (testsToRun.length === 0 || failures > 0) {
 		allTestsCompleted();
 		return;
 	}
@@ -98,8 +98,8 @@ tests = {
 			} else {
 			
 				url1= "http://localhost:13855/addAggregate?time=2013-06-23%2008:10:05&min=1&max=7&samples=6&ave=4.166667&name=" + testContext.name + "&server=other-pc&stdevInc=20.83333";
-				url2= "http://localhost:13855/addAggregate?time=2013-06-23%2008:10:06&min=3&max=30&samples=5&ave=17.6&name=" + testContext.name + "&server=other-pc&stdevInc=419.2"
-
+				url2= "http://localhost:13855/addAggregate?time=2013-06-23%2008:10:06&min=3&max=30&samples=5&ave=17.6&name=" + testContext.name + "&server=other-pc&stdevInc=419.2";
+				
 				var rowsThatShouldBeCreated = [
 					{ "t" : "2013-06-23", "m" : 1, "M" : 30, "N" : 11, "A" : 10.272727454545453, "n" : testContext.name, "s" : "other-pc", "V" : 84.74379912947664,"unit" : "d"},
 					{ "t" : "2013-06-23 08", "m" : 1, "M" : 30, "N" : 11, "A" : 10.272727454545453, "n" : testContext.name, "s" : "other-pc", "V" : 84.74379912947664, "unit" : "h"},
@@ -107,14 +107,14 @@ tests = {
 					{ "t" : "2013-06-23 08:10:05", "m" : 1, "M" : 7, "N" : 6, "A" : 4.166667, "n" : testContext.name, "s" : "other-pc", "V" : 20.83333, "unit" : "s"},
 					{ "t" : "2013-06-23 08:10:06", "m" : 3, "M" : 30, "N" : 5, "A" : 17.6, "n" : testContext.name, "s" : "other-pc", "V" : 419.2, "unit" : "s"},
 					{ "unit" : "counterName", "n" : "testCombineAggregateRows" }
-				]
+				];
 				
 				mongo.clearTestsDatabase(function (err) {
 					setTimeout(function () {
 		
 						var callsRemaining = 2;
 						function onCallOver() {
-							if (--callsRemaining == 0) {
+							if (--callsRemaining === 0) {
 								setTimeout(function() {
 									mongo.assertRowsExists(rowsThatShouldBeCreated, function(assertErr) {
 										if (assertErr == null) testContext.Pass();
@@ -141,7 +141,7 @@ tests = {
 			} else {
 			
 				url1= "http://localhost:13855/addRaw?time=2013-06-23%2008:10:05&val=1&name=" + testContext.name + "&server=other-pc";
-				url2= "http://localhost:13855/addRaw?time=2013-06-23%2008:10:06&val=2&name=" + testContext.name + "&server=other-pc"
+				url2= "http://localhost:13855/addRaw?time=2013-06-23%2008:10:06&val=2&name=" + testContext.name + "&server=other-pc";
 				
 				var rowsThatShouldBeCreated = [
 					{ "t" : "2013-06-23 08:10:05", "n" : testContext.name, "s" : "other-pc", "N" : 1, "m" : 1, "M" : 1, "A" : 1, "V" : 0, "unit" : "s" },
@@ -150,14 +150,14 @@ tests = {
 					{ "A" : 1.5, "M" : 2, "m" : 1, "n" : testContext.name, "N" : 2, "s" : "other-pc", "V" : 0.5, "t" : "2013-06-23", "unit" : "d" },
 					{ "A" : 1.5, "M" : 2, "m" : 1, "n" : testContext.name, "N" : 2, "s" : "other-pc", "V" : 0.5, "t" : "2013-06-23 08:10", "unit" : "m" },
 					{ "unit" : "counterName", "n" : "testCombineRawRows" }
-				]
+				];
 				
 				mongo.clearTestsDatabase(function (err) {
 					setTimeout(function () {
 		
 						var callsRemaining = 2;
 						function onCallOver() {
-							if (--callsRemaining == 0) {
+							if (--callsRemaining === 0) {
 								setTimeout(function() {
 									mongo.assertRowsExists(rowsThatShouldBeCreated, function(assertErr) {
 										if (assertErr == null) testContext.Pass();
@@ -193,15 +193,15 @@ tests = {
 					{ "t" : "2013-06-23 08:10:06", "n" : testContext.name, "s" : "other-pc", "N" : 1, "m" : 2, "M" : 2, "A" : 2, "V" : 0, "unit" : "s" },
 					{ "A" : 1.5, "M" : 2, "m" : 1, "n" : testContext.name, "N" : 2, "s" : "other-pc", "V" : 0.5, "t" : "2013-06-23 08", "unit" : "h"},
 					{ "A" : 1.5, "M" : 2, "m" : 1, "n" : testContext.name, "N" : 2, "s" : "other-pc", "V" : 0.5, "t" : "2013-06-23", "unit" : "d" },
-					{ "A" : 1.5, "M" : 2, "m" : 1, "n" : testContext.name, "N" : 2, "s" : "other-pc", "V" : 0.5, "t" : "2013-06-23 08:10", "unit" : "m" },
-				]
+					{ "A" : 1.5, "M" : 2, "m" : 1, "n" : testContext.name, "N" : 2, "s" : "other-pc", "V" : 0.5, "t" : "2013-06-23 08:10", "unit" : "m" }
+				];
 				
 				mongo.clearTestsDatabase(function (err) {
 					setTimeout(function () {
 		
 						var callsRemaining = 1;
 						function onCallOver() {
-							if (--callsRemaining == 0) {
+							if (--callsRemaining === 0) {
 								setTimeout(function() {
 									mongo.assertRowsExists(rowsThatShouldBeCreated, function(assertErr) {
 										if (assertErr == null) testContext.Pass();
@@ -254,7 +254,7 @@ tests = {
 							mongo.assertRowsExists(rowsThatShouldBeCreated, function(assertErr) {
 								if (assertErr == null) testContext.Pass();
 								else testContext.Fail(assertErr);
-							})
+							});
 						}, 2000);
 
 					}, mongoDelayMS);
@@ -296,12 +296,12 @@ tests = {
 									console.log(err);
 								}
 
-								if (--remaining == 0) {
+								if (--remaining === 0) {
 									var afterMs = new Date().getTime();
 									console.log("It took " + (afterMs - beforeMs).toString() + "ms");
 								}
 							});
-						}
+						};
 
 						//for (var i=0; i< count; ++i) {
 						//	sendOneRequest(docs[i]);
@@ -314,6 +314,6 @@ tests = {
 			}
 		});
 	}
-}
+};
 
 runAllTests();

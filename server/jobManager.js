@@ -5,7 +5,7 @@ var countersLib = require("./counter.js");
 var mail = require("./crayonMail.js");
 var exec = require('child_process').exec;
 var fs = require('fs');
-var staticDir = __dirname + '/../static'
+var staticDir = __dirname + '/../static';
 var minutesDelayLagAssuranceForAggregation = 1;
 var cpuCounter = null;
 var rawRemainingRamCounter = null;
@@ -47,7 +47,7 @@ JobManager.prototype.secondPassed = function(now) {
 						cpuCounter.addSample(cpu);
 					}
 				}
-			})
+			});
 		} catch (ex) {}
 
 		try {
@@ -58,10 +58,10 @@ JobManager.prototype.secondPassed = function(now) {
 						rawRemainingRamCounter.addSample(bytes);
 					}
 				}
-			})
+			});
 		} catch (ex) {}
 	}
-}
+};
 
 JobManager.prototype.halfMinuteElapsed = function(now) {
 	var me=this;
@@ -75,34 +75,34 @@ JobManager.prototype.halfMinuteElapsed = function(now) {
 		if (config.hoursToRetainSamples && config.hoursToRetainSamples.raw) hoursToKeepRawData = config.hoursToRetainSamples.raw;
 		var rawTime = new Date().addMinutes(-60 * hoursToKeepRawData).toISOString().substring(0,16);
 		var rawFolder = "minutes_ram";
-		var rawCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Archive ms", "crayon")
+		var rawCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Raw Archive ms", "crayon");
 		me.archive(msBefore, rawTime, rawFolder, rawCounter);
 
 		var hoursToKeepMinutesData = 24;
 		if (config.hoursToRetainSamples && config.hoursToRetainSamples.minutes) hoursToKeepMinutesData = config.hoursToRetainSamples.minutes;
 		var mTime = new Date().addMinutes(-60 * hoursToKeepMinutesData).toISOString().substring(0,15);
 		var mFolder = "minutes";
-		var mCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Archive ms", "crayon")
+		var mCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Minutes Archive ms", "crayon");
 		me.archive(msBefore, mTime, mFolder, mCounter);
 
 		var hoursToKeepHoursData = 336;
 		if (config.hoursToRetainSamples && config.hoursToRetainSamples.hours) hoursToKeepMinutesData = config.hoursToRetainSamples.hours;
 		var hTime = new Date().addMinutes(-60 * hoursToKeepHoursData).toISOString().substring(0,13);
 		var hFolder = "hours";
-		var hCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Archive ms", "crayon")
+		var hCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Hours Archive ms", "crayon");
 		me.archive(msBefore, hTime, hFolder, hCounter);
 
 		var hoursToKeepDaysData = 365;
 		if (config.hoursToRetainSamples && config.hoursToRetainSamples.days) hoursToKeepMinutesData = config.hoursToRetainSamples.days;
 		var dTime = new Date().addMinutes(-60 * hoursToKeepDaysData).toISOString().substring(0,10);
 		var dFolder = "days";
-		var dCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Days Archive ms", "crayon")
+		var dCounter = countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Days Archive ms", "crayon");
 		me.archive(msBefore, dTime, dFolder, dCounter);
 
 	} catch (ex) {
 		me.logger.error("Exception removing minute dir: " + ex.stack);
 	}
-}
+};
 
 JobManager.prototype.archive = function(msBefore, time, folder, counter) {
 	if (!folder) return;
@@ -122,13 +122,16 @@ JobManager.prototype.archive = function(msBefore, time, folder, counter) {
 		var duration = msAfter-msBefore;
 		counter.addSample(duration);
 	});
-}
+};
 
 JobManager.prototype.minuteElapsed = function(now) {
 	var me=this;
 
 	var config = configLib.getConfig();
 	var coresToUseForAggregation = config.coresToUseForAggregation || 1;
+	var aggregationInput = "";
+	var msBefore = 0;
+	var plan;
 
 	var execConfig = {
 	    maxBuffer: 50 * 1024 * 1024,
@@ -139,16 +142,16 @@ JobManager.prototype.minuteElapsed = function(now) {
 	if (!me.noAggregations) {
 		if (now.getUTCMinutes() % 10 == 1) {
 			try {
-				var msBefore = new Date().getTime();
+				msBefore = new Date().getTime();
 				me.logger.info("Started aggregating minutes");
 
 				// Aggregate previous 10 minutes
 	 
-				var aggregationInput = "minutes_ram/" + now.addMinutes(-10).toISOString().substring(0,"2013-08-18T19:5".length) + "*/*/*"
-				var plan = "ls " + aggregationInput + " | xargs -n 1 -P " + coresToUseForAggregation + " -I {} ./sort-file-faster.sh {};" +
+				aggregationInput = "minutes_ram/" + now.addMinutes(-10).toISOString().substring(0,"2013-08-18T19:5".length) + "*/*/*";
+				plan = "ls " + aggregationInput + " | xargs -n 1 -P " + coresToUseForAggregation + " -I {} ./sort-file-faster.sh {};" +
 					"ls " + aggregationInput + " | " +
 				    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
-						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=minutes -f merge-aggregate.sh'"
+						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=minutes -f merge-aggregate.sh'";
 
 				exec(plan, execConfig, function(error, out, err) {  
 					if (error) {
@@ -167,14 +170,14 @@ JobManager.prototype.minuteElapsed = function(now) {
 
 		if (now.getUTCMinutes() == 15) {
 			try {
-				var msBefore = new Date().getTime();
+				msBefore = new Date().getTime();
 				me.logger.info("Started aggregating hours");
 
-				var aggregationInput = "minutes/" + now.addMinutes(-30).toISOString().substring(0,"2013-08-18T19".length) + "*/*/*"
-				var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+				aggregationInput = "minutes/" + now.addMinutes(-30).toISOString().substring(0,"2013-08-18T19".length) + "*/*/*";
+				plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
 					"ls " + aggregationInput + " | " +
 				    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
-						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=hours -f merge-aggregate.sh'"
+						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=hours -f merge-aggregate.sh'";
 
 				exec(plan, execConfig, function(error, out, err) {  
 					if (error) {
@@ -193,14 +196,14 @@ JobManager.prototype.minuteElapsed = function(now) {
 
 		if (now.getUTCMinutes() == 10 && now.getUTCHours() == 1) {
 			try {
-				var msBefore = new Date().getTime();
+				msBefore = new Date().getTime();
 				me.logger.info("Started aggregating days");
 
-				var aggregationInput = "hours/" + now.addHours(-24).toISOString().substring(0,"2013-08-18".length) + "*/*/*"
-				var plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
+				aggregationInput = "hours/" + now.addHours(-24).toISOString().substring(0,"2013-08-18".length) + "*/*/*";
+				plan = "ls " + aggregationInput + " | xargs -n 1 -P 10 -I {} ./sort-file-faster.sh {};" +
 					"ls " + aggregationInput + " | " +
 				    	"awk -F'[/.]' '{key=$3\"/\"$4; map[key]=map[key]\" \"$0} END { for (key in map) { print map[key];} }' | " +
-						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=days -f merge-aggregate.sh'"
+						"xargs -n 1 -P " + coresToUseForAggregation + " -I {} sh -c 'echo {} | awk -v level=days -f merge-aggregate.sh'";
 
 				exec(plan, execConfig, function(error, out, err) {  
 					if (error) {
@@ -220,11 +223,11 @@ JobManager.prototype.minuteElapsed = function(now) {
 	}
 
 	me.syncSVN();
-}
+};
 
 JobManager.prototype.hourElapsed = function(now) {
 	var me=this;
-}
+};
 
 
 JobManager.prototype.syncSVN = function() {
@@ -255,7 +258,7 @@ JobManager.prototype.syncSVN = function() {
 	catch (ex) {
 		me.logger.error("Exception committing svn changes: " + ex.stack);
 	}
-}
+};
 
 
 module.exports.JobManager = JobManager;

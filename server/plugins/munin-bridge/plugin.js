@@ -10,7 +10,7 @@ module.exports.load = function(pluginManager) {
 	pm.registerDashboard("Munin Dashboard", __dirname + "/munin-dashboard.html");
 	//pm.registerDashboard("Munin Mini Dashboard", __dirname + "/munin-dashboard.html?&mini=1");
 	updateMuninConfig(pluginManager);
-}
+};
 
 module.exports.getMuninConfig = function(callContext) {
 	if (callContext.args.server && 
@@ -26,11 +26,11 @@ module.exports.getMuninConfig = function(callContext) {
 	} else {
 		callContext.respondJson(200, muninConfig);
 	}
-}
+};
 
 module.exports.getMuninServers = function(callContext) {
 	callContext.respondJson(200, muninServers);
-}
+};
 
 var updateMuninConfig = function() {
 	pm.logger.info("Reading munin config dir...");
@@ -49,7 +49,7 @@ var updateMuninConfig = function() {
 		var readFile = function(file) {
 			fs.readFile(__dirname + "/munin-configs/" + file, "utf-8", function(err, data) {
 				var readFileCompleted = function() {
-					if (--filesRemaining == 0) {
+					if (--filesRemaining === 0) {
 						pm.logger.info("Done reading files");
 						muninConfig = newMuninConfig;
 						muninConfigByServer = newMuninConfigByServer;
@@ -87,11 +87,11 @@ var updateMuninConfig = function() {
 				}
 				
 			});
-		}
-		for (i in files) {
+		};
+		for (var i in files) {
 			readFile(files[i]);
 		}
 	});
-}
+};
 
 module.exports.updateMuninConfig = updateMuninConfig;

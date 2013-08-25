@@ -47,7 +47,7 @@ var validateTimeField = function(args, callContext) {
 		logger.error("Error parsing time: " + timeError + " for " + JSON.stringify(args) );
 		return;
 	}
-}
+};
 
 function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 	try {
@@ -69,7 +69,9 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 		var dateCursor = dateFrom;
 		var inputFilesString = "";
 		var inputFilesArr = [];
-		var mainFolder = "";
+		var inputFile;
+		
+		var lookupPrefixEndIndex;
 
 		// Replacements
 		if (serverWildcard == "$crayon-server") serverWildcard = countersLib.getShortHostname();
@@ -82,19 +84,19 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 			timeField = "$4";
 			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
-				var inputFile = "minutes_ram/" + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard
+				inputFile = "minutes_ram/" + dateCursor.toISOString().substring(0,16) + "/" + serverWildcard + "/" + componentWildcard;
 				inputFilesString += " " + inputFile;
 				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addMinutes(1);
 			}
 			if (ds.aggregateOnServer) {
-				 planSuffix += " | awk -f ../aggregateMinutesInline.sh"
+				 planSuffix += " | awk -f ../aggregateMinutesInline.sh";
 			}
 		} else if (ds.unit == 'm') {
 			timeField = "$4";
 			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			while (dateCursor <= dateTo) {
-				var inputFile = "minutes/" + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
+				inputFile = "minutes/" + dateCursor.toISOString().substring(0,15) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
 				inputFilesString += " " + inputFile;
 				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addMinutes(10);
@@ -104,7 +106,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
-				var inputFile = "hours/" + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
+				inputFile = "hours/" + dateCursor.toISOString().substring(0,13) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
 				inputFilesString += " " + inputFile;
 				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addHours(1);
@@ -114,7 +116,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 			if (!args.noDsIndex) plan += "echo '" + ds.originalIndex + "';";
 			//dateCursor = dateCursor.addHours(-(dateCursor.getUTCHours()%3));
 			while (dateCursor <= dateTo) {
-				var inputFile = "days/" + dateCursor.toISOString().substring(0,10) + "/" + serverWildcard + "/" + componentWildcard + ".@*"
+				inputFile = "days/" + dateCursor.toISOString().substring(0,10) + "/" + serverWildcard + "/" + componentWildcard + ".@*";
 				inputFilesString += " " + inputFile;
 				inputFilesArr.push(inputFile);
 				dateCursor = dateCursor.addDays(1);
@@ -153,41 +155,41 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 		var useMultipleCores = (coresToUsePerQuery > 1);
 		if (useMultipleCores) {
 			plan += "ls " + inputFilesString + " 2>/dev/null | xargs -n 1 -P " + coresToUsePerQuery + " -I {} ";
-			fileName = "{}"
+			fileName = "{}";
 
 			if (ds.unit == 'r') {
-				plan += "egrep -s -h '^" + ds.name + "' " + fileName + " "
+				plan += "egrep -s -h '^" + ds.name + "' " + fileName + " ";
 			} else {
-				var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
+				lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
 				if (lookupPrefixEndIndex > 0) {
-					plan += "./synced_egrep.sh " + planSeed + " '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " '" + ds.name + "'"
+					plan += "./synced_egrep.sh " + planSeed + " '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " '" + ds.name + "'";
 					//plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '" + ds.name + "'"
 				} else {
-					plan += "./synced_egrep.sh " + planSeed + " '-' " + fileName + " '" + ds.name + "'"
+					plan += "./synced_egrep.sh " + planSeed + " '-' " + fileName + " '" + ds.name + "'";
 					//plan += "egrep -s -h '" + ds.name + "' " + fileName + " "
 				}
 			}
 
 			if (ds.exclude) plan += " | egrep -v '" + ds.exclude + "' ";
-			plan += " | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
-			plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck"
+			plan += " | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix;
+			plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck";
 		} else { 
 			plan += "for f in $(ls " + inputFilesString + " 2>/dev/null); do ";
-			fileName = "$f"
+			fileName = "$f";
 
 			if (ds.unit == 'r') {
-				plan += "egrep -s -h '^" + ds.name + "' " + fileName + " "
+				plan += "egrep -s -h '^" + ds.name + "' " + fileName + " ";
 			} else {
-				var lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
+				lookupPrefixEndIndex = ds.name.search("[^0-9a-zA-Z]");
 				if (lookupPrefixEndIndex > 0) {
-					plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '^" + ds.name + "'"
+					plan += "look '" + ds.name.substring(0,lookupPrefixEndIndex) + "' " + fileName + " 2>/dev/null | egrep -s -h '^" + ds.name + "'";
 				} else {
-					plan += "egrep -s -h '^" + ds.name + "' " + fileName + " "
+					plan += "egrep -s -h '^" + ds.name + "' " + fileName + " ";
 				}
 			}
 
 			if (ds.exclude) plan += " | egrep -v '" + ds.exclude + "' ";
-			plan += "; done | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix
+			plan += "; done | awk '{if (" + timeField + " > \"" + dateFromStr + "\" && "+  timeField + " < \"" + dateToStr + "\") print;}'" + planSuffix;
 		}
 
 		executePlan(plan, execConfig, onDatasourceQueryDone);
@@ -201,6 +203,7 @@ function queryDataSource(ds, callContext, onDatasourceQueryDone, args) {
 // Exposes the docs to the client 
 module.exports.find = function(callContext) {
 	var args = callContext.args;
+	var dsIndex = null;
 
 	// Validate & cast all input arguments to their proper form
 	if (!args.ds || args.ds.length == 0) {
@@ -239,16 +242,18 @@ module.exports.find = function(callContext) {
 
 	var dataSourcesCopy = args.ds;
 	var dataSources = [];
+	var dataSource = null;
+	var dataSourceCopy = null;
 
 	// Expand servers (first pass)
 	for (dsIndex in dataSourcesCopy) {
-		var dataSource = dataSourcesCopy[dsIndex];
+		dataSource = dataSourcesCopy[dsIndex];
 		if (typeof dataSource == "string") {
 			// ignore strings
 			continue;
 		} else if (dataSource.server && dataSource.server.join != null) {
-			for (serverId in dataSource.server) {
-				var dataSourceCopy = JSON.parse(JSON.stringify(dataSource));
+			for (var serverId in dataSource.server) {
+				dataSourceCopy = JSON.parse(JSON.stringify(dataSource));
 				dataSourceCopy.server = dataSource.server[serverId];
 				dataSources.push(dataSourceCopy);
 			}
@@ -260,11 +265,13 @@ module.exports.find = function(callContext) {
 	// Expand component (second pass)
 	dataSourcesCopy = dataSources;
 	dataSources = [];
+	dataSource = null;
+	dataSourceCopy = null;
 	for (dsIndex in dataSourcesCopy) {
-		var dataSource = dataSourcesCopy[dsIndex];
+		dataSource = dataSourcesCopy[dsIndex];
 		if (dataSource.component && dataSource.component.join != null) {
-			for (componentId in dataSource.component) {
-				var dataSourceCopy = JSON.parse(JSON.stringify(dataSource));
+			for (var componentId in dataSource.component) {
+				dataSourceCopy = JSON.parse(JSON.stringify(dataSource));
 				dataSourceCopy.component = dataSource.component[componentId];
 				dataSources.push(dataSourceCopy);
 			}
@@ -296,14 +303,14 @@ module.exports.find = function(callContext) {
 		logger.info("Query plan ended within " + ((endTotalMs-startQueryMs) + "ms").colorMagenta() + " size of output: " + combinedOutput.length);
 		countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Query Plan Execution ms", "crayon").addSample(endTotalMs-startQueryMs);
 		callContext.respondText(200, combinedOutput);
-	}
+	};
 
 	
 	var config = configLib.getConfig();
 	var myHostname = countersLib.getHostname().toLowerCase().split(":")[0];
 
 	if (args.noShards != "1") {
-		for (shardId in config.shards) {
+		for (var shardId in config.shards) {
 			var remoteShard = config.shards[shardId];
 			var remoteShardShortName = remoteShard.toLowerCase().split(":")[0];
 			if (remoteShardShortName == myHostname) continue;
@@ -317,11 +324,11 @@ module.exports.find = function(callContext) {
 
 	// Iterate over the datasources and 
 	for (dsIndex in dataSources) {
-		var dataSource = dataSources[dsIndex];
+		dataSource = dataSources[dsIndex];
 		dataSource.index = dsIndex;
 		queryDataSource(dataSource, callContext, onDatasourceQueryDone, args);
 	}
-}
+};
 
 function queryShard(args, remoteShard, onDatasourceQueryDone) {
 	var dsString = encodeURIComponent(JSON.stringify(args.ds));
@@ -374,7 +381,7 @@ function queryShard(args, remoteShard, onDatasourceQueryDone) {
 // and call addAggregate
 module.exports.addRaw = function(callContext) {
 	addAggregate(callContext);
-}
+};
 
 // Adding a an aggregate sample is adding a sample which contains all values as aggregatives (min/max/ave/var...)
 var addAggregate = function(callContext) {
@@ -388,12 +395,12 @@ var addAggregate = function(callContext) {
 	addBulkTimeslotsByDate(callContext.body.length, callContext.args);
 
 	callContext.respondText(200, "OK");
-}
+};
 
 // Make sure each of the samples has what it takes
 function validateSamples(callContext) {
 
-	for (argsNum in callContext.args) {
+	for (var argsNum in callContext.args) {
 		var args = callContext.args[argsNum];
 
 		// Minify the arguments and validate their value
@@ -438,7 +445,7 @@ function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callb
 	if (metricsCameFrom) startLogMessage += " that came from " + metricsCameFrom.colorBlue();
 	logger.debug(startLogMessage);
 
-	var crayonId = countersLib.getCrayonId();
+	//var crayonId = countersLib.getCrayonId();
 	insertCounter = insertCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "Inserts", "crayon");
 	createFolderCounter = createFolderCounter || countersLib.getOrCreateCounter(countersLib.systemCounterDefaultInterval, "folder-creations-attempts", "crayon");
 	//twoBytesCrayonId = twoBytesCrayonId || crayonId.toString(16).length;
@@ -465,6 +472,8 @@ function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callb
 	var lastBufObj = null;
 	var lastKey = null;
 	var minuteStr = new Date().toISOString().substring(0,16);
+	var key = null;
+	var bufObj = null;
 
 	if (unit == 's') {
 		for (var i=0; i <argsArr.length; ++i) {
@@ -472,13 +481,13 @@ function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callb
 			//args.t = timeFormatter(args.t);
 			
 			var valString = args.S.toString();
-			var compString = (args.c ? args.c.replace(/ /g,"_") : "-")
-			var serverString = (args.s ? args.s.replace(/ /g,"_") : "-")
+			var compString = (args.c ? args.c.replace(/ /g,"_") : "-");
+			var serverString = (args.s ? args.s.replace(/ /g,"_") : "-");
 			var timeString = args.t.toISOString().substring(0,19);
 
-			var key = serverString + "/" + compString;
+			key = serverString + "/" + compString;
 
-			var bufObj = lastBufObj;
+			bufObj = lastBufObj;
 			if (key != lastKey) {
 				lastKey = key;
 				bufObj = pathHash[key];
@@ -515,20 +524,21 @@ function addTimeslotBulk(dataSize, beforeMs, timeFormatter, unit, argsArr, callb
 		}
 	}
 
-	for (key in pathHash) {
-		var bufObj = pathHash[key]
-		fs.appendFile('minutes_ram/' + minuteStr + "/" + key, bufObj.buf.slice(0, bufObj.pos), function (err) {
+	var appendResultHandler = function (err) {
 			if (err) {
 				logger.error("Failed saving seconds bulk: " + err);
 
 				//try { fs.mkdirSync("minutes_ram/" + server + "/" + component + "/" + name); } catch (e) {}
 			}
 
-			if (--remaining == 0) {
+		if (--remaining === 0) {
 				onSaveCompleted();
 			}
 			
-		});
+	};
+	for (key in pathHash) {
+		bufObj = pathHash[key];
+		fs.appendFile('minutes_ram/' + minuteStr + "/" + key, bufObj.buf.slice(0, bufObj.pos), appendResultHandler);
 	}
 
 	insertCounter.increment(argsArr.length);
@@ -539,7 +549,7 @@ var dirHash = {};
 setInterval(function() {
 	try {
 		var hashKeys = Object.keys(dirHash);
-		for (i in hashKeys) {
+		for (var i in hashKeys) {
 			if (dirHash[hashKeys[i]].addMinutes(2) < new Date()) {
 				delete hashKeys[i];
 			}
@@ -640,7 +650,7 @@ module.exports.matchSeriesName = function(callContext) {
 		"| awk '{if (a[$1] == null && NF > 2) {a[$1]=1; print $1; g += 1; b = 0} else { b += 1 } if (g >= " + limit + " || (g >= 1 && b > 50)) { print \"awkterminating\" }}' " + 
 		"| head -" + limit + " | grep -v awkterminating";
 
-	plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck"
+	plan += "; rm -f /tmp/crayon-query-" + planSeed + ".lck";
 	logger.info("Executing match series name: " + plan.colorBlue());
 	var maxBufferMB = 10;
 	var execConfig = {
@@ -659,7 +669,7 @@ module.exports.matchSeriesName = function(callContext) {
 
 		callContext.respondText(200, out||"");
 	});
-}
+};
 
 module.exports.addAggregate = addAggregate;
 module.exports.addBulkTimeslotsByDate = addBulkTimeslotsByDate;

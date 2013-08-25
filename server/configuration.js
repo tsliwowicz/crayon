@@ -2,8 +2,8 @@ var fs = require('fs');
 var config = {};
 var logger;
 module.exports.setLogger = function(l) { logger = l; };
-module.exports.getConfig = function() { return config; }
-module.exports.setConfigValue = function(name, value) { config[name] = value; }
+module.exports.getConfig = function() { return config; };
+module.exports.setConfigValue = function(name, value) { config[name] = value; };
 module.exports.setConfig = function(configText) {
 	if (configText != null) {
 
@@ -21,12 +21,12 @@ module.exports.setConfig = function(configText) {
 	} else {
 		logger.error("Can not change configuration to a null value");
 	}
-}
+};
 
 var reloadConfigFileFromDisk = function() {
 	var text = fs.readFileSync("crayon.conf");
 	config = JSON.parse(text);
-}
+};
 
 var saveConfigToDisk = function(configText) {
 	fs.writeFile("crayon.conf", configText, function(err) {
@@ -36,7 +36,7 @@ var saveConfigToDisk = function(configText) {
 	        logger.info("Configuration persisted.");
 	    }
 	}); 
-}
+};
 
 
 reloadConfigFileFromDisk();

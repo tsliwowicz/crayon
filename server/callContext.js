@@ -5,7 +5,7 @@ var url = require("url");
 var zlib = require('zlib');
 var countersLib = require("./counter.js");
 var configLib = require("./configuration.js");
-var staticDir = __dirname + '/../static'
+var staticDir = __dirname + '/../static';
 
 var logger;
 module.exports.setLogger = function(l) { logger = l; };
@@ -64,7 +64,7 @@ CallContext.prototype.minifyArgNames = function(args) {
 	if (args.val != null) 		{ args.S = args.val; delete args.val; }
 	if (args.server != null) 	{ args.s = args.server; delete args.server; }
 	if (args.component != null)	{ args.c = args.component; delete args.component; }
-}
+};
 
 // Each response to the client should pass through this function
 CallContext.prototype.respondWithHeaders = function(code, headers, msg, msgType) {
@@ -101,8 +101,8 @@ CallContext.prototype.respondWithHeaders = function(code, headers, msg, msgType)
 
         // Any other type of message should be stringified
 		} else if (msgType != "binary" && typeof msg != "string") {
-			msg = JSON.stringify(msg)
-		};
+			msg = JSON.stringify(msg);
+		}
 
 
 		// Get the encoding the client supports
@@ -157,12 +157,12 @@ CallContext.prototype.respondWithHeaders = function(code, headers, msg, msgType)
 		me.response.write("Failed responding: " + ex, "utf-8");						
 		me.response.end();
 	}
-}
+};
 
 // A short method group for calling respondWithHeaders under different circumstances
-CallContext.prototype.respondJson = function(code, msg, headers) { this.respondWithHeaders(code, headers || {"Content-Type": "text/json"}, msg); }
-CallContext.prototype.respondText = function(code, msg, headers) { this.respondWithHeaders(code, headers || {"Content-Type": "text/plain"}, msg); }
-CallContext.prototype.respondBinary = function(code, msg, headers) { this.respondWithHeaders(code, headers, msg, "binary"); }
+CallContext.prototype.respondJson = function(code, msg, headers) { this.respondWithHeaders(code, headers || {"Content-Type": "text/json"}, msg); };
+CallContext.prototype.respondText = function(code, msg, headers) { this.respondWithHeaders(code, headers || {"Content-Type": "text/plain"}, msg); };
+CallContext.prototype.respondBinary = function(code, msg, headers) { this.respondWithHeaders(code, headers, msg, "binary"); };
 
 // Convert the argument to json and abort request if it's not
 CallContext.prototype.jsonifyArg = function(arg) {
@@ -174,7 +174,7 @@ CallContext.prototype.jsonifyArg = function(arg) {
  		me.respondText(400, "Failed parsing argument '" + arg + "': " + ex);
  		return false;
  	}
-}
+};
 
 // Convert the argument to number and abort the request if it's not (with support for array of arguments)
 CallContext.prototype.numberifyArg = function(arg, index) {

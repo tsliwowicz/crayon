@@ -7,7 +7,7 @@ var portForGraphiteFormat = null;
 var noAggregations = false;
 var demoMode = false;
 
-for (argIndex in process.argv) {
+for (var argIndex in process.argv) {
 	var arg = process.argv[argIndex];
 	if (arg.indexOf("--port=") == 0) serverPort=Number(arg.substring("--port=".length));
 	if (arg.indexOf("--graphite-api-port=") == 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
@@ -22,7 +22,7 @@ console.log("Hostname: " + hostname);
 
 // Priority imports
 var countersLib = require("./counter.js");
-countersLib.setHostname(hostname)
+countersLib.setHostname(hostname);
 countersLib.setCrayonId(serverPort);
 
 // Imports
@@ -75,7 +75,7 @@ mail.connect(function(err) {
 
 		callContext.parseArgs(function(err) {
 			if (err) {
-				callContext.respondText(400, "Error parsing arguments of post request: " + err)
+				callContext.respondText(400, "Error parsing arguments of post request: " + err);
 				logger.error("Error parsing arguments of post request: " + err);
 				return;
 			}

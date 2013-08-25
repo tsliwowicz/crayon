@@ -2,7 +2,7 @@ var dates = require("./dates.js");
 var prototypes = require("./prototypes.js");
 var countersLib = require("./counter.js");
 var fs = require('fs');
-var staticDir = __dirname + '/../static'
+var staticDir = __dirname + '/../static';
 
 // Set the global services for this module
 var logger;
@@ -21,4 +21,4 @@ module.exports.saveThresholds = function(callContext) {
 
 	    callContext.respondJson(200, {});
 	}); 
-}
+};
