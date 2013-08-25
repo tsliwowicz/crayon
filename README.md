@@ -30,17 +30,18 @@ Also, White Paper and comparison to graphite coming up soon.
 What does it do ?
 -----------------
 
-* Crayon provides a an API for storing/getting metrics, a server for processing them and a website for viewing them.
-* Crayon provides a JSON DSL for defining graphs with well over a hundred keywords (e.g. logarithmic graphs, delta graphs, etc.)
-* Crayon supports realtime analytics up to subsecond latancy as well as aggregated information with configurable retention.
-* Crayon aggregates analytics in multiple ways (e.g. Max, Min, Sum, Average, Count of samples, etc.)
-* Crayon graphs are fully interactive with zooming and auto updating without any extra configuration (with image export supported)
-* Crayon can be fed with multiple metrics at once to improve performance or even already aggregated metrics if aggregate them yourself
-* [disabled for now] Crayon performs programmable realtime monitoring with json alert definitions and mail notification using [emailjs][]
-* Crayon integrated with third parties for getting metrics (besides the HTTP interface), for example the queuing system [RabbitMQ][]
-* Crayon provides multiple themes for your convinience
-* Crayon queries are both multithreaded (use multiple cores) and indexed (binary search)
-* Crayon provides easy sharding with simply adding the shards to a list in the config file
+* Crayon provides several APIs for storing/getting metrics, a server for processing them and a website for viewing them.  
+* Crayon provides a JSON DSL for defining graphs with well over a hundred keywords (e.g. logarithmic graphs, delta graphs, etc.)  
+* Crayon supports realtime analytics up to subsecond latancy as well as aggregated information with configurable retention.  
+* Crayon aggregates analytics in multiple ways (e.g. Max, Min, Sum, Average, Count of samples, etc.)  
+* Crayon graphs are fully interactive with zooming and auto updating without any extra configuration (with image export supported)  
+* Crayon can be fed with multiple metrics at once to improve performance or even already aggregated metrics if aggregate them yourself  
+* Crayon comes with 'crayon shell' which allows various operations through the command line  
+* Crayon integrates with third parties for getting metrics (besides the HTTP interface), for example the queuing system [RabbitMQ][]  
+* Crayon provides multiple UI CSS themes for your convinience  
+* Crayon aggregations and queries are multithreaded up to a number of cores specified in the config file  
+* Crayon provides easy sharding (no smart routing at the moment) by simply adding the shards to a list in the config file  
+* Crayon provides utilizes SVN for source control and replication of user generated dashboards  
 
 [emailjs]: https://github.com/eleith/emailjs
 [RabbitMQ]: https://github.com/postwait/node-amqp
