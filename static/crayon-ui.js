@@ -84,7 +84,7 @@ window.reloadDashboardList = function() {
 	});
 
 	$.ajax({
-		url: "/dashboards.conf",
+		url: "/dashboards/dashboards.conf",
 		success: function(result) {
 			var lines = result.split('\n');
 

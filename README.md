@@ -1,7 +1,7 @@
 Crayon
 ======
 
-(readme.md update in progress, last update on 2013-08-21).
+(readme.md update in progress, last update on 2013-08-25).
 
 * Crayon is a _complete_ multiplatform monitoring and charting solution for large scale distributed applications. 
 * Crayon is an _open source_ contributed by [Taboola][] and will remain free forever.
@@ -218,6 +218,9 @@ Since it's only javascript, there's also no need for compilation.
 		 node is single threaded and we want the UI to be as responsive as possible
 ```		 
 
+Additional Optional Installations:  
+* Before using the SVN automatic sync feature for dashboards, run `yum install svn`  
+
 How do I migrate from Munin ?
 -----------------------------
 
@@ -277,6 +280,9 @@ Stack and Licenses
 
 Change Log
 ----------
+
+2013-08-25 - 
+* Added automatic sync for dashboards using SVN (configure in crayon.conf)
 
 2013-08-21 -  
 * Added a new crayon-client.sh shell file to wrap everything easy from the command line

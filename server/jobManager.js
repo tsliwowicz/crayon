@@ -14,6 +14,9 @@ function JobManager(logger, noAggregations) {
 	var me=this;
 	
 	me.logger = logger;
+	me.noAggregations = noAggregations;
+
+	
 	me.hourTimer = setInterval(function() { me.hourElapsed(new Date()); }, 1000*60*60);
 	me.minuteTimer = setInterval(function() { me.minuteElapsed(new Date()); }, 1000*60);
 	me.halfMinuteTimer = setInterval(function() { me.halfMinuteElapsed(new Date()); }, 1000*30);
@@ -22,8 +25,7 @@ function JobManager(logger, noAggregations) {
 	me.halfMinuteElapsed(new Date());
 	me.minuteElapsed(new Date());
 	me.hourElapsed(new Date());
-	me.noAggregations = noAggregations;
-
+	
 	//me.minuteTimer = setInterval(function() { me.checkThresholds(); }, 1000*5);
 	//me.checkThresholds();
 	if (!me.logger) throw new Error("Logger is undefined");
@@ -134,7 +136,7 @@ JobManager.prototype.minuteElapsed = function(now) {
 	    }
 	};
 
-	if (!noAggregations) {
+	if (!me.noAggregations) {
 		if (now.getUTCMinutes() % 10 == 1) {
 			try {
 				var msBefore = new Date().getTime();
@@ -216,12 +218,44 @@ JobManager.prototype.minuteElapsed = function(now) {
 			}
 		}
 	}
+
+	me.syncSVN();
 }
 
 JobManager.prototype.hourElapsed = function(now) {
 	var me=this;
-
-	
 }
+
+
+JobManager.prototype.syncSVN = function() {
+	var me=this;
+
+	try {
+		var msBefore = new Date().getTime();
+		var config = configLib.getConfig();
+		if (!config.svn || !config.svn.url || !config.svn.user || !config.svn.password) return;		
+		var svnUrl = config.svn.url;
+		var user = config.svn.user;
+		var pwd = config.svn.password;
+
+		me.logger.info("Started syncing with SVN: " + svnUrl.colorBlue());
+		exec("./sync-svn.sh " + svnUrl + " " + user + " " + pwd, function(error, out, err) {  
+			if (error) {
+				me.logger.error("Failed syncing svn: " + error);
+			} else if (err) {
+				me.logger.error("Error syncing svn: " + err);
+			}
+
+			var msAfter = new Date().getTime();
+			var duration = msAfter-msBefore;
+			me.logger.info(out);
+			me.logger.info("Syncing with SVN took " + (duration + "ms").colorMagenta());
+		});
+	}
+	catch (ex) {
+		me.logger.error("Exception committing svn changes: " + ex.stack);
+	}
+}
+
 
 module.exports.JobManager = JobManager;

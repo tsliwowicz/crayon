@@ -15,7 +15,7 @@ module.exports.deleteDashboard = function(callContext) {
 	var dashboardId = callContext.args["id"];
 	var newPath = "/dashboards/" + dashboardId + ".json";
 
-	var confText = fs.readFileSync(staticDir + "/dashboards.conf");
+	var confText = fs.readFileSync(staticDir + "/dashboards/dashboards.conf");
 	var confLines = confText.toString().split('\n');
 	var newConfLines = [];
 	for (i in confLines) {
@@ -33,7 +33,7 @@ module.exports.deleteDashboard = function(callContext) {
 	        return;
 	    } 
 
-		fs.writeFile(staticDir + "/dashboards.conf", newConfText, function(err) {
+		fs.writeFile(staticDir + "/dashboards/dashboards.conf", newConfText, function(err) {
 		    if(err) {
 		        callContext.respondJson(500, {error:"Failed saving dashboards.conf: " + err});
 		        return;
@@ -49,7 +49,7 @@ module.exports.saveDashboard = function(callContext) {
 	var dashboard = JSON.parse(dashboardText);
 	var newPath = "/dashboards/" + dashboard.id + ".json";
 
-	var confText = fs.readFileSync(staticDir + "/dashboards.conf");
+	var confText = fs.readFileSync(staticDir + "/dashboards/dashboards.conf");
 	var confLines = confText.toString().split('\n');
 	var newConfLines = [];
 	var added = false;
@@ -74,7 +74,7 @@ module.exports.saveDashboard = function(callContext) {
 	        return;
 	    } 
 
-		fs.writeFile(staticDir + "/dashboards.conf", newConfText, function(err) {
+		fs.writeFile(staticDir + "/dashboards/dashboards.conf", newConfText, function(err) {
 		    if(err) {
 		        callContext.respondJson(500, {error:"Failed saving dashboards.conf: " + err});
 		        return;
