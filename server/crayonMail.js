@@ -34,7 +34,7 @@ module.exports.connect = function(callback) {
 	*/
 
 	callback(null);
-}
+};
 
 function send(options) {
 	var config = configLib.getConfig();

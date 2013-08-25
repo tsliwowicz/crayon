@@ -24,7 +24,7 @@ function handleMessage(buff) {
 	catch (ex) {
 		var firstItem = "[message is null]";
 		if (messageString) {
-			firstItem = "[no first item. Message len=" + messageString.trim().length + "]"
+			firstItem = "[no first item. Message len=" + messageString.trim().length + "]";
 			var endOfFirstItem = messageString.indexOf("}");
 			if (endOfFirstItem > 0 && endOfFirstItem < 3000) {
 				firstItem = messageString.substring(0,endOfFirstItem);
@@ -51,7 +51,7 @@ function handleMessage(buff) {
 				} else {
 					var len = 300;
 					if (messageString.trim().length < 300) len = messageString.trim().length;
-					firstItem += "[first } loc is " + endOfFirstItem + ", first 300 chars: "  + messageString.trim().substring(0,len) + " ]"
+					firstItem += "[first } loc is " + endOfFirstItem + ", first 300 chars: "  + messageString.trim().substring(0,len) + " ]";
 				}
 			}
 		}
@@ -71,7 +71,7 @@ function handleMessage(buff) {
 
 
 		callContext.body = messageString;
-		callContext.provider = "rabbitMQ"
+		callContext.provider = "rabbitMQ";
 		measurements.addRaw(callContext);
 		//logger.info("Got new message from queue");
 	}
@@ -133,7 +133,7 @@ function connect() {
 
 module.exports.disconnect = function() {
 	connection.end();
-}
+};
 
 module.exports.connect = connect;
 

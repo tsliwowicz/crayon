@@ -6,20 +6,20 @@ var hostname = require("os").hostname();
 var portForGraphiteFormat = null;
 var noAggregations = false;
 
-for (argIndex in process.argv) {
+for (var argIndex in process.argv) {
 	var arg = process.argv[argIndex];
-	if (arg.indexOf("--port=") == 0) serverPort=Number(arg.substring("--port=".length));
-	if (arg.indexOf("--graphite-api-port=") == 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
-	if (arg.indexOf("--jobmanager") == 0) isJobManager = true;
-	if (arg.indexOf("--noAggregations") == 0) noAggregations = true;
-	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
+	if (arg.indexOf("--port=") === 0) serverPort=Number(arg.substring("--port=".length));
+	if (arg.indexOf("--graphite-api-port=") === 0) portForGraphiteFormat=Number(arg.substring("--graphite-api-port=".length));
+	if (arg.indexOf("--jobmanager") === 0) isJobManager = true;
+	if (arg.indexOf("--noAggregations") === 0) noAggregations = true;
+	if (arg.indexOf("--uiOnly") === 0) uiOnly = true;
 }
 console.log(process.argv);
 console.log("Hostname: " + hostname);
 
 // Priority imports
 var countersLib = require("./counter.js");
-countersLib.setHostname(hostname)
+countersLib.setHostname(hostname);
 countersLib.setCrayonId(serverPort);
 
 // Imports
@@ -68,7 +68,7 @@ mail.connect(function(err) {
 
 		callContext.parseArgs(function(err) {
 			if (err) {
-				callContext.respondText(400, "Error parsing arguments of post request: " + err)
+				callContext.respondText(400, "Error parsing arguments of post request: " + err);
 				logger.error("Error parsing arguments of post request: " + err);
 				return;
 			}

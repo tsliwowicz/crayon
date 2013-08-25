@@ -2,14 +2,14 @@
 // var groups = { groupName: [ hostnames in short format ] }
 var groups = {
 	"Group": ["Server1", "Server2"]
-}
+};
 
 var graphList = [];
 var byServers = {};
 var byCategory = {};
 
 var graphListUpdated = function(callback) {
-	for (n in graphList) {
+	for (var n in graphList) {
 		var graph = graphList[n];
 		var server = graph["graph_server"];
 		var category = graph["graph_category"];
@@ -25,7 +25,7 @@ var graphListUpdated = function(callback) {
 	console.log(byCategory);
 	
 	if (callback) callback();
-}
+};
 
 var updateGraphList = function(callback) {
 	$.ajax({
@@ -36,7 +36,7 @@ var updateGraphList = function(callback) {
 			graphListUpdated(callback);
 		}
 	});
-}
+};
 
 
 // data-fnordmetric="timeseries"

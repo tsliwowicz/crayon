@@ -2,7 +2,7 @@ var dates = require("./dates.js");
 var prototypes = require("./prototypes.js");
 var countersLib = require("./counter.js");
 var fs = require('fs');
-var staticDir = __dirname + '/../static'
+var staticDir = __dirname + '/../static';
 
 // Set the global services for this module
 var logger;
@@ -18,7 +18,7 @@ module.exports.deleteDashboard = function(callContext) {
 	var confText = fs.readFileSync(staticDir + "/dashboards.conf");
 	var confLines = confText.toString().split('\n');
 	var newConfLines = [];
-	for (i in confLines) {
+	for (var i in confLines) {
 		var confLine = confLines[i];
 		if (confLine.indexOf("/dashboards/" + dashboardId + ".json") != -1) {
 		} else {
@@ -42,7 +42,7 @@ module.exports.deleteDashboard = function(callContext) {
 		    callContext.respondJson(200, {});
 		}); 
 	});
-}
+};
 
 module.exports.saveDashboard = function(callContext) {
 	var dashboardText = callContext.body;
@@ -53,7 +53,7 @@ module.exports.saveDashboard = function(callContext) {
 	var confLines = confText.toString().split('\n');
 	var newConfLines = [];
 	var added = false;
-	for (i in confLines) {
+	for (var i in confLines) {
 		var confLine = confLines[i];
 		if (confLine.indexOf("/dashboards/" + dashboard.id + ".json") != -1) {
 			newConfLines.push(dashboard.sidebarText + " = " + newPath);
@@ -83,4 +83,4 @@ module.exports.saveDashboard = function(callContext) {
 		    callContext.respondJson(200, {});
 		}); 
 	});
-}
+};

@@ -1,4 +1,4 @@
-var glob = require("glob")
+var glob = require("glob");
 
 function PluginManager(logger, contextLib) {
 	var me=this;
@@ -21,7 +21,7 @@ PluginManager.prototype.loadPlugin = function(file) {
 	} catch (ex) {
 		me.logger.error("Failed loading plugin " + pluginName + "\n" + ex.stack);
 	}
-}	
+};	
 
 PluginManager.prototype.loadPlugins = function() {
 	var me=this;
@@ -33,11 +33,11 @@ PluginManager.prototype.loadPlugins = function() {
 			return;
 		}
 
-		for (i in files) {
+		for (var i in files) {
 			me.loadPlugin(files[i]);
 		}
 	});
-}
+};
 
 PluginManager.prototype.registerDashboard = function(name, uri) {
 	var me=this;
@@ -47,7 +47,7 @@ PluginManager.prototype.registerDashboard = function(name, uri) {
 	var relativeUri = uri.replace(__dirname,"");
 	me.registeredDashboards.push({name: name, uri: relativeUri});
 	me.registeredDashboardsLastModified = new Date();
-}
+};
 
 PluginManager.prototype.tryRun = function(callContext) {
 	var me=this;
@@ -64,7 +64,7 @@ PluginManager.prototype.tryRun = function(callContext) {
 
 	plugin[action](callContext);
 	return true;
-}
+};
 
 PluginManager.prototype.getDashboards = function(callContext) {
 	var me=this;
@@ -83,6 +83,6 @@ PluginManager.prototype.getDashboards = function(callContext) {
 	} else {
 		callContext.respondWithHeaders(200, responseHeaders, me.registeredDashboards);
 	}
-}
+};
 
 module.exports.PluginManager = PluginManager;

@@ -12,7 +12,7 @@ setInterval(function() {
 	try {
 	var now = new Date();
 	var allMetrics = [];
-	for (key in counterByKey) {
+	for (var key in counterByKey) {
 		var counter = counterByKey[key];
 		if (counter.keepState && counter.args.N == 0) continue;
 
@@ -26,40 +26,40 @@ setInterval(function() {
 	} catch (ex) {
 		console.log("Cannot flush counters: " + ex.stack);
 	}
-}, 1000)
+}, 1000);
 
 module.exports.setHostname = function(h) {
 	hostname = h;
 	shortHostname = h.split('.')[0];
-}
+};
 
 module.exports.setCrayonId = function(c) { 
 	crayonId = c; 
-}
+};
 
 module.exports.getCrayonId = function(c) { 
 	return crayonId; 
-}
+};
 
 module.exports.getHostname = function(c) { 
 	return hostname; 
-}
+};
 
 module.exports.getShortHostname = function(c) { 
 	return shortHostname; 
-}
+};
 
 module.exports.stopAll = function() {
-	for (counter in counterByKey) {
+	for (var counter in counterByKey) {
 		counterByKey[counter].stop();
 	}
-}
+};
 
 module.exports.flushAll = function() {
-	for (counter in counterByKey) {
+	for (var counter in counterByKey) {
 		counterByKey[counter].flushCounter();
 	}
-}
+};
 
 module.exports.getOrCreateCounter = function(secondsInterval, name, component, server, keepState) {
 	if (!server) server = shortHostname;
@@ -96,17 +96,17 @@ Counter.prototype.resetCounter = function() {
 	me.args.V = 0;
 	me.args.S = 0;
 	me.incrementLastValue = 0;
-}
+};
 
 Counter.prototype.getMetric = function() {
 	var me=this;
 
 	var argsCopy = {};
-	for (key in me.args) {
-		argsCopy[key] = me.args[key]
+	for (var key in me.args) {
+		argsCopy[key] = me.args[key];
 	}
 	return argsCopy;
-}
+};
 
 Counter.prototype.flushCounter = function() {
 	var me=this;
@@ -115,8 +115,8 @@ Counter.prototype.flushCounter = function() {
 		me.args.t = new Date();
 		try {
 			var argsCopy = {};
-			for (key in me.args) {
-				argsCopy[key] = me.args[key]
+			for (var key in me.args) {
+				argsCopy[key] = me.args[key];
 			}
 
 			//if (me.keepState && me.args.N == 0) {
@@ -131,14 +131,14 @@ Counter.prototype.flushCounter = function() {
 		}
 	//}
 	
-}
+};
 
 Counter.prototype.stop = function() {
 	var me=this;
 	try {
 		if (me.timer) clearInterval(me.timer);
 	} catch (ex) {}
-}
+};
 
 Counter.prototype.addSample = function(newValue) {
 	var me=this;
@@ -151,14 +151,14 @@ Counter.prototype.addSample = function(newValue) {
 	me.args.S += newValue;
 	me.args.V += (newValue - oldAverage) * (newValue - me.args.A);
 	// STDev S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))
-}
+};
 
 // Sometimes it's easier to just call increment
 // Although we could have used the N field of different counter, it's simpler to understand that way
 // TODO: Should consider changing this
 Counter.prototype.increment = function(count) {
 	var me=this;
-	if (count == null) count = 1;
+	if (typeof count != "number") count = 1;
 	me.incrementLastValue += count;
 	me.args.m = me.incrementLastValue;
 	me.args.M = me.incrementLastValue;
@@ -166,6 +166,6 @@ Counter.prototype.increment = function(count) {
 	me.args.S = me.incrementLastValue;
 	me.args.N += 1;
 	me.args.V = 0;
-}
+};
 
 module.exports.Counter = Counter;
