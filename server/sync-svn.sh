@@ -1,7 +1,7 @@
 url=$1
 user=$2
 pwd=$3
-
+action=mine-full
 
 mkdir -p ../static/dashboards/
 cd ../static/dashboards
@@ -13,13 +13,15 @@ if ! [ -d ".svn" ]; then
 	
 	echo "Checking out crayon dashboards (first time)"
 	svn checkout $url/dashboards . --no-auth-cache --non-interactive --username $user --password $pwd
+
+	action=theirs-full
 fi
 
 echo "Adding new dashboards to svn"
 svn add ./* --no-auth-cache --non-interactive --username $user --password $pwd --quiet
 
 echo "Updating local repository with new dashboards"
-svn update . --username svnuser --password 5tgbnhy6 --no-auth-cache --non-interactive --accept mine-full
+svn update . --username svnuser --password 5tgbnhy6 --no-auth-cache --non-interactive --accept $action
 
 echo "Committing changes to svn"
 svn commit -m "Committing crayon dashboards" --no-auth-cache --non-interactive --username $user --password $pwd
