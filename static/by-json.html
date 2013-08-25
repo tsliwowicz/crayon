@@ -633,6 +633,11 @@ function deleteDashboardForce(d) {
 }
 
 function deleteDashboard() {
+	if (window.demoMode) {
+		showAlert({OK: true, title:"Demo Mode", text:"Feature is not available in demo mode"});
+		return;
+	}
+
 	showAlert({OK: true, Cancel: true, title:"Confirm Delete", text:"Are you sure you want to delete this dashboard?", callback: 
 		function(choice) {
 			if (choice == "OK") {

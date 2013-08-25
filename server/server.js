@@ -5,6 +5,7 @@ var uiOnly = false;
 var hostname = require("os").hostname();
 var portForGraphiteFormat = null;
 var noAggregations = false;
+var demoMode = false;
 
 for (argIndex in process.argv) {
 	var arg = process.argv[argIndex];
@@ -13,7 +14,9 @@ for (argIndex in process.argv) {
 	if (arg.indexOf("--jobmanager") == 0) isJobManager = true;
 	if (arg.indexOf("--noAggregations") == 0) noAggregations = true;
 	if (arg.indexOf("--uiOnly") == 0) uiOnly = true;
+	if (arg.indexOf("--demoMode") == 0) { demoMode = true; noAggregations = true; }
 }
+
 console.log(process.argv);
 console.log("Hostname: " + hostname);
 
@@ -56,6 +59,10 @@ pluginManager.loadPlugins();
 // =========== Startup ===============
 // ===================================
 
+if (demoMode) {
+	logger.warn("Running in demo mode!");
+}
+
 mail.connect(function(err) {
 	if (err) return;	
 
@@ -90,13 +97,33 @@ mail.connect(function(err) {
 			} else if (callContext.uri == "/getConfig") {
 				return callContext.respondJson(200,configLib.getConfig());
 			} else if (callContext.uri == "/setConfig") {
+				if (demoMode) {
+					callContext.respondText(200,"Feature Not Available In Demo Mode");
+					return;
+				}
+
 				configLib.setConfig(callContext.body);
 				return callContext.respondText(200,"OK");
 			} else if (callContext.uri == "/saveDashboard") {
+				if (demoMode) {
+					callContext.respondText(200,"Feature Not Available In Demo Mode");
+					return;
+				}
+
 				return dashboards.saveDashboard(callContext);
 			} else if (callContext.uri == "/deleteDashboard") {
+				if (demoMode) {
+					callContext.respondText(200,"Feature Not Available In Demo Mode");
+					return;
+				}
+
 				return dashboards.deleteDashboard(callContext);
 			} else if (callContext.uri == "/saveThresholds") {
+				if (demoMode) {
+					callContext.respondText(200,"Feature Not Available In Demo Mode");
+					return;
+				}
+
 				return thresholds.saveThresholds(callContext);
 			} else if (callContext.uri.indexOf("plugins/") > 0 && pluginManager.tryRun(callContext)) {
 				return;

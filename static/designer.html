@@ -245,6 +245,11 @@ function saveDashboardOverwrite(dashboard) {
 }
 
 function saveDashboard() {
+	if (window.demoMode) {
+		showAlert({OK: true, title:"Demo Mode", text:"Feature is not available in demo mode"});
+		return;
+	}
+
 	var jsonString = editor.getValue();
   	var dashboard = JSON.parse(jsonString);
   	if (!dashboard.id) {

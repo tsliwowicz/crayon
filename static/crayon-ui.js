@@ -1,4 +1,6 @@
 var queryArgs = {};
+window.demoMode = false;
+
 (function () {
 	var match,
 		pl     = /\+/g,  // Regex for replacing addition symbol with a space
@@ -17,18 +19,48 @@ var setHeader = function(name) {
 function readCookie(name) {
     return (name = new RegExp('(?:^|;\\s*)' + ('' + name).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '=([^;]*)').exec(document.cookie)) && name[1];
 }
+
 var themeCookie = readCookie("theme");
+
+// Set as default theme if no cookie exists
+if (themeCookie == null) {
+	queryArgs.theme = "ambiance"; 
+}
+
 var theme = queryArgs.theme || themeCookie;
 
 var head = $("head");
 var body = $("body");
 
 /* CRAYON MAIN UI START */
-body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png">' +
+body.append('<div id="titleHeader"><img src="/CrayonsSmall.png"><img src="/CrayonTitleSmall.png">' + 
 	  '<span id="themeSelectBlock">Theme:<select onchange="selectTheme()" id="themeSelect">' +
 	  '<option>default</option>' +
 	  '<option>ambiance</option>' +
 	  '</select></span></div>');
+
+if (demoMode) {
+	body.append('<div id="demoModeTitle" onclick="showDemoOverlay()">DEMO MODE</div>');
+	body.append('<div id="demoModeOverlay"><h2>Demo Mode</h2>This is a demo mode of crayon and some features are unavailable.<br>' +
+		'You can run your own instance of Crayon. Get it <a href="http://www.github.com/shai-d/crayon">here</a>.<br>' +
+		'Feel free to post questions at the <a href="https://groups.google.com/forum/#!forum/crayon-mailing-list">mailing list</a><br><br>' +
+		'Among the demo mode limitations:<br>' +
+		'<ul>' +
+		'<li>You cannot delete or save dashboards</li>' +
+		'<li>Data points are only saved for 60 minutes</li>' +
+		'<li>Only valid value for the property "unit" is "r" (raw data)</li>' +
+		'<li>You are sharing storage with everyone, play nice</li>' +
+		'</ul>' +
+		'</div>');
+}
+
+function showDemoOverlay() {
+	if ($(demoModeOverlay).css("display") == "block") {
+		$(demoModeOverlay).css("display","none");
+	} else {
+		$(demoModeOverlay).css("display","block");
+	}
+}
 
 head.append('<script type="text/javascript" src="/html2canvas.js"></script>');
 head.append('<link rel="stylesheet" type="text/css" href="/crayon.css" media="screen" />');
