@@ -68,8 +68,8 @@ PluginManager.prototype.tryRun = function(callContext) {
 
 PluginManager.prototype.getDashboards = function(callContext) {
 	var me=this;
-	var etag = me.registeredDashboardsLastModified.toLocaleString().replace(/[/ :]/g,"");
-
+	var etag = me.registeredDashboardsLastModified.toLocaleString().replace(/[\/ :]/g,"");
+	
 	var responseHeaders = {
 		"Content-Type": "text/json", 
 		"Last-Modified": me.registeredDashboardsLastModified,
